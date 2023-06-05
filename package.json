@@ -1,0 +1,32 @@
+{
+	"name": "xutils",
+	"version": "1.0.0",
+	"description": "Thuku's collection of useful javascript utilities.",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"prepublish": "npm run build",
+		"dev": "npm run test",
+		"build": "rimraf ./dist && tsc",
+		"prod": "npm run build && node dist/test.js",
+		"test": "npx ts-node ./lib/test.ts"
+	},
+	"keywords": [
+		"typescript",
+		"javascript",
+		"js",
+		"tsc",
+		"library",
+		"utilities",
+		"custom",
+		"xutils",
+		"xthukuh"
+	],
+	"author": "https://github.com/xthukuh",
+	"license": "ISC",
+	"devDependencies": {
+		"rimraf": "^5.0.1",
+		"ts-node": "^10.9.1",
+		"typescript": "^5.1.3"
+	}
+}
