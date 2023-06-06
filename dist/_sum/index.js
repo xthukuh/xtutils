@@ -1,7 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._sum = exports._sayHello = void 0;
-var _hello_1 = require("./_hello");
-Object.defineProperty(exports, "_sayHello", { enumerable: true, get: function () { return _hello_1._sayHello; } });
+exports._sum = void 0;
 var _sum_1 = require("./_sum");
 Object.defineProperty(exports, "_sum", { enumerable: true, get: function () { return _sum_1._sum; } });
