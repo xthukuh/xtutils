@@ -1,4 +1,4 @@
-import { _jsonStringify } from '../_json';
+import { _jsonStringify } from './_json';
 
 /**
  * Safely `string` cast value
