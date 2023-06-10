@@ -2,6 +2,7 @@ import { _jsonStringify } from './_json';
 
 /**
  * Safely `string` cast value
+ * - Returns ISO format timestamp for valid Date value
  * 
  * @param value  Cast value
  * @param _default  [default: `''`] Default result on failure
@@ -10,7 +11,8 @@ import { _jsonStringify } from './_json';
 export const _string = (value: any, _default: string = ''): string => {
 	let val: string = '';
 	try {
-		val = String(value);
+		if (value instanceof Date && !isNaN(value.getTime())) val = value.toISOString();
+		else val = String(value);
 	}
 	catch (e){
 		val = _default;

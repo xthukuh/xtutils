@@ -1,33 +1,34 @@
 import { _sayHello } from '../lib';
-import { _expectTestData } from './__utils';
+import { _expectTestDataFn } from './helpers';
 
-const _original = console.log;
-const results = ['[x] - Hello Thuku!', '[x] - Hello Martin!'];
+//_sayHello
+describe("_sayHello: (name?:string) => string", () => {
+	const _expected2 = '[x] - Hello Martin!';
+	const _expected1 = '[x] - Hello Thuku!';
+	let consoleLogMock: jest.SpyInstance;
 
-beforeAll(() => {
-	console.log = jest.fn().mockImplementation(()=>{});
-});
+	beforeAll(() => {
+		consoleLogMock = jest.spyOn(console, 'log').mockImplementation();
+	});
+	
+	afterAll(() => {
+		expect(consoleLogMock).toHaveBeenCalledTimes(2);
+		expect(consoleLogMock.mock.calls).toEqual([[_expected1], [_expected2]]);
+		consoleLogMock.mockRestore();
+	});
 
-afterAll(() => {
-	console.debug('after-calls', (console.log as jest.Mock).mock.calls);
-	// expect((console.log as jest.Mock).mock.calls).toEqual([[results[0]], [results[1]]]);
-	console.log = _original;
-});
-
-//tests
-describe("Test call arguments... \`_sayHello:(name?:string)=>string\`", () => {
-	_expectTestData('_sayHello', _sayHello, [
+	_expectTestDataFn('_sayHello', _sayHello, [
 		{
-			text: 'No arguments',
+			text: 'default',
 			code: '',
 			args: [],
-			result: results[0],
+			expected: _expected1,
 		},
 		{
-			text: 'No arguments',
+			text: 'name',
 			code: 'Martin',
 			args: ['Martin'],
-			result: results[1],
+			expected: _expected2,
 		},
 	]);
 });
