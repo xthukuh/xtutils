@@ -2,37 +2,69 @@
  * Lib Exports
  */
 
-//_hello
-export { _sayHello } from './utils/_hello';
+//utils - types
+export type {
+	
+	//_number
+	bool,
 
-//_json
-export { _jsonStringify, _jsonParse, _jsonClone } from './utils/_json';
+	//_promise
+	IPromiseResult,
+	
+	//_queue
+	IQueue,
+	
+	//_sort
+	SortDirection, SortOrder,
+	
+	//_term
+	ITermFormat,
 
-//_string
-export { _string, _stringable, _strNorm, _str } from './utils/_string';
+	//..
+} from './utils';
 
-//_batch
-export { _batchValues } from './utils/_batch';
+//utils
+export {
 
-//_datetime
-export { _isDate, _getDate, _datetime, _timestamp } from './utils/_datetime';
+	//_hello
+	_sayHello,
 
-//_number
-export type { bool } from './utils/_number';
-export { _isNumeric, _toNum, _num, _int, _round, _commas, _rand } from './utils/_number';
+	//_json
+	_jsonStringify, _jsonParse, _jsonClone,
+	
+	//_string
+	_string, _stringable, _strNorm, _str,
+	
+	//_batch
+	_batchValues,
+	
+	//_datetime
+	_isDate, _getDate, _datetime, _timestamp,
+	
+	//_number
+	_isNumeric, _toNum, _num, _int, _round, _commas, _rand,
+	
+	//_promise
+	_sleep, _asyncAll, _asyncValues,
+	
+	//_queue
+	_queue,
+	
+	//_sort
+	_sortValues,
+	
+	//_term
+	Term,
+	
+	//_node_fs
+	_pathExists,
+	_lsDir,
+	_readLines,
+	_readSync,
+	_writeSync,
+	_processArgs,
+	_removeDir,
+	_removeFile,
 
-//_promise
-export type { IPromiseResult } from './utils/_promise';
-export { _sleep, _asyncAll, _asyncValues } from './utils/_promise';
-
-//_queue
-export type { IQueue } from './utils/_queue';
-export { _queue } from './utils/_queue';
-
-//_sort
-export type { SortDirection, SortOrder } from './utils/_sort';
-export { _sortValues } from './utils/_sort';
-
-//_term
-export type { ITermFormat } from './utils/_term';
-export { Term } from './utils/_term';
+	//..
+} from './utils';
