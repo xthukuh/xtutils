@@ -73,7 +73,7 @@ describe('_jsonStringify: (value: any, space?: string | number | undefined, _und
 		{
 			text: 'Set instance',
 			code: `new Set<number>([1,1,2])`,
-			args: [new Set([1,1,2])],
+			args: [new Set<number>([1,1,2])],
 			expected: `{"[Set]":[1,2]}`,
 		},
 		{
@@ -167,6 +167,9 @@ describe('_jsonParse: (value: string, _default?: any) => any', () => {
 describe('_jsonClone: <TReturn extends any>(value: any, space?: string|number|undefined, _undefined: any = null) => TReturn', () => {
 	describe(`/* Example */ const a = {name: 'John'}, b = a, c = _jsonClone(a);`, () => {
 		let a = {name: 'John'}, b = a, c = _jsonClone(a);
+		test(`a equals {name: 'John'} --> true`, () => expect(a).toEqual({name: 'John'}));
+		test(`b equals {name: 'John'} --> true`, () => expect(b).toEqual({name: 'John'}));
+		test(`c equals {name: 'John'} --> true`, () => expect(c).toEqual({name: 'John'}));
 		test('a === b --> true', () => expect(a === b).toBe(true));
 		test('a === c --> false', () => expect(a === c).toBe(false));
 	});

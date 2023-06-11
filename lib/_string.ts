@@ -27,7 +27,7 @@ export const _string = (value: any, _default: string = ''): string => {
  * @returns `false|string` Cast result or `false` on failure
  */
 export const _stringable = (value: any): false|string => {
-	const failed = `!${Date.now()}!`, val = _string(value, failed), pattern = /^\[object \w+\]$/;
+	const failed = `!${Date.now()}!`, val = _string(value, failed), pattern = /\[object \w+\]/;
 	return !(val === failed || pattern.test(val)) ? val : false;
 };
 
