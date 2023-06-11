@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports._str = exports._strNorm = exports._stringable = exports._string = void 0;
-const _json_1 = require("../_json");
+const _json_1 = require("./_json");
 /**
  * Safely `string` cast value
+ * - Returns ISO format timestamp for valid Date value
  *
  * @param value  Cast value
  * @param _default  [default: `''`] Default result on failure
@@ -12,7 +13,10 @@ const _json_1 = require("../_json");
 const _string = (value, _default = '') => {
     let val = '';
     try {
-        val = String(value);
+        if (value instanceof Date && !isNaN(value.getTime()))
+            val = value.toISOString();
+        else
+            val = String(value);
     }
     catch (e) {
         val = _default;
@@ -27,7 +31,7 @@ exports._string = _string;
  * @returns `false|string` Cast result or `false` on failure
  */
 const _stringable = (value) => {
-    const failed = `!${Date.now()}!`, val = (0, exports._string)(value, failed), pattern = /^\[object \w+\]$/;
+    const failed = `!${Date.now()}!`, val = (0, exports._string)(value, failed), pattern = /\[object \w+\]/;
     return !(val === failed || pattern.test(val)) ? val : false;
 };
 exports._stringable = _stringable;

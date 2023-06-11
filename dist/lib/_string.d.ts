@@ -1,5 +1,6 @@
 /**
  * Safely `string` cast value
+ * - Returns ISO format timestamp for valid Date value
  *
  * @param value  Cast value
  * @param _default  [default: `''`] Default result on failure

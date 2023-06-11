@@ -56,7 +56,7 @@ const _jsonStringify = (value, space, _undefined = null) => {
                 _parents(key, value);
             const other = refs.get(value);
             if (other)
-                return '[Circular Reference]' + other;
+                return '[Circular]' + other;
             else
                 refs.set(value, path.join('.'));
         }
