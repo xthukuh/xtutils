@@ -30,22 +30,45 @@ export {
 	_sayHello,
 
 	//_json
-	_jsonStringify, _jsonParse, _jsonClone,
+	_jsonStringify,
+  _jsonParse,
+  _jsonClone,
 	
 	//_string
-	_string, _stringable, _strNorm, _str,
+	_string,
+  _stringable,
+  _strNorm,
+  _str,
+  // _regEscape,
+  // _trim,
+  // _titleCase,
+  // _sentenceCase,
+  // _snakeCase,
+  // _slugCase,
+  // _studlyCase,
 	
 	//_batch
 	_batchValues,
 	
 	//_datetime
-	_isDate, _getDate, _datetime, _timestamp,
+	_isDate,
+  _getDate,
+  _datetime,
+  _timestamp,
 	
 	//_number
-	_isNumeric, _toNum, _num, _int, _round, _commas, _rand,
+	_isNumeric,
+  _toNum,
+  _num,
+  _int,
+  _round,
+  _commas,
+  _rand,
 	
 	//_promise
-	_asyncAll, _asyncValues, _sleep,
+	_asyncAll,
+  _asyncValues,
+  _sleep,
 	
 	//_queue
 	_queue,
@@ -56,15 +79,33 @@ export {
 	//_term
 	Term,
 	
-	//_node_fs
-	_pathExists,
-	_lsDir,
-	_readLines,
-	_readSync,
-	_writeSync,
-	_processArgs,
-	_removeDir,
-	_removeFile,
+	// //_node_fs
+	// _pathExists,
+	// _lsDir,
+	// _readLines,
+	// _readSync,
+	// _writeSync,
+	// _processArgs,
+	// _removeDir,
+	// _removeFile,
+
+  //_ElapsedTime
+  ElapsedTime,
+
+  //_id
+  _getUid,
+
+  //_objects
+  _array,
+  _flatten,
+  _hasProp,
+  _hasProps,
+  _hasAnyProps,
+  _isSpreadable,
+  _isEmpty,
+
+  //_debounced
+  _debouced,
 
 	//..
 } from './utils';

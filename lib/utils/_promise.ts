@@ -44,7 +44,7 @@ export const _asyncValues = <T extends any>(array: T[]): {
 	size: () => number;
 	each: (callback: (value: T, index: number, length: number, _break: ()=>void)=>Promise<any>) => Promise<void>;
 	[Symbol.asyncIterator]: () => {
-		next: () => Promise<{done: boolean; value?: T}>;
+		next: () => Promise<{done: boolean; value: T}>;
 	}
 } => ({
 	values: () => array,
@@ -55,7 +55,6 @@ export const _asyncValues = <T extends any>(array: T[]): {
 		};
 		for await (const value of self){
 			index ++;
-			if (!value) continue;
 			if (cancel) break;
 			await callback(value, index, self.size(), _break);
 		}
@@ -64,10 +63,10 @@ export const _asyncValues = <T extends any>(array: T[]): {
 		let index = 0;
 		const that = this;
 		return {
-			async next(): Promise<{done: boolean; value?: T}> {
-				const length = that.size();
-				if (index >= length) return {done: true};
-				const value = await Promise.resolve(array[index]);
+			async next(): Promise<{done: boolean; value: T}> {
+				let value: T = undefined as T, length = that.size();
+				if (index >= length) return {done: true, value};
+				value = await Promise.resolve(array[index]);
 				index ++;
 				return {done: false, value};
 			},

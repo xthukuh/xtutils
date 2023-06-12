@@ -1,4 +1,5 @@
 import { _jsonStringify } from './_json';
+import { bool } from './_number';
 
 /**
  * Safely `string` cast value
@@ -63,3 +64,81 @@ export const _str = (value: any, trim: boolean = false, stringify: boolean = fal
 	}
 	return trim ? value.trim() : value;
 };
+
+//TODO: implement
+// /**
+//  * Escape regex operators from string (i.e. `'/s'` => `'\\/s'`)
+//  * 
+//  * @param value
+//  * @returns `string` escaped
+//  */
+// export const _regEscape = (value: string): string => value.replace(new RegExp('/[-\\/\\\\^$*+?.()|[\\]{}]/', 'g'), '\\$&');
+//
+// /**
+//  * Trim string regex characters `[ \n\r\t\v\x00]*`
+//  * 
+//  * @param value  Trim string
+//  * @param rl  [default: `both`] Trim direction `'r'|'right'` or `'l'/'left'` 
+//  * @param chars  [default: `' \n\r\t\v\x00'`] Strip characters
+//  * @returns `string` trimmed
+//  */
+// export const _trim = (value: string, rl?: string, chars: string = ' \n\r\t\v\x00'): string => {
+//   rl = rl ? rl.trim().toLowerCase() : '';
+//   let p = `[${_regEscape(chars)}]*`, pattern = `^${p}|${p}$`;
+//   if (['l', 'left'].includes(rl)) pattern = `^${p}`;
+//   else if (['r', 'right'].includes(rl)) pattern = `${p}$`;
+//   return value.replace(new RegExp(pattern, 'g'), '');
+// };
+//
+// /**
+//  * Convert string to title case (i.e. "heLLo woRld" => "Hello World")
+//  * 
+//  * @param value
+//  * @returns `string` Title Case
+//  */
+// export const _titleCase = (value: string): string => value.replace(/\w\S*/g, match => match[0].toUpperCase() + match.substring(1).toLowerCase());
+//
+// /**
+//  * Convert string to sentence case
+//  * 
+//  * @param value  Parse value
+//  * @param ignore  Ignore lowercasing
+//  * @returns `string` Sentence case
+//  */
+// export const _sentenceCase = (value: string, ignore: bool = false): string => value.split(/((?<=\.|\?|!)\s*)/)
+// .map(val => {
+//   if (val.length){
+//     const first = val.charAt(0).toUpperCase();
+//     const rest = val.length > 1 ? val.slice(1) : '';
+//     val = first + (ignore ? rest : rest.toLowerCase());
+//   }
+//   return val;
+// })
+// .join('');
+//
+// /**
+//  * Convert value to snake case (i.e. 'HelloWorld' => 'hello_world')
+//  * 
+//  * @param value
+//  * @returns `string` snake_case
+//  */
+// export const _snakeCase = (value: string): string => _strNorm(value).replace(/\W+/g, ' ').split(/ |\B(?=[A-Z])/).join('_').replace(/_+/g, '_').toLowerCase();
+//
+// /**
+//  * Convert value to slug case (i.e. 'HelloWorld' => 'hello-world')
+//  * 
+//  * @param value
+//  * @returns `string` slug-case
+//  */
+// export const _slugCase = (value: string): string => _strNorm(value).replace(/(?:[\W_])?[A-Z]/g, (m, i) => m.length === 1 && i ? '-' + m : m)
+// .replace(/[0-9a-zA-Z]/, '-')
+// .replace(/-+/g, '-')
+// .toLowerCase();
+//
+// /**
+//  * Convert value to studly case (i.e. 'hello-world' => 'HelloWorld')
+//  * 
+//  * @param value
+//  * @returns `string` StudlyCase
+//  */
+// export const _studlyCase = (value: string): string => _slug(value).split('-').map(w => w[0].toUpperCase() + w.substring(1).toLowerCase()).join('');
