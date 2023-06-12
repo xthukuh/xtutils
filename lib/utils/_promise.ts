@@ -1,16 +1,6 @@
 import { _str } from './_string';
 
 /**
- * Delay promise
- * 
- * @param timeout  Delay milliseconds
- * @returns `Promise`
- */
-export const _sleep = async (timeout: number): Promise<void> => {
-	return new Promise(resolve => setTimeout(() => resolve(), timeout >= 0 ? timeout : 0));
-};
-
-/**
  * Promise result interface
  */
 export interface IPromiseResult<TResult> {
@@ -22,22 +12,22 @@ export interface IPromiseResult<TResult> {
 
 /**
  * Parallel resolve `array` values callback promises
+ * - i.e. await _asyncAll<number, number>([1, 2], async (num) => num * 2) --> [{status: 'resolved', index: 0, value: 2}, {status: 'resolved', index: 1, value: 4}]
  * 
  * @param array  Entries
  * @param callback  Entry callback
- * @param results  [default: `false`] Return results buffer
- * @returns `Promise<void|IPromiseResult<TResult>[]>`
+ * @returns `Promise<IPromiseResult<TResult>[]>`
  */
-export const _asyncAll = async<T extends any, TResult extends any>(array: T[], callback?: (value: T, index: number, array: T[]) => Promise<TResult|undefined>, results: boolean = false): Promise<void|IPromiseResult<TResult>[]> => {
-	return new Promise((resolve: (value?:IPromiseResult<TResult>[])=>void|IPromiseResult<TResult>[]) => {
+export const _asyncAll = async<T extends any, TResult extends any>(array: T[], callback?: (value: T, index: number, array: T[]) => Promise<TResult>): Promise<IPromiseResult<TResult>[]> => {
+	return new Promise((resolve) => {
 		const _buffer: IPromiseResult<TResult>[] = [], _len = array.length;
-		const _resolve = () => resolve(results ? _buffer : undefined);
+		const _resolve = () => resolve(_buffer);
 		if (!_len) return _resolve();
 		let count = 0;
 		array.forEach((v, i, a) => {
 			(async()=>Promise.resolve(callback ? callback(v, i, a) : v) as Promise<TResult>)()
-			.then(value => results ? _buffer.push({status: 'resolved', index: i, value}) : undefined)
-			.catch(reason => results ? _buffer.push({status: 'rejected', index: i, reason}) : undefined)
+			.then(value => _buffer.push({status: 'resolved', index: i, value}))
+			.catch(reason => _buffer.push({status: 'rejected', index: i, reason}))
 			.finally(() => ++count === _len ? _resolve() : undefined);
 		});
 	});
@@ -84,3 +74,14 @@ export const _asyncValues = <T extends any>(array: T[]): {
 		};
 	},
 });
+
+/**
+ * Delay promise
+ * 
+ * @param timeout  Delay milliseconds
+ * @returns `Promise<number>` timeout
+ */
+export const _sleep = async (timeout: number): Promise<number> => {
+	timeout = !isNaN(timeout) && timeout >= 0 ? timeout : 0
+	return new Promise(resolve => setTimeout(() => resolve(timeout), timeout));
+};

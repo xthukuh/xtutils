@@ -1,11 +1,4 @@
 /**
- * Delay promise
- *
- * @param timeout  Delay milliseconds
- * @returns `Promise`
- */
-export declare const _sleep: (timeout: number) => Promise<void>;
-/**
  * Promise result interface
  */
 export interface IPromiseResult<TResult> {
@@ -16,13 +9,13 @@ export interface IPromiseResult<TResult> {
 }
 /**
  * Parallel resolve `array` values callback promises
+ * - i.e. await _asyncAll<number, number>([1, 2], async (num) => num * 2) --> [{status: 'resolved', index: 0, value: 2}, {status: 'resolved', index: 1, value: 4}]
  *
  * @param array  Entries
  * @param callback  Entry callback
- * @param results  [default: `false`] Return results buffer
- * @returns `Promise<void|IPromiseResult<TResult>[]>`
+ * @returns `Promise<IPromiseResult<TResult>[]>`
  */
-export declare const _asyncAll: <T extends unknown, TResult extends unknown>(array: T[], callback?: ((value: T, index: number, array: T[]) => Promise<TResult | undefined>) | undefined, results?: boolean) => Promise<void | IPromiseResult<TResult>[]>;
+export declare const _asyncAll: <T extends unknown, TResult extends unknown>(array: T[], callback?: ((value: T, index: number, array: T[]) => Promise<TResult>) | undefined) => Promise<IPromiseResult<TResult>[]>;
 /**
  * Get async iterable values (i.e. `for await (const value of _asyncValues(array)){...}`)
  *
@@ -40,3 +33,10 @@ export declare const _asyncValues: <T extends unknown>(array: T[]) => {
         }>;
     };
 };
+/**
+ * Delay promise
+ *
+ * @param timeout  Delay milliseconds
+ * @returns `Promise<number>` timeout
+ */
+export declare const _sleep: (timeout: number) => Promise<number>;

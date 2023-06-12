@@ -3,7 +3,7 @@
  * Lib Exports
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._removeFile = exports._removeDir = exports._processArgs = exports._writeSync = exports._readSync = exports._readLines = exports._lsDir = exports._pathExists = exports.Term = exports._sortValues = exports._queue = exports._asyncValues = exports._asyncAll = exports._sleep = exports._rand = exports._commas = exports._round = exports._int = exports._num = exports._toNum = exports._isNumeric = exports._timestamp = exports._datetime = exports._getDate = exports._isDate = exports._batchValues = exports._str = exports._strNorm = exports._stringable = exports._string = exports._jsonClone = exports._jsonParse = exports._jsonStringify = exports._sayHello = void 0;
+exports._removeFile = exports._removeDir = exports._processArgs = exports._writeSync = exports._readSync = exports._readLines = exports._lsDir = exports._pathExists = exports.Term = exports._sortValues = exports._queue = exports._sleep = exports._asyncValues = exports._asyncAll = exports._rand = exports._commas = exports._round = exports._int = exports._num = exports._toNum = exports._isNumeric = exports._timestamp = exports._datetime = exports._getDate = exports._isDate = exports._batchValues = exports._str = exports._strNorm = exports._stringable = exports._string = exports._jsonClone = exports._jsonParse = exports._jsonStringify = exports._sayHello = void 0;
 //utils
 var utils_1 = require("./utils");
 //_hello
@@ -33,9 +33,9 @@ Object.defineProperty(exports, "_round", { enumerable: true, get: function () { 
 Object.defineProperty(exports, "_commas", { enumerable: true, get: function () { return utils_1._commas; } });
 Object.defineProperty(exports, "_rand", { enumerable: true, get: function () { return utils_1._rand; } });
 //_promise
-Object.defineProperty(exports, "_sleep", { enumerable: true, get: function () { return utils_1._sleep; } });
 Object.defineProperty(exports, "_asyncAll", { enumerable: true, get: function () { return utils_1._asyncAll; } });
 Object.defineProperty(exports, "_asyncValues", { enumerable: true, get: function () { return utils_1._asyncValues; } });
+Object.defineProperty(exports, "_sleep", { enumerable: true, get: function () { return utils_1._sleep; } });
 //_queue
 Object.defineProperty(exports, "_queue", { enumerable: true, get: function () { return utils_1._queue; } });
 //_sort

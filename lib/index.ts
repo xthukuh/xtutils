@@ -45,7 +45,7 @@ export {
 	_isNumeric, _toNum, _num, _int, _round, _commas, _rand,
 	
 	//_promise
-	_sleep, _asyncAll, _asyncValues,
+	_asyncAll, _asyncValues, _sleep,
 	
 	//_queue
 	_queue,

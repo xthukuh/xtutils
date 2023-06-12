@@ -16,36 +16,26 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._asyncValues = exports._asyncAll = exports._sleep = void 0;
-/**
- * Delay promise
- *
- * @param timeout  Delay milliseconds
- * @returns `Promise`
- */
-const _sleep = (timeout) => __awaiter(void 0, void 0, void 0, function* () {
-    return new Promise(resolve => setTimeout(() => resolve(), timeout >= 0 ? timeout : 0));
-});
-exports._sleep = _sleep;
+exports._sleep = exports._asyncValues = exports._asyncAll = void 0;
 /**
  * Parallel resolve `array` values callback promises
+ * - i.e. await _asyncAll<number, number>([1, 2], async (num) => num * 2) --> [{status: 'resolved', index: 0, value: 2}, {status: 'resolved', index: 1, value: 4}]
  *
  * @param array  Entries
  * @param callback  Entry callback
- * @param results  [default: `false`] Return results buffer
- * @returns `Promise<void|IPromiseResult<TResult>[]>`
+ * @returns `Promise<IPromiseResult<TResult>[]>`
  */
-const _asyncAll = (array, callback, results = false) => __awaiter(void 0, void 0, void 0, function* () {
+const _asyncAll = (array, callback) => __awaiter(void 0, void 0, void 0, function* () {
     return new Promise((resolve) => {
         const _buffer = [], _len = array.length;
-        const _resolve = () => resolve(results ? _buffer : undefined);
+        const _resolve = () => resolve(_buffer);
         if (!_len)
             return _resolve();
         let count = 0;
         array.forEach((v, i, a) => {
             (() => __awaiter(void 0, void 0, void 0, function* () { return Promise.resolve(callback ? callback(v, i, a) : v); }))()
-                .then(value => results ? _buffer.push({ status: 'resolved', index: i, value }) : undefined)
-                .catch(reason => results ? _buffer.push({ status: 'rejected', index: i, reason }) : undefined)
+                .then(value => _buffer.push({ status: 'resolved', index: i, value }))
+                .catch(reason => _buffer.push({ status: 'rejected', index: i, reason }))
                 .finally(() => ++count === _len ? _resolve() : undefined);
         });
     });
@@ -106,3 +96,14 @@ const _asyncValues = (array) => ({
     },
 });
 exports._asyncValues = _asyncValues;
+/**
+ * Delay promise
+ *
+ * @param timeout  Delay milliseconds
+ * @returns `Promise<number>` timeout
+ */
+const _sleep = (timeout) => __awaiter(void 0, void 0, void 0, function* () {
+    timeout = !isNaN(timeout) && timeout >= 0 ? timeout : 0;
+    return new Promise(resolve => setTimeout(() => resolve(timeout), timeout));
+});
+exports._sleep = _sleep;

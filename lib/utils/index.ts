@@ -23,7 +23,7 @@ export { _isNumeric, _toNum, _num, _int, _round, _commas, _rand } from './_numbe
 
 //_promise
 export type { IPromiseResult } from './_promise';
-export { _sleep, _asyncAll, _asyncValues } from './_promise';
+export { _asyncAll, _asyncValues, _sleep } from './_promise';
 
 //_queue
 export type { IQueue } from './_queue';

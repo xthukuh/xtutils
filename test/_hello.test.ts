@@ -2,7 +2,7 @@ import { _sayHello } from '../lib';
 import { _expectTestDataFn } from './helpers';
 
 //_sayHello
-describe("_sayHello: (name?:string) => string", () => {
+describe('_sayHello: (name?:string) => string', () => {
 	const _expected2 = '[x] - Hello Martin!';
 	const _expected1 = '[x] - Hello Thuku!';
 	let consoleLogMock: jest.SpyInstance;

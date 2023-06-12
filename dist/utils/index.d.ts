@@ -9,7 +9,7 @@ export { _isDate, _getDate, _datetime, _timestamp } from './_datetime';
 export type { bool } from './_number';
 export { _isNumeric, _toNum, _num, _int, _round, _commas, _rand } from './_number';
 export type { IPromiseResult } from './_promise';
-export { _sleep, _asyncAll, _asyncValues } from './_promise';
+export { _asyncAll, _asyncValues, _sleep } from './_promise';
 export type { IQueue } from './_queue';
 export { _queue } from './_queue';
 export type { SortDirection, SortOrder } from './_sort';

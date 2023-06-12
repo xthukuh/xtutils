@@ -2,7 +2,7 @@ import { _string, _stringable, _strNorm, _str } from '../lib';
 import { _expectTestDataFn } from './helpers';
 
 //_string
-describe("_string: (value: any, _default?: string) => string", () => {
+describe('_string: (value: any, _default?: string) => string', () => {
 	_expectTestDataFn('_string', _string, [
 		{
 			text: 'string',
@@ -74,7 +74,7 @@ describe("_string: (value: any, _default?: string) => string", () => {
 });
 
 //_stringable
-describe("_stringable: (value: any) => false|string", () => {
+describe('\n  _stringable: (value: any) => false|string', () => {
 	_expectTestDataFn('_stringable', _stringable, [
 		{
 			text: 'blank string',
@@ -158,7 +158,7 @@ describe("_stringable: (value: any) => false|string", () => {
 });
 
 //_strNorm
-describe("_strNorm: (value: string) => string", () => {
+describe('\n  _strNorm: (value: string) => string', () => {
 	_expectTestDataFn('_strNorm', _strNorm, [
 		{
 			text: 'normal',
@@ -176,7 +176,7 @@ describe("_strNorm: (value: string) => string", () => {
 });
 
 //_str
-describe("_str: (value: any, trim: boolean = false, stringify: boolean = false) => string", () => {
+describe('\n  _str: (value: any, trim: boolean = false, stringify: boolean = false) => string', () => {
 	_expectTestDataFn('_str', _str, [
 		{
 			text: 'string',

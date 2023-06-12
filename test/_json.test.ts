@@ -98,7 +98,7 @@ describe('_jsonStringify: (value: any, space?: string | number | undefined, _und
 });
 
 //_jsonParse
-describe('_jsonParse: (value: string, _default?: any) => any', () => {
+describe('\n  _jsonParse: (value: string, _default?: any) => any', () => {
 	_expectTestDataFn('_jsonParse', _jsonParse, [
 		{
 			text: 'null',
@@ -164,7 +164,7 @@ describe('_jsonParse: (value: string, _default?: any) => any', () => {
 });
 
 //_jsonClone
-describe('_jsonClone: <TReturn extends any>(value: any, space?: string|number|undefined, _undefined: any = null) => TReturn', () => {
+describe('\n  _jsonClone: <TReturn extends any>(value: any, space?: string|number|undefined, _undefined: any = null) => TReturn', () => {
 	describe(`/* Example */ const a = {name: 'John'}, b = a, c = _jsonClone(a);`, () => {
 		let a = {name: 'John'}, b = a, c = _jsonClone(a);
 		test(`a equals {name: 'John'} --> true`, () => expect(a).toEqual({name: 'John'}));

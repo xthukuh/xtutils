@@ -5,8 +5,12 @@ const config: Config = {
 	preset: 'ts-jest',
 	testEnvironment: 'node',
 	moduleFileExtensions: ['ts', 'js'],
-	roots: ['<rootDir>/test'],
-	testMatch: ['**/*.test.ts'],
+	roots: [
+		'<rootDir>/test',
+	],
+	testMatch: [
+		'**/*.test.ts',
+	],
 	transform: {
 		'^.+\\.ts?$': 'ts-jest',
 	},
