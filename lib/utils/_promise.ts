@@ -6,7 +6,7 @@ import { _str } from './_string';
 export interface IPromiseResult<TResult> {
 	status: 'resolved'|'rejected';
 	index: number;
-	value?: TResult|undefined;
+	value?: TResult;
 	reason?: any;
 }
 
