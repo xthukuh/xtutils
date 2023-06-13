@@ -1,5 +1,4 @@
 "use strict";
-//NUMBER UTILS
 Object.defineProperty(exports, "__esModule", { value: true });
 exports._rand = exports._commas = exports._round = exports._int = exports._num = exports._toNum = exports._isNumeric = void 0;
 /**

@@ -1,9 +1,6 @@
 "use strict";
-/**
- * Lib Exports
- */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._removeFile = exports._removeDir = exports._processArgs = exports._writeSync = exports._readSync = exports._readLines = exports._lsDir = exports._pathExists = exports.Term = exports._sortValues = exports._queue = exports._sleep = exports._asyncValues = exports._asyncAll = exports._rand = exports._commas = exports._round = exports._int = exports._num = exports._toNum = exports._isNumeric = exports._timestamp = exports._datetime = exports._getDate = exports._isDate = exports._batchValues = exports._str = exports._strNorm = exports._stringable = exports._string = exports._jsonClone = exports._jsonParse = exports._jsonStringify = exports._sayHello = void 0;
+exports._debouced = exports._hasAnyProps = exports._hasProps = exports._hasProp = exports._flatten = exports.ElapsedTime = exports.Term = exports._sortValues = exports._queue = exports._sleep = exports._asyncValues = exports._asyncAll = exports._rand = exports._commas = exports._round = exports._int = exports._num = exports._toNum = exports._isNumeric = exports._timestamp = exports._datetime = exports._getDate = exports._isDate = exports._batchValues = exports._regEscape = exports._str = exports._strNorm = exports._stringable = exports._string = exports._uuid = exports._jsonClone = exports._jsonParse = exports._jsonStringify = exports._sayHello = void 0;
 //_hello
 var _hello_1 = require("./_hello");
 Object.defineProperty(exports, "_sayHello", { enumerable: true, get: function () { return _hello_1._sayHello; } });
@@ -14,10 +11,12 @@ Object.defineProperty(exports, "_jsonParse", { enumerable: true, get: function (
 Object.defineProperty(exports, "_jsonClone", { enumerable: true, get: function () { return _json_1._jsonClone; } });
 //_string
 var _string_1 = require("./_string");
+Object.defineProperty(exports, "_uuid", { enumerable: true, get: function () { return _string_1._uuid; } });
 Object.defineProperty(exports, "_string", { enumerable: true, get: function () { return _string_1._string; } });
 Object.defineProperty(exports, "_stringable", { enumerable: true, get: function () { return _string_1._stringable; } });
 Object.defineProperty(exports, "_strNorm", { enumerable: true, get: function () { return _string_1._strNorm; } });
 Object.defineProperty(exports, "_str", { enumerable: true, get: function () { return _string_1._str; } });
+Object.defineProperty(exports, "_regEscape", { enumerable: true, get: function () { return _string_1._regEscape; } });
 //_batch
 var _batch_1 = require("./_batch");
 Object.defineProperty(exports, "_batchValues", { enumerable: true, get: function () { return _batch_1._batchValues; } });
@@ -45,13 +44,15 @@ var _sort_1 = require("./_sort");
 Object.defineProperty(exports, "_sortValues", { enumerable: true, get: function () { return _sort_1._sortValues; } });
 var _term_1 = require("./_term");
 Object.defineProperty(exports, "Term", { enumerable: true, get: function () { return _term_1.Term; } });
-//_node_fs
-var _node_fs_1 = require("./_node_fs");
-Object.defineProperty(exports, "_pathExists", { enumerable: true, get: function () { return _node_fs_1._pathExists; } });
-Object.defineProperty(exports, "_lsDir", { enumerable: true, get: function () { return _node_fs_1._lsDir; } });
-Object.defineProperty(exports, "_readLines", { enumerable: true, get: function () { return _node_fs_1._readLines; } });
-Object.defineProperty(exports, "_readSync", { enumerable: true, get: function () { return _node_fs_1._readSync; } });
-Object.defineProperty(exports, "_writeSync", { enumerable: true, get: function () { return _node_fs_1._writeSync; } });
-Object.defineProperty(exports, "_processArgs", { enumerable: true, get: function () { return _node_fs_1._processArgs; } });
-Object.defineProperty(exports, "_removeDir", { enumerable: true, get: function () { return _node_fs_1._removeDir; } });
-Object.defineProperty(exports, "_removeFile", { enumerable: true, get: function () { return _node_fs_1._removeFile; } });
+//_ElapsedTime
+var _ElapsedTime_1 = require("./_ElapsedTime");
+Object.defineProperty(exports, "ElapsedTime", { enumerable: true, get: function () { return _ElapsedTime_1.ElapsedTime; } });
+//_objects
+var _objects_1 = require("./_objects");
+Object.defineProperty(exports, "_flatten", { enumerable: true, get: function () { return _objects_1._flatten; } });
+Object.defineProperty(exports, "_hasProp", { enumerable: true, get: function () { return _objects_1._hasProp; } });
+Object.defineProperty(exports, "_hasProps", { enumerable: true, get: function () { return _objects_1._hasProps; } });
+Object.defineProperty(exports, "_hasAnyProps", { enumerable: true, get: function () { return _objects_1._hasAnyProps; } });
+//_debounced
+var _debouced_1 = require("./_debouced");
+Object.defineProperty(exports, "_debouced", { enumerable: true, get: function () { return _debouced_1._debouced; } });

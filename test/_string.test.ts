@@ -1,4 +1,4 @@
-import { _string, _stringable, _strNorm, _str } from '../lib';
+import { _string, _stringable, _strNorm, _str, _regEscape, _uuid } from '../lib';
 import { _expectTestDataFn } from './helpers';
 
 //_string
@@ -305,4 +305,24 @@ describe('\n  _str: (value: any, trim: boolean = false, stringify: boolean = fal
 		// 	expected: `TypeError: example`,
 		// },
 	]);
+});
+
+//_regEscape
+describe('\n  _regEscape: (value: any) => string', () => {
+	_expectTestDataFn('_regEscape', _regEscape, [
+		{
+			text: 'escape',
+			code: `'~_!@#$%^&*()[]\\/,.?"\`\\':;{}|<>=+-'`,
+			args: ['~_!@#$%^&*()[]\\/,.?"`\':;{}|<>=+-'],
+			expected: '~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"`\':;\\{\\}\\|<>=\\+-',
+		},
+	]);
+});
+
+//_uuid
+describe('\n  _uuid: (length: number) => string', () => {
+	console.log(_uuid(20));
+	test('generate random string of length 20 (i.e. "") ---> true', () => {
+		expect(_uuid(20).length).toBe(20);
+	});
 });

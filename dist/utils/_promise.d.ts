@@ -4,7 +4,7 @@
 export interface IPromiseResult<TResult> {
     status: 'resolved' | 'rejected';
     index: number;
-    value?: TResult | undefined;
+    value?: TResult;
     reason?: any;
 }
 /**
@@ -29,7 +29,7 @@ export declare const _asyncValues: <T extends unknown>(array: T[]) => {
     [Symbol.asyncIterator]: () => {
         next: () => Promise<{
             done: boolean;
-            value?: T | undefined;
+            value: T;
         }>;
     };
 };

@@ -1,5 +1,4 @@
 "use strict";
-//NODE FILE UTILS
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -21,7 +20,7 @@ exports._removeFile = exports._removeDir = exports._processArgs = exports._write
 const Fs = require("fs");
 const Path = require("path");
 const Readline = require("readline");
-const _json_1 = require("./_json");
+const utils_1 = require("../utils");
 /**
  * Get existing path type
  *
@@ -121,7 +120,7 @@ const _readSync = (path, json = false, _default = undefined) => {
         if ((0, exports._pathExists)(path) !== 1)
             throw new Error('Read file path is invalid.');
         const contents = Fs.readFileSync(path).toString();
-        return json ? (0, _json_1._jsonParse)(contents, _default) : contents;
+        return json ? (0, utils_1._jsonParse)(contents, _default) : contents;
     }
     catch (e) {
         return _default;

@@ -1,5 +1,3 @@
-//DATE TIME UTILS
-
 /**
  * Validate `Date` instance
  * 

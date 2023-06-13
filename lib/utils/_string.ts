@@ -1,5 +1,18 @@
+import { bool } from './_common';
 import { _jsonStringify } from './_json';
-import { bool } from './_number';
+
+/**
+ * Get unique string of random characters (in lowercase)
+ * 
+ * @param length  (max 64)
+ */
+export function _uuid(length?: number): string{
+	const _uid = () => Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+	if (!(length !== undefined && Number.isInteger(length) && length > 0 && length <= 64)) return _uid();
+	let buffer = '';
+	while (buffer.length < length) buffer += _uid();
+	return buffer.substring(0, length);
+}
 
 /**
  * Safely `string` cast value
@@ -65,14 +78,15 @@ export const _str = (value: any, trim: boolean = false, stringify: boolean = fal
 	return trim ? value.trim() : value;
 };
 
-//TODO: implement
-// /**
-//  * Escape regex operators from string (i.e. `'/s'` => `'\\/s'`)
-//  * 
-//  * @param value
-//  * @returns `string` escaped
-//  */
-// export const _regEscape = (value: string): string => value.replace(new RegExp('/[-\\/\\\\^$*+?.()|[\\]{}]/', 'g'), '\\$&');
+/**
+ * Escape regex operators from string
+ * - i.e. `'~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`
+ * 
+ * @param value
+ * @returns `string` escaped
+ */
+export const _regEscape = (value: any): string => _str(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 //
 // /**
 //  * Trim string regex characters `[ \n\r\t\v\x00]*`

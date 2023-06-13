@@ -1,7 +1,4 @@
-/**
- * Boolean equivalent
- */
-export type bool = boolean | 1 | 0;
+import { bool } from './_common';
 /**
  * Check if value is numeric
  *

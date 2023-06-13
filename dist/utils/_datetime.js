@@ -1,5 +1,4 @@
 "use strict";
-//DATE TIME UTILS
 Object.defineProperty(exports, "__esModule", { value: true });
 exports._timestamp = exports._datetime = exports._getDate = exports._isDate = void 0;
 /**

@@ -62,8 +62,6 @@ const _asyncValues = (array) => ({
                     _d = false;
                     const value = _c;
                     index++;
-                    if (!value)
-                        continue;
                     if (cancel)
                         break;
                     yield callback(value, index, self.size(), _break);
@@ -84,10 +82,10 @@ const _asyncValues = (array) => ({
         return {
             next() {
                 return __awaiter(this, void 0, void 0, function* () {
-                    const length = that.size();
+                    let value = undefined, length = that.size();
                     if (index >= length)
-                        return { done: true };
-                    const value = yield Promise.resolve(array[index]);
+                        return { done: true, value };
+                    value = yield Promise.resolve(array[index]);
                     index++;
                     return { done: false, value };
                 });

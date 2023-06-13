@@ -1,6 +1,7 @@
-/**
- * Lib Exports
- */
+//_common
+export type {
+  bool,
+} from './_common';
 
 //_hello
 export {
@@ -16,11 +17,12 @@ export {
 
 //_string
 export {
+	_uuid,
   _string,
   _stringable,
   _strNorm,
   _str,
-  // _regEscape,
+  _regEscape,
   // _trim,
   // _titleCase,
   // _sentenceCase,
@@ -41,11 +43,6 @@ export {
   _datetime,
   _timestamp,
 } from './_datetime';
-
-//_number
-export type {
-  bool,
-} from './_number';
 
 export {
   _isNumeric,
@@ -96,37 +93,17 @@ export {
   Term,
 } from './_term';
 
-// //_node_fs
-// export {
-// 	_pathExists,
-// 	_lsDir,
-// 	_readLines,
-// 	_readSync,
-// 	_writeSync,
-// 	_processArgs,
-// 	_removeDir,
-// 	_removeFile,
-// } from './_node_fs';
-
 //_ElapsedTime
 export {
   ElapsedTime,
 } from './_ElapsedTime';
 
-//_id
-export {
-  _getUid,
-} from './_id'
-
 //_objects
 export {
-  _array,
   _flatten,
   _hasProp,
   _hasProps,
   _hasAnyProps,
-  _isSpreadable,
-  _isEmpty,
 } from './_objects';
 
 //_debounced
