@@ -20,10 +20,25 @@ export const _expectTestDataFn = (func:string, handler: (...args:any[])=>any, da
 	if (!data.length) return;
 
 	//padding helpers
-	let p1 = 0, p2 = 0, max = 200, _pre = (v: any) => `${v}`, _code = (v: any) => `${func}(${v})`;
+	let p1 = 0, p2 = 0, max = 200;
+	const _esc = (v: any, q: boolean = false) => {
+		v = q ? `${v}`.replace(/'/g, `\\'`) : `${v}`;
+		return v.replace(/\n/g, '\\n')
+		.replace(/\r/g, '\\r')
+		.replace(/\t/g, '\\t')
+		.replace(/\v/g, '\\v')
+		.replace(/\x00/g, '\\x00');
+	};
+	const _pre = (v: any) => _esc(v);
+	const _code = (v: any) => `${func}(${_esc(v)})`;
+	const _exp = (v: any) => {
+		if ('string' === typeof v) return `'${_esc(v, true)}'`;
+		else if ('object' === typeof v && v) return JSON.stringify(v);
+		return `${v}`;
+	};
 	data.forEach(item => {
 		const t = _pre(item.text).length, c = _code(item.code).length;
-		let xl = t + c + ` :  --> ${item.returns ? `(${item.returns}) `: ''}${item.expected}`.length;
+		let xl = t + c + ` :  --> ${_exp(item.expected)}`.length;
 		if (xl > max) return;
 		p1 = t > p1 ? t : p1;
 		p2 = c > p2 ? c : p2;
@@ -35,10 +50,7 @@ export const _expectTestDataFn = (func:string, handler: (...args:any[])=>any, da
 		args: any[];
 		expected: any;
 	}[] = data.map(item => {
-		let ret: any = item.expected;
-		if ('string' === typeof ret) ret = `'${ret.replace(/'/g, '\\\'').replace(/\t/g, '\\t').replace(/\n/g, '\\n')}'`;
-		else if ('object' === typeof ret && ret) ret = JSON.stringify(ret);
-		else ret = `${ret}`;
+		let ret: any = _exp(item.expected);
 		let description = `${_pre(item.text).padEnd(p1)} : ${_code(item.code).padEnd(p2)} --> ${ret}`;
 		if (description.length > max) description = `${_pre(item.text).padEnd(p1)} : ${_code(item.code)} --> ${ret}`;
 		const args = item.args;

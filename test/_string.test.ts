@@ -1,5 +1,12 @@
-import { _string, _stringable, _strNorm, _str, _regEscape, _uuid } from '../lib';
+import { _string, _stringable, _strNorm, _str, _regEscape, _uuid, _strEscape } from '../lib';
 import { _expectTestDataFn } from './helpers';
+
+//_uuid
+describe('\n  _uuid: (length: number) => string', () => {
+	test('generate random string of length 20 (i.e. "") ---> true', () => {
+		expect(_uuid(20).length).toBe(20);
+	});
+});
 
 //_string
 describe('_string: (value: any, _default?: string) => string', () => {
@@ -312,17 +319,21 @@ describe('\n  _regEscape: (value: any) => string', () => {
 	_expectTestDataFn('_regEscape', _regEscape, [
 		{
 			text: 'escape',
-			code: `'~_!@#$%^&*()[]\\/,.?"\`\\':;{}|<>=+-'`,
-			args: ['~_!@#$%^&*()[]\\/,.?"`\':;{}|<>=+-'],
-			expected: '~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"`\':;\\{\\}\\|<>=\\+-',
+			code: `'\\\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\`\\':;{}|<>=+-'`,
+			args: ['\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"`\':;{}|<>=+-'],
+			expected: '\\\\s\n\r\t\v\x00~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"`\':;\\{\\}\\|<>=\\+-',
 		},
 	]);
 });
 
-//_uuid
-describe('\n  _uuid: (length: number) => string', () => {
-	console.log(_uuid(20));
-	test('generate random string of length 20 (i.e. "") ---> true', () => {
-		expect(_uuid(20).length).toBe(20);
-	});
+// _strEscape
+describe('\n  _spaceEscape: (value: any) => string', () => {
+	_expectTestDataFn('_strEscape', _strEscape, [
+		{
+			text: 'escape',
+			code: `'\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\`\\':;{}|<>=+-'`,
+			args: ['\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"`\':;{}|<>=+-'],
+			expected: '\\\\s\\n\\r\\t\\x00~_!@#$%^&*()[]\\\\/,.?"`\':;{}|<>=+-',
+		},
+	]);
 });

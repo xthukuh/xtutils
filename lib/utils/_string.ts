@@ -80,29 +80,46 @@ export const _str = (value: any, trim: boolean = false, stringify: boolean = fal
 
 /**
  * Escape regex operators from string
- * - i.e. `'~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`
+ * - i.e. `'\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'\\s\n\r\t\v\x00\s~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`
  * 
  * @param value
  * @returns `string` escaped
  */
 export const _regEscape = (value: any): string => _str(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-//
-// /**
-//  * Trim string regex characters `[ \n\r\t\v\x00]*`
-//  * 
-//  * @param value  Trim string
-//  * @param rl  [default: `both`] Trim direction `'r'|'right'` or `'l'/'left'` 
-//  * @param chars  [default: `' \n\r\t\v\x00'`] Strip characters
-//  * @returns `string` trimmed
-//  */
-// export const _trim = (value: string, rl?: string, chars: string = ' \n\r\t\v\x00'): string => {
-//   rl = rl ? rl.trim().toLowerCase() : '';
-//   let p = `[${_regEscape(chars)}]*`, pattern = `^${p}|${p}$`;
-//   if (['l', 'left'].includes(rl)) pattern = `^${p}`;
-//   else if (['r', 'right'].includes(rl)) pattern = `${p}$`;
-//   return value.replace(new RegExp(pattern, 'g'), '');
-// };
+/**
+ * Escape string special characters
+ * - i.e. `'\n\r\t\v\x00'` => `'\\n\\r\\t\\v\\x00'`
+ * 
+ * @param value
+ * @returns `string` escaped
+ */
+export const _strEscape = (value: any): string => JSON.stringify(_str(value))
+.replace(/^"|"$/g, '')
+.replace(/\\"/g, '"')
+.replace(/\\u000b\\u0000/g, '\\x00');
+// .replace(/\n/g, '\\n')
+// .replace(/\r/g, '\\r')
+// .replace(/\t/g, '\\t')
+// .replace(/\v/g, '\\v')
+// .replace(/\x00/g, '\\x00');
+
+
+/**
+ * Trim string regex characters `[ \n\r\t\v\x00]*`
+ * 
+ * @param value  Trim string
+ * @param rl  [default: `both`] Trim direction `'r'|'right'` or `'l'/'left'` 
+ * @param chars  [default: `' \n\r\t\v\x00'`] Strip characters
+ * @returns `string` trimmed
+ */
+export const _trim = (value: string, rl: ''|'r'|'l'|'right'|'left' = '', chars: string = ' \n\r\t\v\x00'): string => {
+	rl = ['','r','l','right','left'].includes(rl) ? rl : '';
+	let p = `[${_regEscape(chars)}]*`, pattern = `^${p}|${p}$`;
+	if (['l', 'left'].includes(rl)) pattern = `^${p}`;
+	else if (['r', 'right'].includes(rl)) pattern = `${p}$`;
+	return value.replace(new RegExp(pattern, 'g'), '');
+};
 //
 // /**
 //  * Convert string to title case (i.e. "heLLo woRld" => "Hello World")

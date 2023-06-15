@@ -41,9 +41,26 @@ export declare const _strNorm: (value: string) => string;
 export declare const _str: (value: any, trim?: boolean, stringify?: boolean) => string;
 /**
  * Escape regex operators from string
- * - i.e. `'~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`
+ * - i.e. `'\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'\\s\n\r\t\v\x00\s~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`
  *
  * @param value
  * @returns `string` escaped
  */
 export declare const _regEscape: (value: any) => string;
+/**
+ * Escape string special characters
+ * - i.e. `'\n\r\t\v\x00'` => `'\\n\\r\\t\\v\\x00'`
+ *
+ * @param value
+ * @returns `string` escaped
+ */
+export declare const _strEscape: (value: any) => string;
+/**
+ * Trim string regex characters `[ \n\r\t\v\x00]*`
+ *
+ * @param value  Trim string
+ * @param rl  [default: `both`] Trim direction `'r'|'right'` or `'l'/'left'`
+ * @param chars  [default: `' \n\r\t\v\x00'`] Strip characters
+ * @returns `string` trimmed
+ */
+export declare const _trim: (value: string, rl?: '' | 'r' | 'l' | 'right' | 'left', chars?: string) => string;

@@ -23,6 +23,7 @@ export {
   _strNorm,
   _str,
   _regEscape,
+	_strEscape,
   // _trim,
   // _titleCase,
   // _sentenceCase,
