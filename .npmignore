@@ -1,7 +1,8 @@
 lib/
 test/
-jest.config.ts
 LICENSE
 README.md
 tsconfig.json
 tsconfig.prod.json
+jest.config.ts
+webpack.config.js
