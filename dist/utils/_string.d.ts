@@ -1,3 +1,4 @@
+import { bool } from './_common';
 /**
  * Get unique string of random characters (in lowercase)
  *
@@ -10,7 +11,6 @@ export declare function _uuid(length?: number): string;
  *
  * @param value  Cast value
  * @param _default  [default: `''`] Default result on failure
- * @returns `string`
  */
 export declare const _string: (value: any, _default?: string) => string;
 /**
@@ -24,7 +24,6 @@ export declare const _stringable: (value: any) => false | string;
  * Normalize string by removing accents (i.e. "Amélie" => "Amelie")
  *
  * @param value
- * @returns `string` normalized
  */
 export declare const _strNorm: (value: string) => string;
 /**
@@ -36,7 +35,6 @@ export declare const _strNorm: (value: string) => string;
  * @param value
  * @param trim  Trim result
  * @param stringify  Stringify `array` or `object` value that does not implement `toString()` method
- * @returns  `string`
  */
 export declare const _str: (value: any, trim?: boolean, stringify?: boolean) => string;
 /**
@@ -44,23 +42,47 @@ export declare const _str: (value: any, trim?: boolean, stringify?: boolean) => 
  * - i.e. `'\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'\\s\n\r\t\v\x00\s~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`
  *
  * @param value
- * @returns `string` escaped
  */
 export declare const _regEscape: (value: any) => string;
 /**
  * Escape string special characters
- * - i.e. `'\n\r\t\v\x00'` => `'\\n\\r\\t\\v\\x00'`
+ * - i.e. `'\r\n\t\f\v\x00-\u00f3-\u1234-\xb4-\u000b-/\\'` => `'\\r\\n\\t\\f\\v\\x00-ó-ሴ-´-\\v-/\\\\'`
  *
  * @param value
- * @returns `string` escaped
  */
 export declare const _strEscape: (value: any) => string;
 /**
- * Trim string regex characters `[ \n\r\t\v\x00]*`
+ * Regex string trim characters
  *
- * @param value  Trim string
- * @param rl  [default: `both`] Trim direction `'r'|'right'` or `'l'/'left'`
- * @param chars  [default: `' \n\r\t\v\x00'`] Strip characters
- * @returns `string` trimmed
+ * @param value  Trim value
+ * @param rl  Trim mode (`''` => (default) trim right and left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
+ * @param chars  Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
  */
-export declare const _trim: (value: string, rl?: '' | 'r' | 'l' | 'right' | 'left', chars?: string) => string;
+export declare const _trim: (value: any, chars?: string, rl?: '' | 'r' | 'l' | 'right' | 'left') => string;
+/**
+ * Regex string trim leading characters (left)
+ *
+ * @param value Trim value
+ * @param chars Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
+ */
+export declare const _ltrim: (value: any, chars?: string) => string;
+/**
+ * Regex string trim trailing characters (right)
+ *
+ * @param value Trim value
+ * @param chars Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
+ */
+export declare const _rtrim: (value: any, chars?: string) => string;
+/**
+ * Convert string to title case (i.e. "heLLo woRld" => "Hello World")
+ *
+ * @param value
+ */
+export declare const _titleCase: (value: any) => string;
+/**
+ * Convert string to sentence case
+ *
+ * @param value  Parse value
+ * @param ignore  Ignore lowercasing
+ */
+export declare const _sentenceCase: (value: any, ignore?: bool) => string;
