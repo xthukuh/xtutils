@@ -5,11 +5,10 @@
 	"main": "dist/xutils.min.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"clean": "rimraf ./dist",
+		"prebuild": "rimraf ./dist",
 		"prepublish": "npm run build",
-		"build": "npm run prod",
-		"prod": "npm run clean && npx webpack --env=mode=production",
-		"dev": "npm run clean && npx webpack",
+		"build": "npm run prebuild && npx webpack --env=mode=production",
+		"dev": "npx ts-node ./test/index.ts",
 		"test": "jest"
 	},
 	"keywords": [

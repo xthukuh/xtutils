@@ -20,7 +20,6 @@ export function _uuid(length?: number): string{
  * 
  * @param value  Cast value
  * @param _default  [default: `''`] Default result on failure
- * @returns `string`
  */
 export const _string = (value: any, _default: string = ''): string => {
 	let val: string = '';
@@ -49,7 +48,6 @@ export const _stringable = (value: any): false|string => {
  * Normalize string by removing accents (i.e. "Amélie" => "Amelie")
  * 
  * @param value
- * @returns `string` normalized
  */
 export const _strNorm = (value: string): string => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
@@ -62,7 +60,6 @@ export const _strNorm = (value: string): string => value.normalize('NFD').replac
  * @param value
  * @param trim  Trim result
  * @param stringify  Stringify `array` or `object` value that does not implement `toString()` method
- * @returns  `string`
  */
 export const _str = (value: any, trim: boolean = false, stringify: boolean = false): string => {
 	if ('string' !== typeof value){
@@ -83,69 +80,94 @@ export const _str = (value: any, trim: boolean = false, stringify: boolean = fal
  * - i.e. `'\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'\\s\n\r\t\v\x00\s~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`
  * 
  * @param value
- * @returns `string` escaped
  */
 export const _regEscape = (value: any): string => _str(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
  * Escape string special characters
- * - i.e. `'\n\r\t\v\x00'` => `'\\n\\r\\t\\v\\x00'`
+ * - i.e. `'\r\n\t\f\v\x00-\u00f3-\u1234-\xb4-\u000b-/\\'` => `'\\r\\n\\t\\f\\v\\x00-ó-ሴ-´-\\v-/\\\\'`
  * 
  * @param value
- * @returns `string` escaped
  */
 export const _strEscape = (value: any): string => JSON.stringify(_str(value))
+.replace(/\\u([\d\w]{4})/g, (m, s) => {
+	const h = parseInt(s, 16);
+	return h > 255 ? m : '\\' + encodeURIComponent(String.fromCharCode(h)).replace('%', 'x').replace('x0B', 'v');
+})
 .replace(/^"|"$/g, '')
-.replace(/\\"/g, '"')
-.replace(/\\u000b\\u0000/g, '\\x00');
-// .replace(/\n/g, '\\n')
-// .replace(/\r/g, '\\r')
-// .replace(/\t/g, '\\t')
-// .replace(/\v/g, '\\v')
-// .replace(/\x00/g, '\\x00');
-
+.replace(/\\"/g, '"');
 
 /**
- * Trim string regex characters `[ \n\r\t\v\x00]*`
+ * Regex string trim characters
  * 
- * @param value  Trim string
- * @param rl  [default: `both`] Trim direction `'r'|'right'` or `'l'/'left'` 
- * @param chars  [default: `' \n\r\t\v\x00'`] Strip characters
- * @returns `string` trimmed
+ * @param value  Trim value
+ * @param rl  Trim mode (`''` => (default) trim right and left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
+ * @param chars  Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
  */
-export const _trim = (value: string, rl: ''|'r'|'l'|'right'|'left' = '', chars: string = ' \n\r\t\v\x00'): string => {
-	rl = ['','r','l','right','left'].includes(rl) ? rl : '';
-	let p = `[${_regEscape(chars)}]*`, pattern = `^${p}|${p}$`;
+export const _trim = (value: any, chars: string = ' \r\n\t\f\v\x00', rl: ''|'r'|'l'|'right'|'left' = ''): string => {
+	value = _str(value);
+	if (!chars.length) return value;
+	chars = chars.replace(/\{default\}/, ' \r\n\t\f\v\x00');
+	let d1 = 0, d2 = 0;
+	let _chars: string[] = [...new Set([...chars])].filter(v => {
+		if (v === '-'){
+			d1 = 1;
+			return false;
+		}
+		if (v === '_'){
+			d2 = 1;
+			return false;
+		}
+		return true;
+	});
+	if (d2) _chars.unshift('_');
+	if (d1) _chars.unshift('-');
+	let p = `[${_regEscape(_chars.join(''))}]*`, pattern = `^${p}|${p}$`;
 	if (['l', 'left'].includes(rl)) pattern = `^${p}`;
 	else if (['r', 'right'].includes(rl)) pattern = `${p}$`;
-	return value.replace(new RegExp(pattern, 'g'), '');
+	return value.replace(new RegExp(pattern, 'gs'), '');
 };
-//
-// /**
-//  * Convert string to title case (i.e. "heLLo woRld" => "Hello World")
-//  * 
-//  * @param value
-//  * @returns `string` Title Case
-//  */
-// export const _titleCase = (value: string): string => value.replace(/\w\S*/g, match => match[0].toUpperCase() + match.substring(1).toLowerCase());
-//
-// /**
-//  * Convert string to sentence case
-//  * 
-//  * @param value  Parse value
-//  * @param ignore  Ignore lowercasing
-//  * @returns `string` Sentence case
-//  */
-// export const _sentenceCase = (value: string, ignore: bool = false): string => value.split(/((?<=\.|\?|!)\s*)/)
-// .map(val => {
-//   if (val.length){
-//     const first = val.charAt(0).toUpperCase();
-//     const rest = val.length > 1 ? val.slice(1) : '';
-//     val = first + (ignore ? rest : rest.toLowerCase());
-//   }
-//   return val;
-// })
-// .join('');
+
+/**
+ * Regex string trim leading characters (left)
+ * 
+ * @param value Trim value
+ * @param chars Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
+ */
+export const _ltrim = (value: any, chars: string = ' \r\n\t\f\v\x00'): string => _trim(value, chars, 'left');
+
+/**
+ * Regex string trim trailing characters (right)
+ * 
+ * @param value Trim value
+ * @param chars Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
+ */
+export const _rtrim = (value: any, chars: string = ' \r\n\t\f\v\x00'): string => _trim(value, chars, 'right');
+
+/**
+ * Convert string to title case (i.e. "heLLo woRld" => "Hello World")
+ * 
+ * @param value
+ */
+export const _titleCase = (value: any): string => _str(value).replace(/\w\S*/g, match => match[0].toUpperCase() + match.substring(1).toLowerCase());
+
+/**
+ * Convert string to sentence case
+ * 
+ * @param value  Parse value
+ * @param ignore  Ignore lowercasing
+ */
+export const _sentenceCase = (value: any, ignore: bool = false): string => _str(value)
+.split(/((?<=\.|\?|!)\s*)/)
+.map(val => {
+  if (val.length){
+    const first = val.charAt(0).toUpperCase();
+    const rest = val.length > 1 ? val.slice(1) : '';
+    val = first + (ignore ? rest : rest.toLowerCase());
+  }
+  return val;
+})
+.join('');
 //
 // /**
 //  * Convert value to snake case (i.e. 'HelloWorld' => 'hello_world')

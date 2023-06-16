@@ -1,5 +1,21 @@
-import { _string, _stringable, _strNorm, _str, _regEscape, _uuid, _strEscape } from '../lib';
-import { _expectTestDataFn } from './helpers';
+import {
+	_uuid,
+	_string,
+	_stringable,
+	_strNorm,
+	_str,
+	_regEscape,
+	_strEscape,
+	_trim,
+	_ltrim,
+	_rtrim,
+	_titleCase,
+	_sentenceCase,
+	// _snakeCase,
+  // _slugCase,
+  // _studlyCase,
+} from '../lib';
+import { _expectTests } from './__helpers';
 
 //_uuid
 describe('\n  _uuid: (length: number) => string', () => {
@@ -10,330 +26,426 @@ describe('\n  _uuid: (length: number) => string', () => {
 
 //_string
 describe('_string: (value: any, _default?: string) => string', () => {
-	_expectTestDataFn('_string', _string, [
+	_expectTests('_string', _string, [
 		{
-			text: 'string',
+			label: 'string',
 			code: `'Hello'`,
 			args: ['Hello'],
-			expected: `Hello`,
+			expected: 'Hello',
 		},
 		{
-			text: 'number',
-			code: `420.69`,
+			label: 'number',
+			code: '420.69',
 			args: [420.69],
-			expected: `420.69`,
+			expected: '420.69',
 		},
 		{
-			text: 'boolean',
-			code: `true`,
+			label: 'boolean',
+			code: 'true',
 			args: [true],
-			expected: `true`,
+			expected: 'true',
 		},
 		{
-			text: 'undefined',
-			code: `undefined`,
+			label: 'undefined',
+			code: 'undefined',
 			args: [undefined],
-			expected: `undefined`,
+			expected: 'undefined',
 		},
 		{
-			text: 'null',
-			code: `null`,
+			label: 'null',
+			code: 'null',
 			args: [null],
-			expected: `null`,
+			expected: 'null',
 		},
 		{
-			text: 'array',
+			label: 'array',
 			code: `[1,2,'a',{}]`,
 			args: [[1,2,'a',{}]],
-			expected: `1,2,a,[object Object]`,
+			expected: '1,2,a,[object Object]',
 		},
 		{
-			text: 'object',
+			label: 'object',
 			code: `{name:'John'}`,
 			args: [{name:'John'}],
-			expected: `[object Object]`,
+			expected: '[object Object]',
 		},
 		{
-			text: 'Set instance',
-			code: `new Set()`,
+			label: 'Set instance',
+			code: 'new Set()',
 			args: [new Set()],
-			expected: `[object Set]`,
+			expected: '[object Set]',
 		},
 		{
-			text: 'Map instance',
-			code: `new Map()`,
+			label: 'Map instance',
+			code: 'new Map()',
 			args: [new Map()],
-			expected: `[object Map]`,
+			expected: '[object Map]',
 		},
 		{
-			text: 'Date instance',
-			code: `new Date(0)`,
+			label: 'Date instance',
+			code: 'new Date(0)',
 			args: [new Date(0)],
-			expected: `1970-01-01T00:00:00.000Z`,
+			expected: '1970-01-01T00:00:00.000Z',
 		},
 		{
-			text: 'Error instance',
+			label: 'Error instance',
 			code: `new TypeError('example')`,
 			args: [new TypeError('example')],
-			expected: `TypeError: example`,
+			expected: 'TypeError: example',
 		},
 	]);
 });
 
 //_stringable
 describe('\n  _stringable: (value: any) => false|string', () => {
-	_expectTestDataFn('_stringable', _stringable, [
+	_expectTests('_stringable', _stringable, [
 		{
-			text: 'blank string',
+			label: 'blank string',
 			code: `''`,
 			args: [''],
-			expected: ``,
+			expected: '',
 		},
 		{
-			text: 'string',
+			label: 'string',
 			code: `'Hello'`,
 			args: ['Hello'],
-			expected: `Hello`,
+			expected: 'Hello',
 		},
 		{
-			text: 'number',
-			code: `420.69`,
+			label: 'number',
+			code: '420.69',
 			args: [420.69],
-			expected: `420.69`,
+			expected: '420.69',
 		},
 		{
-			text: 'boolean',
-			code: `true`,
+			label: 'boolean',
+			code: 'true',
 			args: [true],
-			expected: `true`,
+			expected: 'true',
 		},
 		{
-			text: 'undefined',
-			code: `undefined`,
+			label: 'undefined',
+			code: 'undefined',
 			args: [undefined],
-			expected: `undefined`,
+			expected: 'undefined',
 		},
 		{
-			text: 'null',
-			code: `null`,
+			label: 'null',
+			code: 'null',
 			args: [null],
-			expected: `null`,
+			expected: 'null',
 		},
 		{
-			text: 'scalar array',
-			code: `[1,2,3]`,
+			label: 'scalar array',
+			code: '[1,2,3]',
 			args: [[1,2,3]],
-			expected: `1,2,3`,
+			expected: '1,2,3',
 		},
 		{
-			text: 'array with object',
+			label: 'array with object',
 			code: `[1,2,'a',{}]`,
 			args: [[1,2,'a',{}]],
 			expected: false,
 		},
 		{
-			text: 'object',
+			label: 'object',
 			code: `{name:'John'}`,
 			args: [{name:'John'}],
 			expected: false,
 		},
 		{
-			text: 'Set instance',
-			code: `new Set()`,
+			label: 'Set instance',
+			code: 'new Set()',
 			args: [new Set()],
 			expected: false,
 		},
 		{
-			text: 'Map instance',
-			code: `new Map()`,
+			label: 'Map instance',
+			code: 'new Map()',
 			args: [new Map()],
 			expected: false,
 		},
 		{
-			text: 'Date instance',
-			code: `new Date(0)`,
+			label: 'Date instance',
+			code: 'new Date(0)',
 			args: [new Date(0)],
-			expected: `1970-01-01T00:00:00.000Z`,
+			expected: '1970-01-01T00:00:00.000Z',
 		},
 		{
-			text: 'Error instance',
+			label: 'Error instance',
 			code: `new TypeError('example')`,
 			args: [new TypeError('example')],
-			expected: `TypeError: example`,
+			expected: 'TypeError: example',
 		},
 	]);
 });
 
 //_strNorm
 describe('\n  _strNorm: (value: string) => string', () => {
-	_expectTestDataFn('_strNorm', _strNorm, [
+	_expectTests('_strNorm', _strNorm, [
 		{
-			text: 'normal',
+			label: 'normal',
 			code: `'Hello'`,
 			args: ['Hello'],
-			expected: `Hello`,
+			expected: 'Hello',
 		},
 		{
-			text: 'accents',
+			label: 'accents',
 			code: `'Amélie'`,
 			args: ['Amélie'],
-			expected: `Amelie`,
+			expected: 'Amelie',
 		},
 	]);
 });
 
 //_str
 describe('\n  _str: (value: any, trim: boolean = false, stringify: boolean = false) => string', () => {
-	_expectTestDataFn('_str', _str, [
+	_expectTests('_str', _str, [
 		{
-			text: 'string',
+			label: 'string',
 			code: `' Hello '`,
 			args: [' Hello '],
-			expected: ` Hello `,
+			expected: ' Hello ',
 		},
 		{
-			text: 'string (trim)',
+			label: 'string (trim)',
 			code: `' Hello ', true`,
 			args: [' Hello ', true],
-			expected: `Hello`,
+			expected: 'Hello',
 		},
 		{
-			text: 'number',
-			code: `420.69`,
+			label: 'number',
+			code: '420.69',
 			args: [420.69],
-			expected: `420.69`,
+			expected: '420.69',
 		},
 		{
-			text: 'boolean',
-			code: `true`,
+			label: 'boolean',
+			code: 'true',
 			args: [true],
-			expected: `true`,
+			expected: 'true',
 		},
 		{
-			text: 'undefined',
-			code: `undefined`,
+			label: 'undefined',
+			code: 'undefined',
 			args: [undefined],
-			expected: ``,
+			expected: '',
 		},
 		{
-			text: 'undefined (stringify ignored)',
-			code: `undefined, false, true`,
+			label: 'undefined (stringify ignored)',
+			code: 'undefined, false, true',
 			args: [undefined, false, true],
-			expected: ``,
+			expected: '',
 		},
 		{
-			text: 'null',
-			code: `null`,
+			label: 'null',
+			code: 'null',
 			args: [null],
-			expected: ``,
+			expected: '',
 		},
 		{
-			text: 'null (stringify ignored)',
-			code: `null, false, true`,
+			label: 'null (stringify ignored)',
+			code: 'null, false, true',
 			args: [null, false, true],
-			expected: ``,
+			expected: '',
 		},
 		{
-			text: 'scalar array',
-			code: `[1,2,3]`,
+			label: 'scalar array',
+			code: '[1,2,3]',
 			args: [[1,2,3]],
-			expected: ``,
+			expected: '',
 		},
 		{
-			text: 'scalar array (stringify)',
-			code: `[1,2,3], false, true`,
+			label: 'scalar array (stringify)',
+			code: '[1,2,3], false, true',
 			args: [[1,2,3], false, true],
-			expected: `[1,2,3]`,
+			expected: '[1,2,3]',
 		},
 		{
-			text: 'array with object',
+			label: 'array with object',
 			code: `[1,2,'a',{}]`,
 			args: [[1,2,'a',{}]],
-			expected: ``,
+			expected: '',
 		},
 		{
-			text: 'array with object (stringify)',
+			label: 'array with object (stringify)',
 			code: `[1,2,'a',{}], false, true`,
 			args: [[1,2,'a',{}], false, true],
-			expected: `[1,2,"a",{}]`,
+			expected: '[1,2,"a",{}]',
 		},
 		{
-			text: 'object',
+			label: 'object',
 			code: `{name:'John'}`,
 			args: [{name:'John'}],
-			expected: ``,
+			expected: '',
 		},
 		{
-			text: 'object (stringify)',
+			label: 'object (stringify)',
 			code: `{name:'John'}, false, true`,
 			args: [{name:'John'}, false, true],
-			expected: `{"name":"John"}`,
+			expected: '{"name":"John"}',
 		},
 		{
-			text: 'Set instance',
+			label: 'Set instance',
 			code: `new Set<number>([1,1,2])`,
 			args: [new Set<number>([1,1,2])],
-			expected: ``,
+			expected: '',
 		},
 		{
-			text: 'Set instance (stringify)',
-			code: `new Set<number>([1,1,2]), false, true`,
+			label: 'Set instance (stringify)',
+			code: 'new Set<number>([1,1,2]), false, true',
 			args: [new Set<number>([1,1,2]), false, true],
-			expected: `{"[Set]":[1,2]}`,
+			expected: '{"[Set]":[1,2]}',
 		},
-		// {
-		// 	text: 'Map instance',
-		// 	code: `new Map<string,string|number>([['one',1],['two','ii']])`,
-		// 	args: [new Map<string,string|number>([['one',1],['two','ii']])],
-		// 	expected: `{"[Map]":[["one",1],["two","ii"]]}`,
-		// },
-		// {
-		// 	text: 'Set instance',
-		// 	code: `new Set(1,2)`,
-		// 	args: [new Set()],
-		// 	expected: `[object Set]`,
-		// },
-		// {
-		// 	text: 'Map instance',
-		// 	code: `new Map()`,
-		// 	args: [new Map()],
-		// 	expected: `[object Map]`,
-		// },
-		// {
-		// 	text: 'Date instance',
-		// 	code: `new Date(0)`,
-		// 	args: [new Date(0)],
-		// 	expected: `1970-01-01T00:00:00.000Z`,
-		// },
-		// {
-		// 	text: 'Error instance',
-		// 	code: `new TypeError('example')`,
-		// 	args: [new TypeError('example')],
-		// 	expected: `TypeError: example`,
-		// },
+		{
+			label: 'Map instance',
+			code: `new Map<string,string|number>([['one',1],['two','ii']])`,
+			args: [new Map<string,string|number>([['one',1],['two','ii']])],
+			expected: '',
+		},
+		{
+			label: 'Map instance (stringify)',
+			code: `new Map<string,string|number>([['one',1],['two','ii']]), false, true`,
+			args: [new Map<string,string|number>([['one',1],['two','ii']]), false, true],
+			expected: `{"[Map]":[["one",1],["two","ii"]]}`,
+		},
+		{
+			label: 'Date instance',
+			code: 'new Date(0)',
+			args: [new Date(0)],
+			expected: '1970-01-01T00:00:00.000Z',
+		},
+		{
+			label: 'Date instance (invalid)',
+			code: `new Date('')`,
+			args: [new Date('')],
+			expected: 'Invalid Date',
+		},
+		{
+			label: 'Error instance',
+			code: `new TypeError('example')`,
+			args: [new TypeError('example')],
+			expected: 'TypeError: example',
+		},
 	]);
 });
 
 //_regEscape
 describe('\n  _regEscape: (value: any) => string', () => {
-	_expectTestDataFn('_regEscape', _regEscape, [
+	_expectTests('_regEscape', _regEscape, [
 		{
-			text: 'escape',
-			code: `'\\\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\`\\':;{}|<>=+-'`,
-			args: ['\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"`\':;{}|<>=+-'],
-			expected: '\\\\s\n\r\t\v\x00~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"`\':;\\{\\}\\|<>=\\+-',
+			label: 'regex escape special',
+			code: `'\\\\s\\r\\n\\t\\f\\v\\x00~_!@#$%^&*()[]\\/,.?"\`\\':;{}|<>=+-'`,
+			args: ['\\s\r\n\t\f\v\x00~_!@#$%^&*()[]\\/,.?"`\':;{}|<>=+-'],
+			expected: '\\\\s\r\n\t\f\v\x00~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"`\':;\\{\\}\\|<>=\\+-',
 		},
 	]);
 });
 
 // _strEscape
-describe('\n  _spaceEscape: (value: any) => string', () => {
-	_expectTestDataFn('_strEscape', _strEscape, [
+describe('\n  _strEscape: (value: any) => string', () => {
+	_expectTests('_strEscape', _strEscape, [
 		{
-			text: 'escape',
-			code: `'\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\`\\':;{}|<>=+-'`,
-			args: ['\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"`\':;{}|<>=+-'],
-			expected: '\\\\s\\n\\r\\t\\x00~_!@#$%^&*()[]\\\\/,.?"`\':;{}|<>=+-',
+			label: 'string escape special',
+			code: `'\\r\\n\\t\\f\\v\\x00-\\u00f3-\\u1234-\\xb4-\\u000b-/\\\\'`,
+			args: ['\r\n\t\f\v\x00-\u00f3-\u1234-\xb4-\u000b-/\\'],
+			expected: '\\r\\n\\t\\f\\v\\x00-ó-ሴ-´-\\v-/\\\\',
+		},
+	]);
+});
+
+//_trim
+describe(`\n  _trim: (value: any, chars: string = ' \\r\\n\\t\\f\\v\\x00', rl: ''|'r'|'l'|'right'|'left' = '') => string`, () => {
+	_expectTests('_trim', _trim, [
+		{
+			label: 'default whitespace',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 '`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 '],
+			expected: '-_Hello_-',
+		},
+		{
+			label: 'default whitespace ("l"|"left")',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', undefined, 'l'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', undefined, 'l'],
+			expected: '-_Hello_- \t\v\x00 ',
+		},
+		{
+			label: 'default whitespace ("r"|"right")',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', undefined, 'r'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', undefined, 'r'],
+			expected: ' \r\n\f\t -_Hello_-',
+		},
+		{
+			label: 'custom characters ({default})',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', '-_{default}'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', '-_{default}'],
+			expected: 'Hello',
+		},
+		{
+			label: 'custom characters',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00'],
+			expected: 'Hello',
+		},
+		{
+			label: 'custom characters (left)',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00', 'l'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00', 'l'],
+			expected: 'Hello_- \t\v\x00 ',
+		},
+		{
+			label: 'custom characters (right)',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00', 'r'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00', 'r'],
+			expected: ' \r\n\f\t -_Hello',
+		},
+	]);
+});
+
+//_ltrim
+describe(`\n  _ltrim: (value: any, chars: string = ' \\r\\n\\t\\f\\v\\x00') => string`, () => {
+	_expectTests('_ltrim', _ltrim, [
+		{
+			label: 'default whitespace',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 '`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 '],
+			expected: '-_Hello_- \t\v\x00 ',
+		},
+		{
+			label: 'custom characters ({default})',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', '-_{default}'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', '-_{default}'],
+			expected: 'Hello_- \t\v\x00 ',
+		},
+		{
+			label: 'custom characters',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00'],
+			expected: 'Hello_- \t\v\x00 ',
+		},
+	]);
+});
+
+//_rtrim
+describe(`\n  _rtrim: (value: any, chars: string = ' \\r\\n\\t\\f\\v\\x00') => string`, () => {
+	_expectTests('_rtrim', _rtrim, [
+		{
+			label: 'default whitespace',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 '`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 '],
+			expected: ' \r\n\f\t -_Hello_-',
+		},
+		{
+			label: 'custom characters ({default})',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', '-_{default}'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', '-_{default}'],
+			expected: ' \r\n\f\t -_Hello',
+		},
+		{
+			label: 'custom characters',
+			code: `' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00'`,
+			args: [' \r\n\f\t -_Hello_- \t\v\x00 ', '-_ \n\r\t\f\v\x00'],
+			expected: ' \r\n\f\t -_Hello',
 		},
 	]);
 });

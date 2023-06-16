@@ -1,5 +1,5 @@
 import { _sayHello } from '../lib';
-import { _expectTestDataFn } from './helpers';
+import { _expectTests } from './__helpers';
 
 //_sayHello
 describe('_sayHello: (name?:string) => string', () => {
@@ -17,15 +17,15 @@ describe('_sayHello: (name?:string) => string', () => {
 		consoleLogMock.mockRestore();
 	});
 
-	_expectTestDataFn('_sayHello', _sayHello, [
+	_expectTests('_sayHello', _sayHello, [
 		{
-			text: 'default',
+			label: 'with default name',
 			code: '',
 			args: [],
 			expected: _expected1,
 		},
 		{
-			text: 'name',
+			label: 'change default name',
 			code: 'Martin',
 			args: ['Martin'],
 			expected: _expected2,
