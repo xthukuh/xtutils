@@ -1,7 +1,7 @@
 export type { bool, } from './_common';
 export { _sayHello, } from './_hello';
 export { _jsonStringify, _jsonParse, _jsonClone, } from './_json';
-export { _uuid, _string, _stringable, _str, _strNorm, _regEscape, _strEscape, _trim, _ltrim, _rtrim, _titleCase, _sentenceCase, _snakeCase, _slugCase, _studlyCase, _camelCase, } from './_string';
+export { _uuid, _string, _stringable, _str, _strNorm, _regEscape, _strEscape, _trim, _ltrim, _rtrim, } from './_string';
 export { _batchValues, } from './_batch';
 export { _isDate, _getDate, _datetime, _timestamp, } from './_datetime';
 export { _isNumeric, _toNum, _num, _int, _round, _commas, _rand, } from './_number';

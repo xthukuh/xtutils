@@ -1,4 +1,3 @@
-import { bool } from './_common';
 /**
  * Get unique string of random characters (in lowercase)
  *
@@ -73,43 +72,3 @@ export declare const _ltrim: (value: any, chars?: string) => string;
  * @param chars Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
  */
 export declare const _rtrim: (value: any, chars?: string) => string;
-/**
- * Convert string to title case (i.e. "heLLo woRld" => "Hello World")
- *
- * @param value  Parse string
- * @param keepCase  Disable lowercasing uncapitalized characters
- */
-export declare const _titleCase: (value: any, keepCase?: bool) => string;
-/**
- * Convert string to sentence case
- *
- * @param value  Parse string
- * @param keepCase  Disable lowercasing uncapitalized characters
- */
-export declare const _sentenceCase: (value: any, keepCase?: bool) => string;
-/**
- * Convert value to snake case (i.e. 'HelloWorld' => 'hello_world')
- * - accents are normalized (i.e. "Test Amélie" => "test_amelie")
- *
- * @param value  Parse string
- * @param trimTrailing  Trim trailing "_" (`false` = (default) disabled, `true` => trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
- */
-export declare const _snakeCase: (value: any, trimTrailing?: boolean | 'l' | 'left' | 'r' | 'right') => string;
-/**
- * Convert value to slug case (i.e. 'HelloWorld' => 'hello-world')
- *
- * @param value  Parse string
- */
-export declare const _slugCase: (value: any, trimTrailing?: boolean | 'l' | 'left' | 'r' | 'right') => string;
-/**
- * Convert value to studly case (i.e. 'hello-world' => 'HelloWorld')
- *
- * @param value  Parse string
- */
-export declare const _studlyCase: (value: any) => string;
-/**
- * Convert value to camel case (i.e. 'hello-world' => 'helloWorld')
- *
- * @param value  Parse string
- */
-export declare const _camelCase: (value: any) => string;
