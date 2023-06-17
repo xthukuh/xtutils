@@ -21,12 +21,6 @@ export declare const _string: (value: any, _default?: string) => string;
  */
 export declare const _stringable: (value: any) => false | string;
 /**
- * Normalize string by removing accents (i.e. "Amélie" => "Amelie")
- *
- * @param value
- */
-export declare const _strNorm: (value: string) => string;
-/**
  * Convert value to `string` equivalent
  *
  * - Returns '' for `null` and `undefined` value
@@ -37,6 +31,12 @@ export declare const _strNorm: (value: string) => string;
  * @param stringify  Stringify `array` or `object` value that does not implement `toString()` method
  */
 export declare const _str: (value: any, trim?: boolean, stringify?: boolean) => string;
+/**
+ * Normalize string by removing accents (i.e. "Amélie" => "Amelie")
+ *
+ * @param value
+ */
+export declare const _strNorm: (value: any) => string;
 /**
  * Escape regex operators from string
  * - i.e. `'\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'\\s\n\r\t\v\x00\s~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`
@@ -55,8 +55,8 @@ export declare const _strEscape: (value: any) => string;
  * Regex string trim characters
  *
  * @param value  Trim value
- * @param rl  Trim mode (`''` => (default) trim right and left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
  * @param chars  Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
+ * @param rl  Trim mode (`''` => (default) trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
  */
 export declare const _trim: (value: any, chars?: string, rl?: '' | 'r' | 'l' | 'right' | 'left') => string;
 /**
@@ -76,13 +76,40 @@ export declare const _rtrim: (value: any, chars?: string) => string;
 /**
  * Convert string to title case (i.e. "heLLo woRld" => "Hello World")
  *
- * @param value
+ * @param value  Parse string
+ * @param keepCase  Disable lowercasing uncapitalized characters
  */
-export declare const _titleCase: (value: any) => string;
+export declare const _titleCase: (value: any, keepCase?: bool) => string;
 /**
  * Convert string to sentence case
  *
- * @param value  Parse value
- * @param ignore  Ignore lowercasing
+ * @param value  Parse string
+ * @param keepCase  Disable lowercasing uncapitalized characters
  */
-export declare const _sentenceCase: (value: any, ignore?: bool) => string;
+export declare const _sentenceCase: (value: any, keepCase?: bool) => string;
+/**
+ * Convert value to snake case (i.e. 'HelloWorld' => 'hello_world')
+ * - accents are normalized (i.e. "Test Amélie" => "test_amelie")
+ *
+ * @param value  Parse string
+ * @param trimTrailing  Trim trailing "_" (`false` = (default) disabled, `true` => trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
+ */
+export declare const _snakeCase: (value: any, trimTrailing?: boolean | 'l' | 'left' | 'r' | 'right') => string;
+/**
+ * Convert value to slug case (i.e. 'HelloWorld' => 'hello-world')
+ *
+ * @param value  Parse string
+ */
+export declare const _slugCase: (value: any, trimTrailing?: boolean | 'l' | 'left' | 'r' | 'right') => string;
+/**
+ * Convert value to studly case (i.e. 'hello-world' => 'HelloWorld')
+ *
+ * @param value  Parse string
+ */
+export declare const _studlyCase: (value: any) => string;
+/**
+ * Convert value to camel case (i.e. 'hello-world' => 'helloWorld')
+ *
+ * @param value  Parse string
+ */
+export declare const _camelCase: (value: any) => string;

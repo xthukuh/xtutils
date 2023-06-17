@@ -20,8 +20,8 @@ export {
 	_uuid,
 	_string,
 	_stringable,
-	_strNorm,
 	_str,
+	_strNorm,
 	_regEscape,
 	_strEscape,
 	_trim,
@@ -29,9 +29,10 @@ export {
 	_rtrim,
 	_titleCase,
 	_sentenceCase,
-	// _snakeCase,
-	// _slugCase,
-	// _studlyCase,
+	_snakeCase,
+	_slugCase,
+	_studlyCase,
+	_camelCase,
 } from './_string';
 
 //_batch

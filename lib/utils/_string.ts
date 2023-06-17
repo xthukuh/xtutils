@@ -45,13 +45,6 @@ export const _stringable = (value: any): false|string => {
 };
 
 /**
- * Normalize string by removing accents (i.e. "Amélie" => "Amelie")
- * 
- * @param value
- */
-export const _strNorm = (value: string): string => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-/**
  * Convert value to `string` equivalent
  * 
  * - Returns '' for `null` and `undefined` value
@@ -74,6 +67,13 @@ export const _str = (value: any, trim: boolean = false, stringify: boolean = fal
 	}
 	return trim ? value.trim() : value;
 };
+
+/**
+ * Normalize string by removing accents (i.e. "Amélie" => "Amelie")
+ * 
+ * @param value
+ */
+export const _strNorm = (value: any): string => _str(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 /**
  * Escape regex operators from string
@@ -101,8 +101,8 @@ export const _strEscape = (value: any): string => JSON.stringify(_str(value))
  * Regex string trim characters
  * 
  * @param value  Trim value
- * @param rl  Trim mode (`''` => (default) trim right and left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
  * @param chars  Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
+ * @param rl  Trim mode (`''` => (default) trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
  */
 export const _trim = (value: any, chars: string = ' \r\n\t\f\v\x00', rl: ''|'r'|'l'|'right'|'left' = ''): string => {
 	value = _str(value);
@@ -147,51 +147,73 @@ export const _rtrim = (value: any, chars: string = ' \r\n\t\f\v\x00'): string =>
 /**
  * Convert string to title case (i.e. "heLLo woRld" => "Hello World")
  * 
- * @param value
+ * @param value  Parse string
+ * @param keepCase  Disable lowercasing uncapitalized characters
  */
-export const _titleCase = (value: any): string => _str(value).replace(/\w\S*/g, match => match[0].toUpperCase() + match.substring(1).toLowerCase());
+export const _titleCase = (value: any, keepCase: bool = false): string => _str(value)
+.replace(/\w\S*/g, match => match[0].toUpperCase()
++ (keepCase ? match.substring(1) : match.substring(1).toLowerCase()));
 
 /**
  * Convert string to sentence case
  * 
- * @param value  Parse value
- * @param ignore  Ignore lowercasing
+ * @param value  Parse string
+ * @param keepCase  Disable lowercasing uncapitalized characters
  */
-export const _sentenceCase = (value: any, ignore: bool = false): string => _str(value)
+export const _sentenceCase = (value: any, keepCase: bool = false): string => _str(value)
 .split(/((?<=\.|\?|!)\s*)/)
 .map(val => {
   if (val.length){
     const first = val.charAt(0).toUpperCase();
     const rest = val.length > 1 ? val.slice(1) : '';
-    val = first + (ignore ? rest : rest.toLowerCase());
+    val = first + (keepCase ? rest : rest.toLowerCase());
   }
   return val;
 })
 .join('');
-//
-// /**
-//  * Convert value to snake case (i.e. 'HelloWorld' => 'hello_world')
-//  * 
-//  * @param value
-//  * @returns `string` snake_case
-//  */
-// export const _snakeCase = (value: string): string => _strNorm(value).replace(/\W+/g, ' ').split(/ |\B(?=[A-Z])/).join('_').replace(/_+/g, '_').toLowerCase();
-//
-// /**
-//  * Convert value to slug case (i.e. 'HelloWorld' => 'hello-world')
-//  * 
-//  * @param value
-//  * @returns `string` slug-case
-//  */
-// export const _slugCase = (value: string): string => _strNorm(value).replace(/(?:[\W_])?[A-Z]/g, (m, i) => m.length === 1 && i ? '-' + m : m)
-// .replace(/[0-9a-zA-Z]/, '-')
-// .replace(/-+/g, '-')
-// .toLowerCase();
-//
-// /**
-//  * Convert value to studly case (i.e. 'hello-world' => 'HelloWorld')
-//  * 
-//  * @param value
-//  * @returns `string` StudlyCase
-//  */
-// export const _studlyCase = (value: string): string => _slug(value).split('-').map(w => w[0].toUpperCase() + w.substring(1).toLowerCase()).join('');
+
+/**
+ * Convert value to snake case (i.e. 'HelloWorld' => 'hello_world')
+ * - accents are normalized (i.e. "Test Amélie" => "test_amelie")
+ * 
+ * @param value  Parse string
+ * @param trimTrailing  Trim trailing "_" (`false` = (default) disabled, `true` => trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
+ */
+export const _snakeCase = (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false): string => {
+	let res = _strNorm(_trim(value))
+	.replace(/[A-Z]+/g, m => m[0].toUpperCase() + m.substring(1).toLowerCase())
+	.replace(/\W+/g, ' ')
+	.split(/ |\B(?=[A-Z])/).join('_').replace(/_+/g, '_').toLowerCase();
+	if (res === '_') return '';
+	if (/^_|_$/.test(res) && trimTrailing) res = _trim(res, '_', (['l','left','r','right'].includes(trimTrailing as any) ? trimTrailing : '') as any);
+	return res;
+};
+
+/**
+ * Convert value to slug case (i.e. 'HelloWorld' => 'hello-world')
+ * 
+ * @param value  Parse string
+ */
+export const _slugCase = (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false): string => _snakeCase(value, trimTrailing).replace(/_/g, '-');
+
+/**
+ * Convert value to studly case (i.e. 'hello-world' => 'HelloWorld')
+ * 
+ * @param value  Parse string
+ */
+export const _studlyCase = (value: any): string => _snakeCase(value)
+.split('_')
+.filter(v => v.length)
+.map(word => word[0].toUpperCase() + word.substring(1).toLowerCase())
+.join('');
+
+/**
+ * Convert value to camel case (i.e. 'hello-world' => 'helloWorld')
+ * 
+ * @param value  Parse string
+ */
+export const _camelCase = (value: any): string => {
+	let res = _studlyCase(value);
+	if (res.length) res = res[0].toLowerCase() + res.substring(1);
+	return res;
+};
