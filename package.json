@@ -8,6 +8,7 @@
 		"prebuild": "rimraf ./dist",
 		"prepublish": "npm run build",
 		"build": "npm run prebuild && npx webpack --env=mode=production",
+		"build-dev": "npm run prebuild && npx webpack",
 		"dev": "npx ts-node ./test/index.ts",
 		"test": "jest"
 	},

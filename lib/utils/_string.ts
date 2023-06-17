@@ -183,7 +183,7 @@ export const _snakeCase = (value: any, trimTrailing: boolean|'l'|'left'|'r'|'rig
 	let res = _strNorm(_trim(value))
 	.replace(/[A-Z]+/g, m => m[0].toUpperCase() + m.substring(1).toLowerCase())
 	.replace(/\W+/g, ' ')
-	.split(/ |\B(?=[A-Z])/).join('_').replace(/_+/g, '_').toLowerCase();
+	.split(/ |(?=[A-Z])/).join('_').replace(/_+/g, '_').toLowerCase();
 	if (res === '_') return '';
 	if (/^_|_$/.test(res) && trimTrailing) res = _trim(res, '_', (['l','left','r','right'].includes(trimTrailing as any) ? trimTrailing : '') as any);
 	return res;
