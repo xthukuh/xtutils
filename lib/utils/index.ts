@@ -27,12 +27,12 @@ export {
 	_trim,
 	_ltrim,
 	_rtrim,
-	// _titleCase,
-	// _sentenceCase,
-	// _snakeCase,
-	// _slugCase,
-	// _studlyCase,
-	// _camelCase,
+	_titleCase,
+	_sentenceCase,
+	_snakeCase,
+	_slugCase,
+	_studlyCase,
+	_camelCase,
 } from './_string';
 
 //_batch
