@@ -9,12 +9,12 @@ import {
 	_trim,
 	_ltrim,
 	_rtrim,
-	_titleCase,
-	_sentenceCase,
-	_snakeCase,
-  _slugCase,
-  _studlyCase,
-	_camelCase,
+	_toTitleCase,
+	_toSentenceCase,
+	_toSnakeCase,
+  _toSlugCase,
+  _toStudlyCase,
+	_toCamelCase,
 } from '../lib';
 import { _expectTests } from './__helpers';
 
@@ -451,9 +451,9 @@ describe(`\n  _rtrim: (value: any, chars: string = ' \\r\\n\\t\\f\\v\\x00') => s
 	]);
 });
 
-//_titleCase
-describe('\n  _titleCase: (value: any, keepCase: bool = false) => string', () => {
-	_expectTests('_titleCase', _titleCase, [
+//_toTitleCase
+describe('\n  _toTitleCase: (value: any, keepCase: bool = false) => string', () => {
+	_expectTests('_toTitleCase', _toTitleCase, [
 		{
 			label: 'lowercase',
 			code: `'hello world'`,
@@ -487,9 +487,9 @@ describe('\n  _titleCase: (value: any, keepCase: bool = false) => string', () =>
 	]);
 });
 
-//_sentenceCase
-describe('\n  _sentenceCase: (value: any, keepCase: bool = false) => string', () => {
-	_expectTests('_sentenceCase', _sentenceCase, [
+//_toSentenceCase
+describe('\n  _toSentenceCase: (value: any, keepCase: bool = false) => string', () => {
+	_expectTests('_toSentenceCase', _toSentenceCase, [
 		{
 			label: 'lowercase',
 			code: `'hello world. this is a test.'`,
@@ -529,9 +529,9 @@ describe('\n  _sentenceCase: (value: any, keepCase: bool = false) => string', ()
 	]);
 });
 
-//_snakeCase
-describe(`\n  _snakeCase: (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false) => string`, () => {
-	_expectTests('_snakeCase', _snakeCase, [
+//_toSnakeCase
+describe(`\n  _toSnakeCase: (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false) => string`, () => {
+	_expectTests('_toSnakeCase', _toSnakeCase, [
 		{
 			label: 'special characters',
 			code: `'Hello*world.'`,
@@ -667,9 +667,9 @@ describe(`\n  _snakeCase: (value: any, trimTrailing: boolean|'l'|'left'|'r'|'rig
 	]);
 });
 
-//_slugCase
-describe(`\n  _slugCase: (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false) => string`, () => {
-	_expectTests('_slugCase', _slugCase, [
+//_toSlugCase
+describe(`\n  _toSlugCase: (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false) => string`, () => {
+	_expectTests('_toSlugCase', _toSlugCase, [
 		{
 			label: 'special characters',
 			code: `'Hello*world.'`,
@@ -805,9 +805,9 @@ describe(`\n  _slugCase: (value: any, trimTrailing: boolean|'l'|'left'|'r'|'righ
 	]);
 });
 
-//_studlyCase
-describe('\n  _studlyCase: (value: any) => string', () => {
-	_expectTests('_studlyCase', _studlyCase, [
+//_toStudlyCase
+describe('\n  _toStudlyCase: (value: any) => string', () => {
+	_expectTests('_toStudlyCase', _toStudlyCase, [
 		{
 			label: 'special characters',
 			code: `'Hello*world.'`,
@@ -907,9 +907,9 @@ describe('\n  _studlyCase: (value: any) => string', () => {
 	]);
 });
 
-//_camelCase
-describe('\n  _camelCase: (value: any) => string', () => {
-	_expectTests('_camelCase', _camelCase, [
+//_toCamelCase
+describe('\n  _toCamelCase: (value: any) => string', () => {
+	_expectTests('_toCamelCase', _toCamelCase, [
 		{
 			label: 'special characters',
 			code: `'Hello*world.'`,

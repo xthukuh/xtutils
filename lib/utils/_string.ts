@@ -1,4 +1,4 @@
-import { bool } from './_common';
+import { bool } from '../types';
 import { _jsonStringify } from './_json';
 
 /**
@@ -150,7 +150,7 @@ export const _rtrim = (value: any, chars: string = ' \r\n\t\f\v\x00'): string =>
  * @param value  Parse string
  * @param keepCase  Disable lowercasing uncapitalized characters
  */
-export const _titleCase = (value: any, keepCase: bool = false): string => _str(value)
+export const _toTitleCase = (value: any, keepCase: bool = false): string => _str(value)
 .replace(/\w\S*/g, match => match[0].toUpperCase()
 + (keepCase ? match.substring(1) : match.substring(1).toLowerCase()));
 
@@ -160,7 +160,7 @@ export const _titleCase = (value: any, keepCase: bool = false): string => _str(v
  * @param value  Parse string
  * @param keepCase  Disable lowercasing uncapitalized characters
  */
-export const _sentenceCase = (value: any, keepCase: bool = false): string => _str(value)
+export const _toSentenceCase = (value: any, keepCase: bool = false): string => _str(value)
 .split(/((?:\.|\?|!)\s*)/)
 .map(val => {
   if (val.length){
@@ -179,7 +179,7 @@ export const _sentenceCase = (value: any, keepCase: bool = false): string => _st
  * @param value  Parse string
  * @param trimTrailing  Trim trailing "_" (`false` = (default) disabled, `true` => trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
  */
-export const _snakeCase = (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false): string => {
+export const _toSnakeCase = (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false): string => {
 	let res = _strNorm(_trim(value))
 	.replace(/[A-Z]+/g, m => m[0].toUpperCase() + m.substring(1).toLowerCase())
 	.replace(/\W+/g, ' ')
@@ -194,14 +194,14 @@ export const _snakeCase = (value: any, trimTrailing: boolean|'l'|'left'|'r'|'rig
  * 
  * @param value  Parse string
  */
-export const _slugCase = (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false): string => _snakeCase(value, trimTrailing).replace(/_/g, '-');
+export const _toSlugCase = (value: any, trimTrailing: boolean|'l'|'left'|'r'|'right' = false): string => _toSnakeCase(value, trimTrailing).replace(/_/g, '-');
 
 /**
  * Convert value to studly case (i.e. 'hello-world' => 'HelloWorld')
  * 
  * @param value  Parse string
  */
-export const _studlyCase = (value: any): string => _snakeCase(value)
+export const _toStudlyCase = (value: any): string => _toSnakeCase(value)
 .split('_')
 .filter(v => v.length)
 .map(word => word[0].toUpperCase() + word.substring(1).toLowerCase())
@@ -212,8 +212,22 @@ export const _studlyCase = (value: any): string => _snakeCase(value)
  * 
  * @param value  Parse string
  */
-export const _camelCase = (value: any): string => {
-	let res = _studlyCase(value);
+export const _toCamelCase = (value: any): string => {
+	let res = _toStudlyCase(value);
 	if (res.length) res = res[0].toLowerCase() + res.substring(1);
 	return res;
 };
+
+/**
+ * Convert value to lower case sting
+ * 
+ * @param value
+ */
+export const _toLowerCase = (value: any): string => _str(value).toLowerCase();
+
+/**
+ * Convert value to lower case sting
+ * 
+ * @param value
+ */
+ export const _toUpperCase = (value: any): string => _str(value).toUpperCase();

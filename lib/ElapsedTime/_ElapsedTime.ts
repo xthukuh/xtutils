@@ -1,5 +1,5 @@
-import { _isDate } from './_datetime';
-import { _round } from './_number';
+import { _isDate } from '../utils/_datetime';
+import { _round } from '../utils/_number';
 
 export class ElapsedTime
 {

@@ -1,4 +1,4 @@
-import { bool } from './_common';
+import { bool } from '../types';
 
 /**
  * Check if value is numeric

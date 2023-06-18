@@ -1,4 +1,4 @@
-import { bool } from './_common';
+import { bool } from '../types';
 /**
  * Flatten array recursively
  *
@@ -30,3 +30,16 @@ export declare const _hasProps: (value: any, ...props: any) => boolean;
  *
  */
 export declare const _hasAnyProps: (value: any, ...props: any) => boolean;
+/**
+ * Check if value is a class function
+ *
+ * @param value  Test value
+ */
+export declare const _isClass: (value: any) => boolean;
+/**
+ * Check if value is a function (or class optionally)
+ *
+ * @param value  Test value
+ * @param orClass  [default: `false`] Includes class function
+ */
+export declare const _isFunc: (value: any, orClass?: boolean) => boolean;

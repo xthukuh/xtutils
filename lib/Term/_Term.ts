@@ -1,6 +1,6 @@
-import { _isDate, _timestamp } from './_datetime';
-import { _str, _string, _stringable } from './_string';
-import { _jsonStringify, _jsonClone } from './_json';
+import { _isDate, _timestamp } from '../utils/_datetime';
+import { _str, _string, _stringable } from '../utils/_string';
+import { _jsonStringify, _jsonClone } from '../utils/_json';
 
 /**
  * Term format result interface
@@ -448,48 +448,3 @@ export class Term
 		});
 	}
 }
-
-
-//TEST TABLE
-// const _values: any[] = `
-// In eu feugiat ipsum, id euismod nisi.
-// Sed sem velit, facilisis vitae turpis ut, ornare finibus lacus.
-// Proin sodales vestibulum mauris eu tempor. Cras sit amet vehicula urna.
-// Maecenas feugiat varius velit eu egestas. Donec finibus lorem et tempor lobortis.
-// Nullam tincidunt posuere nibh, volutpat imperdiet orci rhoncus eu. Vestibulum maximus rutrum erat ac faucibus.
-// Mauris vitae tempor velit.
-// Curabitur ultricies nunc non massa auctor, vel tincidunt turpis elementum.
-// `.trim().split('\n').map(v => v.trim());
-// const _set = new Set<number>([1, 2, 2, 4, 5]);
-// const _map = new Map<string, any>([['name', 'Martin'], ['age', 30], ['phone', 444555]]);
-// const _circ = (()=>{ const xv = {name:'testXV',_get:function(this: any){const self = this; self._xv = self; return self;}}; return xv._get(); })();
-// _values.push(...[new Date(), new TypeError('Hello error.'), _set, _map, _circ]);
-// const _batch = _batchValues(_values, 3).map(arr => !(_rand(0, 10)%2) ? arr.slice(0) : arr.slice(0).reverse());
-// const _objects: any[] = _jsonClone<any[][]>(_batch).map(arr => Object.fromEntries(arr.map((v, i) => [`col ${i}`, v])));
-// const _object: any = _objects[_rand(0, _objects.length - 1)];
-// const _arr: any[] = [...Array(5)].map((_, r) => [...Array(4)].map((_, c) => `${[r, c]}`));
-// //tests
-// const _tests: {[key: string]: any} = {
-// 	_set,
-// 	_map,
-// 	_batch,
-// 	_object,
-// 	_arr,
-// 	_str: 'Curabitur ultricies nunc non massa auctor, vel tincidunt turpis elementum.',
-// 	_num: _rand(1000, 100000),
-// 	_date: new Date(),
-// 	_err: new Error('Hello error!'),
-// 	_bool: [true, false],
-// };
-// Object.entries(_tests).forEach((entry, i) => {
-// 	const [key, value] = entry;
-// 	console.log('');
-// 	Term.warn(`--- [${i}] test - ${key}`, value?.length ?? '');
-// 	Term.table(value, 32);
-// });
-// //table
-// console.log('');
-// Term.debug('=== table');
-// console.table(_arr);
-// console.table(_object);
-// return;
