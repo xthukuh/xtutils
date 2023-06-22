@@ -1,8 +1,10 @@
-import { bool } from '../types';
+import { Buffer } from 'buffer';
+import { bool, BufferString, BufferEncoding } from '../types';
 /**
  * Get unique string of random characters (in lowercase)
  *
- * @param length  (max 64)
+ * @param length  Result length [min = 7, max = 64]
+ * @returns unique `string` min-length = 7, max-length = 64
  */
 export declare function _uuid(length?: number): string;
 /**
@@ -11,6 +13,7 @@ export declare function _uuid(length?: number): string;
  *
  * @param value  Cast value
  * @param _default  [default: `''`] Default result on failure
+ * @returns `string`
  */
 export declare const _string: (value: any, _default?: string) => string;
 /**
@@ -18,6 +21,7 @@ export declare const _string: (value: any, _default?: string) => string;
  *
  * @param value
  * @returns `false|string` Cast result or `false` on failure
+ * @returns value `string` | `false` on failure
  */
 export declare const _stringable: (value: any) => false | string;
 /**
@@ -29,12 +33,14 @@ export declare const _stringable: (value: any) => false | string;
  * @param value
  * @param trim  Trim result
  * @param stringify  Stringify `array` or `object` value that does not implement `toString()` method
+ * @returns `string`
  */
 export declare const _str: (value: any, trim?: boolean, stringify?: boolean) => string;
 /**
  * Normalize string by removing accents (i.e. "Amélie" => "Amelie")
  *
  * @param value
+ * @returns normalized `string`
  */
 export declare const _strNorm: (value: any) => string;
 /**
@@ -42,6 +48,7 @@ export declare const _strNorm: (value: any) => string;
  * - i.e. `'\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'\\s\n\r\t\v\x00\s~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`
  *
  * @param value
+ * @returns escaped `string`
  */
 export declare const _regEscape: (value: any) => string;
 /**
@@ -49,6 +56,7 @@ export declare const _regEscape: (value: any) => string;
  * - i.e. `'\r\n\t\f\v\x00-\u00f3-\u1234-\xb4-\u000b-/\\'` => `'\\r\\n\\t\\f\\v\\x00-ó-ሴ-´-\\v-/\\\\'`
  *
  * @param value
+ * @returns escaped `string`
  */
 export declare const _strEscape: (value: any) => string;
 /**
@@ -57,6 +65,7 @@ export declare const _strEscape: (value: any) => string;
  * @param value  Trim value
  * @param chars  Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
  * @param rl  Trim mode (`''` => (default) trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
+ * @returns trimmed `string`
  */
 export declare const _trim: (value: any, chars?: string, rl?: '' | 'r' | 'l' | 'right' | 'left') => string;
 /**
@@ -64,6 +73,7 @@ export declare const _trim: (value: any, chars?: string, rl?: '' | 'r' | 'l' | '
  *
  * @param value Trim value
  * @param chars Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
+ * @returns left trimmed `string`
  */
 export declare const _ltrim: (value: any, chars?: string) => string;
 /**
@@ -71,6 +81,7 @@ export declare const _ltrim: (value: any, chars?: string) => string;
  *
  * @param value Trim value
  * @param chars Strip characters [default: `' \n\r\t\f\v\x00'`] - use `'{default}'` to include defaults (i.e `'-{defaults}'` == `'- \n\r\t\f\v\x00'`)
+ * @returns right trimmed `string`
  */
 export declare const _rtrim: (value: any, chars?: string) => string;
 /**
@@ -78,6 +89,7 @@ export declare const _rtrim: (value: any, chars?: string) => string;
  *
  * @param value  Parse string
  * @param keepCase  Disable lowercasing uncapitalized characters
+ * @returns Title Case `string`
  */
 export declare const _toTitleCase: (value: any, keepCase?: bool) => string;
 /**
@@ -85,6 +97,7 @@ export declare const _toTitleCase: (value: any, keepCase?: bool) => string;
  *
  * @param value  Parse string
  * @param keepCase  Disable lowercasing uncapitalized characters
+ * @returns Sentence case `string`
  */
 export declare const _toSentenceCase: (value: any, keepCase?: bool) => string;
 /**
@@ -93,35 +106,76 @@ export declare const _toSentenceCase: (value: any, keepCase?: bool) => string;
  *
  * @param value  Parse string
  * @param trimTrailing  Trim trailing "_" (`false` = (default) disabled, `true` => trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
+ * @returns snake_case `string`
  */
 export declare const _toSnakeCase: (value: any, trimTrailing?: boolean | 'l' | 'left' | 'r' | 'right') => string;
 /**
  * Convert value to slug case (i.e. 'HelloWorld' => 'hello-world')
  *
  * @param value  Parse string
+ * @returns slug-case `string`
  */
 export declare const _toSlugCase: (value: any, trimTrailing?: boolean | 'l' | 'left' | 'r' | 'right') => string;
 /**
  * Convert value to studly case (i.e. 'hello-world' => 'HelloWorld')
  *
  * @param value  Parse string
+ * @returns StudlyCase `string`
  */
 export declare const _toStudlyCase: (value: any) => string;
 /**
  * Convert value to camel case (i.e. 'hello-world' => 'helloWorld')
  *
  * @param value  Parse string
+ * @returns camelCase `string`
  */
 export declare const _toCamelCase: (value: any) => string;
 /**
  * Convert value to lower case sting
  *
  * @param value
+ * @returns lowercase `string`
  */
 export declare const _toLowerCase: (value: any) => string;
 /**
  * Convert value to lower case sting
  *
  * @param value
+ * @returns UPPERCASE `string`
  */
 export declare const _toUpperCase: (value: any) => string;
+/**
+ * Get string buffer unique hash code (i.e. `hashCode('Hello world!')` => `-52966915`)
+ *
+ * @param buffer  Parse string value
+ * @returns `number` hash
+ */
+export declare const _hashCode: (buffer: any) => number;
+/**
+ * Get string buffer hashCode (i.e. `_hash53('Hello world!')` => `5211024121371232` (length=16))
+ * - A simple but high quality 53-bit string hash generator based on
+ *   `cyrb53` script by `bryc` (https://stackoverflow.com/a/52171480/3735576)
+ *
+ * @param buffer  Parse string value
+ * @param seed  Hash entropy
+ * @returns `number` hash
+ */
+export declare const _hash53: (buffer: any, seed?: number) => number;
+/**
+ * Base64 encode
+ * - Example: `_base64Encode('Hello world!')` => `'SGVsbG8gd29ybGQh'`
+ *
+ * @param buffer
+ * @param bufferEncoding
+ * @returns base64 encoded `string`
+ */
+export declare const _base64Encode: (buffer: BufferString, bufferEncoding?: BufferEncoding) => string;
+/**
+ * Base64 decode
+ * - Example: `_base64Decode('SGVsbG8gd29ybGQh')` => `<Buffer 48 65 6c 6c 6f 20 77 6f 72 6c 64 21>`
+ * - Example: `_base64Decode('SGVsbG8gd29ybGQh').toString()` => `'Hello world!'`
+ *
+ * @param base64
+ * @returns decoded `Buffer`
+ */
+export declare const _base64Decode: (base64: string) => Buffer;

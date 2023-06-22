@@ -68,7 +68,7 @@ describe('_jsonStringify: (value: any, space?: string | number | undefined, _und
 			label: 'circular reference',
 			code: 'new (class T{self:T;constructor(){this.self=this}})',
 			args: [new (class T{self:T;constructor(){this.self=this}})],
-			expected: '{"self":"[Circular]this"}',
+			expected: '{"self":"[Circular Reference]this"}',
 		},
 		{
 			label: 'Set instance',

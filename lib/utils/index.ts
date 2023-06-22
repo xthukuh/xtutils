@@ -24,6 +24,10 @@ export {
 	_toCamelCase,
 	_toLowerCase,
 	_toUpperCase,
+  _hashCode,
+	_hash53,
+	_base64Encode,
+	_base64Decode,
 } from './_string';
 
 //_batch
@@ -68,6 +72,7 @@ export {
 	_hasAnyProps,
 	_isClass,
 	_isFunc,
+	_minMax,
 } from './_objects';
 
 //_debounced
@@ -75,3 +80,6 @@ export { _debouced } from './_debouced';
 
 //_deepClone
 export { _deepClone } from './_deepClone';
+
+//_compare
+export { _shallowCompare } from './_compare';

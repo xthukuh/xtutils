@@ -58,3 +58,22 @@ export const _isClass = (value: any): boolean => {
 export const _isFunc = (value: any, orClass: boolean = false): boolean => {
 	return value && 'function' === typeof value && (orClass ? true : !_isClass(value));
 };
+
+
+/**
+ * Get `[min, max]` compared and arranged
+ * - Example: `_minMax(20, 10)` => `[10, 20]`
+ * - Example: `_minMax(0.23, null)` => `[null, 0.23]`
+ *  
+ * @param a  Compare value 1
+ * @param b  Compare value 2
+ * @returns `[min, max]`
+ */
+export const _minMax = (a: any, b: any): [min: any, max: any] => {
+	let min: any = a, max: any = b;
+	if (a > b){
+		min = b;
+		max = a;
+	}
+	return [min, max];
+};

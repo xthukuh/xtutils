@@ -47,7 +47,7 @@ export const _jsonStringify = (value: any, space?: string|number|null|undefined,
 		if ('object' === typeof value){
 			if (key) _parents(key, value);
 			const other = refs.get(value);
-			if (other) return '[Circular]' + other;
+			if (other) return '[Circular Reference]' + other;
 			else refs.set(value, path.join('.'));
 		}
 		return value;

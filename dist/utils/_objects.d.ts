@@ -43,3 +43,13 @@ export declare const _isClass: (value: any) => boolean;
  * @param orClass  [default: `false`] Includes class function
  */
 export declare const _isFunc: (value: any, orClass?: boolean) => boolean;
+/**
+ * Get `[min, max]` compared and arranged
+ * - Example: `_minMax(20, 10)` => `[10, 20]`
+ * - Example: `_minMax(0.23, null)` => `[null, 0.23]`
+ *
+ * @param a  Compare value 1
+ * @param b  Compare value 2
+ * @returns `[min, max]`
+ */
+export declare const _minMax: (a: any, b: any) => [min: any, max: any];

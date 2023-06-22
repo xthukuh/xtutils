@@ -122,3 +122,21 @@ export const _commas = (value: any, places: number = 2, zeros: bool = false): st
  * @returns  `number` Random `integer`
  */
 export const _rand = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1)) + min;
+
+// /**
+//  * TODO: Round to nearest integer
+//  * 
+//  * @param value  Round value
+//  * @param nearestInt  To nearest integer
+//  * @returns `number` integer
+//  */
+// export const _roundToNearest = (value: number, nearestInt: number): number => {
+// 	if (isNaN(value) || Number.isInteger(nearestInt)) return value;
+// 	let neg = (value < 0 ? -1 : 1) * (nearestInt < 0 ? -1 : 1);
+// 	let abs_value = Math.abs(value);
+// 	let abs_nearest = Math.abs(nearestInt);
+// 	let abs_round = Math.round(Math.round(abs_value)/abs_nearest) * abs_nearest;
+// 	let result = neg > 0 ? abs_round : abs_round > abs_value ? abs_round - abs_nearest : abs_round;
+// 	if (value < 0) result = result * -1;
+// 	return result;
+// }

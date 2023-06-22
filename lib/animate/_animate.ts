@@ -2,15 +2,6 @@ import { _isFunc, _toNum } from '../utils';
 import { EasingFunction, EasingsKey, Easings } from './easings';
 import { requestAnimationFrame, cancelAnimationFrame } from './_polyfill';
 
-// //polyfill
-(function(this: any){
-	const _window = 'undefined' === typeof window ? undefined : window;
-	const _global = 'undefined' === typeof global ? undefined : global;
-	const _this = 'undefined' === typeof this ? undefined : this;
-
-	console.log({_window, _global, _this});
-}).call(this);
-
 /**
  * Default animation easing
  */
