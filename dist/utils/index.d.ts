@@ -10,7 +10,7 @@ export type { IQueue } from './_queue';
 export { _queue } from './_queue';
 export type { SortDirection, SortOrder } from './_sort';
 export { _sortValues } from './_sort';
-export { _flatten, _hasProp, _hasProps, _hasAnyProps, _isClass, _isFunc, _minMax, } from './_objects';
+export { _flatten, _hasProp, _hasProps, _hasAnyProps, _isClass, _isFunc, _minMax, _dotFlat, } from './_objects';
 export { _debouced } from './_debouced';
 export { _deepClone } from './_deepClone';
 export { _shallowCompare } from './_compare';

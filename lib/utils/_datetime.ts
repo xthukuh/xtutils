@@ -41,31 +41,3 @@ export const _timestamp = (value?: any, _default?: Date|string|number|null|undef
 	const date = _getDate(value, _default);
 	return !_isDate(date) ? `${date}` : date.toISOString();
 };
-
-//..
-
-/*
-//TESTS:
-console.log(`_getDate() => new Date() =>`, _getDate());
-console.log(`_getDate('2023-05-27T19:30:44.575Z') =>`, _getDate('2023-05-27T19:30:44.575Z'));
-console.log(`_getDate(1685215844575) =>`, _getDate(1685215844575));
-console.log(`_getDate(NaN) => new Date() =>`, _getDate(NaN));
-console.log(`_getDate(NaN, null) => `, _getDate(NaN, null));
-console.log(`_getDate(NaN, new Date()) => `, _getDate(NaN, new Date()));
-console.log(`_getDate(NaN, NaN) => `, _getDate(NaN, NaN));
-console.log(`_getDate(NaN, 1685215844575) => `, _getDate(NaN, 1685215844575));
-console.log(`_getDate(NaN, '2023-05-27T19:30:44.575Z') => `, _getDate(NaN, '2023-05-27T19:30:44.575Z'));
-console.log(`_getDate(NaN, 'midnight') => `, _getDate(NaN, 'midnight'));
-
-//RESULTS:
-// _getDate() => new Date() => 2023-05-27T20:39:19.821Z
-// _getDate('2023-05-27T19:30:44.575Z') => 2023-05-27T19:30:44.575Z
-// _getDate(1685215844575) => 2023-05-27T19:30:44.575Z
-// _getDate(NaN) => new Date() => 2023-05-27T20:39:19.823Z
-// _getDate(NaN, null) =>  1970-01-01T00:00:00.000Z
-// _getDate(NaN, new Date()) =>  2023-05-27T20:39:19.824Z
-// _getDate(NaN, NaN) =>  Invalid Date
-// _getDate(NaN, 1685215844575) =>  2023-05-27T19:30:44.575Z
-// _getDate(NaN, '2023-05-27T19:30:44.575Z') =>  2023-05-27T19:30:44.575Z
-// _getDate(NaN, 'midnight') =>  Invalid Date
-*/

@@ -6,22 +6,12 @@
 	"types": "dist/index.d.ts",
 	"scripts": {
 		"prebuild": "rimraf ./dist",
-		"prepublish": "npm run build",
 		"build": "npm run prebuild && npx webpack --env=mode=production",
+		"prepublish": "npm run build",
 		"dev": "npx ts-node ./test/index.ts",
 		"test": "jest"
 	},
-	"keywords": [
-		"typescript",
-		"javascript",
-		"js",
-		"tsc",
-		"library",
-		"utilities",
-		"custom",
-		"xutils",
-		"xthukuh"
-	],
+	"keywords": ["xthukuh", "xutils", "utils", "typescript", "javascript"],
 	"author": "https://github.com/xthukuh",
 	"license": "ISC",
 	"devDependencies": {

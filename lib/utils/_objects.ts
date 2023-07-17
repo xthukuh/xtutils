@@ -77,3 +77,26 @@ export const _minMax = (a: any, b: any): [min: any, max: any] => {
 	}
 	return [min, max];
 };
+
+/**
+ * Flatten object values recursively to dot paths (i.e. `{a:{x:1},b:{y:2,z:[5,6]}}` => `{'a.x':1,'b.y':2,'b.z.0':5,'b.z.1':6}`)
+ * 
+ * @param value  Parse object
+ * @param omit  Omit entry keys/dot paths
+ * @returns `{[key: string]: any}`
+ */
+export const _dotFlat = (value: any, omit: string[] = []):{[key: string]: any} => {
+	if (!(value && 'object' === typeof value)) return {};
+	const _entries: [key: string, val: any][] = [];
+	const _addEntries = (obj: any, _p_key: string) => {
+		Object.entries(obj).forEach(entry => {
+			const [k, v] = entry;
+			const _key = `${(_p_key ? `${_p_key}.` : '')}${k}`;
+			if (omit && Array.isArray(omit) && omit.length && (omit.includes(`${k}`) || omit.includes(_key))) return;
+			if (v && 'object' === typeof v) _addEntries(v, _key);
+			else _entries.push([_key, v]);
+		});
+	};
+	_addEntries(value, '');
+	return Object.fromEntries(_entries);
+};

@@ -53,3 +53,13 @@ export declare const _isFunc: (value: any, orClass?: boolean) => boolean;
  * @returns `[min, max]`
  */
 export declare const _minMax: (a: any, b: any) => [min: any, max: any];
+/**
+ * Flatten object values recursively to dot paths (i.e. `{a:{x:1},b:{y:2,z:[5,6]}}` => `{'a.x':1,'b.y':2,'b.z.0':5,'b.z.1':6}`)
+ *
+ * @param value  Parse object
+ * @param omit  Omit entry keys/dot paths
+ * @returns `{[key: string]: any}`
+ */
+export declare const _dotFlat: (value: any, omit?: string[]) => {
+    [key: string]: any;
+};

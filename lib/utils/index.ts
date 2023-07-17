@@ -73,6 +73,7 @@ export {
 	_isClass,
 	_isFunc,
 	_minMax,
+	_dotFlat,
 } from './_objects';
 
 //_debounced
