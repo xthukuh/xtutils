@@ -9,10 +9,9 @@
 		"build": "npm run prebuild && npx webpack --env=mode=production",
 		"prepublish": "npm run build",
 		"dev": "npx ts-node ./test/index.ts",
-		"pre-docs": "rimraf ../xthukuh.github.io/xutils",
-		"make-docs": "npx typedoc --out ../xthukuh.github.io/xutils lib/index.ts",
-		"docs": "npm run pre-docs && npm run make-docs",
-		"test": "jest"
+		"test": "jest",
+		"docs": "rimraf ../xthukuh.github.io/xutils/docs.json && npx typedoc lib/index.ts --json ../xthukuh.github.io/xutils/typedocs.json",
+		"": ""
 	},
 	"keywords": [
 		"xthukuh",
