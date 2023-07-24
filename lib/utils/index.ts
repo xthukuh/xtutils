@@ -28,6 +28,9 @@ export {
 	_hash53,
 	_base64Encode,
 	_base64Decode,
+	_isDataURI,
+	_isURL,
+	_isEmail,
 } from './_string';
 
 //_batch

@@ -179,3 +179,25 @@ export declare const _base64Encode: (buffer: BufferString, bufferEncoding?: Buff
  * @returns decoded `Buffer`
  */
 export declare const _base64Decode: (base64: string) => Buffer;
+/**
+ * Validate data URI `string` (i.e. `'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD'`)
+ *
+ * @param value
+ * @returns `boolean`
+ */
+export declare const _isDataURI: (value: any) => boolean;
+/**
+ * Validate URL `string`
+ *
+ * @param value
+ * @param matchDataURI
+ * @returns `boolean`
+ */
+export declare const _isURL: (value: any, matchDataURI?: boolean) => boolean;
+/**
+ * Validate email address `string`
+ *
+ * @param value
+ * @returns `boolean`
+ */
+export declare const _isEmail: (value: any) => boolean;

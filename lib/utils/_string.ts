@@ -314,3 +314,45 @@ export const _base64Encode = (buffer: BufferString, bufferEncoding?: BufferEncod
 export const _base64Decode = (base64: string): Buffer => {
 	return Buffer.from(base64, 'base64');
 };
+
+
+/**
+ * Validate data URI `string` (i.e. `'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD'`)
+ * 
+ * @param value
+ * @returns `boolean`
+ */
+export const _isDataURI = (value: any): boolean => {
+	if (!(value && 'string' === typeof value && value.trim())) return false;
+	return new RegExp(/^(data:)([\w\/\+-]*)(;charset=[\w-]+|;base64){0,1},(.*)/gi).test(value);
+}
+
+/**
+ * Validate URL `string`
+ * 
+ * @param value
+ * @param matchDataURI
+ * @returns `boolean`
+ */
+export const _isURL = (value: any, matchDataURI: boolean = false): boolean => {
+	if (!(value && 'string' === typeof value && value.trim())) return false;
+	if (matchDataURI && _isDataURI(value)) return true;
+	const pattern = '^(https?:\\/\\/)?'  // protocol
+	+ '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'  // domain name
+	+ '((\\d{1,3}\\.){3}\\d{1,3}))'  // or IP (v4) address
+	+ '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'  // port and path
+	+ '(\\?[;&a-z\\d%_.~+=-]*)?' // query string
+	+ '(\\#[-a-z\\d_]*)?$'; // fragment locator
+	return new RegExp(pattern, 'i').test(value);
+}
+
+/**
+ * Validate email address `string`
+ * 
+ * @param value
+ * @returns `boolean`
+ */
+export const _isEmail = (value: any): boolean => {
+	if (!(value && 'string' === typeof value && value.trim())) return false;
+	return /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(value.toLowerCase());
+};
