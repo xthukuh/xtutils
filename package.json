@@ -10,7 +10,10 @@
 		"prepublish": "npm run build",
 		"dev": "npx ts-node ./test/index.ts",
 		"test": "jest",
-		"docs": "rimraf ../xthukuh.github.io/xutils/docs.json && npx typedoc lib/index.ts --json ../xthukuh.github.io/xutils/typedocs.json",
+		"docs-clean": "rimraf ../xthukuh.github.io/xutils/docs.json && rimraf ../xthukuh.github.io/xutils/xutils.min.js",
+		"docs-dist": "copy dist\\xutils.min.js ..\\xthukuh.github.io\\xutils",
+		"docs-json": "npx typedoc lib/index.ts --json ../xthukuh.github.io/xutils/typedocs.json",
+		"docs": "npm run docs-clean && npm run docs-dist && npm run docs-json",
 		"": ""
 	},
 	"keywords": [

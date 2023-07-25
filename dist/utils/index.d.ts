@@ -3,7 +3,7 @@ export { _jsonStringify, _jsonParse, _jsonClone } from './_json';
 export { _uuid, _string, _stringable, _str, _strNorm, _regEscape, _strEscape, _trim, _ltrim, _rtrim, _toTitleCase, _toSentenceCase, _toSnakeCase, _toSlugCase, _toStudlyCase, _toCamelCase, _toLowerCase, _toUpperCase, _hashCode, _hash53, _base64Encode, _base64Decode, _isDataURI, _isURL, _isEmail, } from './_string';
 export { _batchValues } from './_batch';
 export { _isDate, _getDate, _datetime, _timestamp, } from './_datetime';
-export { _isNumeric, _toNum, _num, _int, _round, _commas, _rand, } from './_number';
+export { _isNum, _toNum, _num, _int, _round, _commas, _rand, } from './_number';
 export type { IPromiseResult } from './_promise';
 export { _asyncAll, _asyncValues, _sleep } from './_promise';
 export type { IQueue } from './_queue';

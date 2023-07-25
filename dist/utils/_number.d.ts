@@ -7,7 +7,7 @@ import { bool } from '../types';
  * @param blanks  Pass empty `string` values (because `!isNaN('') === true`)
  * @returns `boolean` is numeric
  */
-export declare const _isNumeric: (value: any, booleans?: bool, blanks?: bool) => boolean;
+export declare const _isNum: (value: any, booleans?: bool, blanks?: bool) => boolean;
 /**
  * Convert value to normalized number
  *

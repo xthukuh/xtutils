@@ -46,7 +46,7 @@ export {
 
 //_number
 export {
-	_isNumeric,
+	_isNum,
 	_toNum,
 	_num,
 	_int,

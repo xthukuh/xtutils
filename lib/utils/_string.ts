@@ -15,6 +15,8 @@ export function _uuid(length?: number): string{
 	let buffer = '';
 	while (buffer.length < length) buffer += _uid();
 	return buffer.substring(0, length);
+	//TODO: _uuid - template
+	//return !(template = getAlphan(template)).length ? uid : template.match(p = /:uid/ig) ? template.replace(p, uid) : `${template}-${uid}`;
 }
 
 /**
