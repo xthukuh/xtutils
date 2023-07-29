@@ -14,9 +14,14 @@ export interface IExceptionError {
 	name: string;
 	
 	/** 
-	 * Error code - finite/parsed `integer` (default: `0`)
+	 * Error code - `string` | finite/parsed `integer` (default: `0`)
 	 */
-	code: number;
+	code: string|number;
+
+	/**
+	 * Error data
+	 */
+	data: any;
 	
 	/**
 	 * Get error string
@@ -47,7 +52,8 @@ export class Exception extends Error implements IExceptionError
 	[PRIVATE]: {
 		message: string;
 		name: string;
-		code: number;
+		code: string|number;
+		data: any;
 	} = {} as any;
 	
 	/**
@@ -65,10 +71,17 @@ export class Exception extends Error implements IExceptionError
 	}
 
 	/**
-	 * Error code - finite/parsed `integer` (default: `0`)
+	 * Error code - `string` | finite/parsed `integer` (default: `0`)
 	 */
-	get code(): number {
+	get code(): string|number {
 		return this[PRIVATE].code;
+	}
+	
+	/**
+	 * Error data
+	 */
+	get data(): any {
+		return this[PRIVATE].data;
 	}
 
 	/**
@@ -76,14 +89,18 @@ export class Exception extends Error implements IExceptionError
 	 * 
 	 * @param message  Error message (default: `'Unspecified exception message.'`)
 	 * @param name  Error name (default: `'Exception'`)
-	 * @param code  Error code - finite/parsed `integer` (default: `0`)
+	 * @param code  Error code - `string` | finite/parsed `integer` (default: `0`)
+	 * @param data  Error data
 	 */
-	constructor(message?: string, name?: string, code?: number){
+	constructor(message?: string, name?: string, code?: string|number, data?: any){
 		super(message = message && 'string' === typeof message && (message = message.trim()) ? message : 'Unspecified exception message.');
+		if ('string' === typeof code) code = (code = code.trim()) ? code : 0;
+		else if (!('number' === typeof code && !isNaN(code = parseInt(`${code}`)) && Number.isInteger(code) && Number.isFinite(code))) code = 0;
 		this[PRIVATE] = {
 			message,
 			name: name && 'string' === typeof name && (name = name.trim()) ? name : 'Exception',
-			code: code && 'number' === typeof code && !isNaN(code = parseInt(`${code}`)) && Number.isInteger(code) && Number.isFinite(code) ? code : 0,
+			code,
+			data,
 		};
 	}
 	
@@ -100,9 +117,10 @@ export class Exception extends Error implements IExceptionError
 	 * 
 	 * @param message  Error message (default: `'Unspecified exception message.'`)
 	 * @param name  Error name (default: `'Exception'`)
-	 * @param code  Error code - finite/parsed `integer` (default: `0`)
+	 * @param code  Error code - `string` | finite/parsed `integer` (default: `0`)
+	 * @param data  Error data
 	 */
-	static error(message?: string, name?: string, code?: number): IExceptionError {
-		return new Exception(message, name, code);
+	static error(message?: string, name?: string, code?: number, data?: any): IExceptionError {
+		return new Exception(message, name, code, data);
 	}
 }
