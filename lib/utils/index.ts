@@ -31,6 +31,7 @@ export {
 	_isDataURI,
 	_isURL,
 	_isEmail,
+	_escapeSql,
 } from './_string';
 
 //_batch

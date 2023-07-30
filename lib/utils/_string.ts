@@ -358,3 +358,16 @@ export const _isEmail = (value: any): boolean => {
 	if (!(value && 'string' === typeof value && value.trim())) return false;
 	return /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(value.toLowerCase());
 };
+
+/**
+ * Escape `SQL` special characters from query `string` value
+ * 
+ * @param value  Parse `string`
+ * @returns Escaped `string`
+ */
+export const _escapeSql = (value: any): string => {
+	if (!(value = _str(value))) return value;
+	const chars = ['\\', '\'', '\"', '\b', '\n', '\r', '\t', '\x1a'];
+	chars.forEach(char => value = value.replace(new RegExp(char, 'g'), '\\' + char));
+	return value;
+};
