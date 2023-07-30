@@ -201,3 +201,10 @@ export declare const _isURL: (value: any, matchDataURI?: boolean) => boolean;
  * @returns `boolean`
  */
 export declare const _isEmail: (value: any) => boolean;
+/**
+ * Escape `SQL` special characters from query `string` value
+ *
+ * @param value  Parse `string`
+ * @returns Escaped `string`
+ */
+export declare const _escapeSql: (value: any) => string;
