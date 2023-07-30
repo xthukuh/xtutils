@@ -11,9 +11,13 @@ export interface IExceptionError {
      */
     name: string;
     /**
-     * Error code - finite/parsed `integer` (default: `0`)
+     * Error code - `string` | finite/parsed `integer` (default: `0`)
      */
-    code: number;
+    code: string | number;
+    /**
+     * Error data
+     */
+    data: any;
     /**
      * Get error string
      *
@@ -40,7 +44,8 @@ export declare class Exception extends Error implements IExceptionError {
     [PRIVATE]: {
         message: string;
         name: string;
-        code: number;
+        code: string | number;
+        data: any;
     };
     /**
      * Error message (default: `'Unspecified exception message.'`)
@@ -51,17 +56,22 @@ export declare class Exception extends Error implements IExceptionError {
      */
     get name(): string;
     /**
-     * Error code - finite/parsed `integer` (default: `0`)
+     * Error code - `string` | finite/parsed `integer` (default: `0`)
      */
-    get code(): number;
+    get code(): string | number;
+    /**
+     * Error data
+     */
+    get data(): any;
     /**
      * New `IExceptionError` instance
      *
      * @param message  Error message (default: `'Unspecified exception message.'`)
      * @param name  Error name (default: `'Exception'`)
-     * @param code  Error code - finite/parsed `integer` (default: `0`)
+     * @param code  Error code - `string` | finite/parsed `integer` (default: `0`)
+     * @param data  Error data
      */
-    constructor(message?: string, name?: string, code?: number);
+    constructor(message?: string, name?: string, code?: string | number, data?: any);
     /**
      * Get error `string`
      */
@@ -71,8 +81,9 @@ export declare class Exception extends Error implements IExceptionError {
      *
      * @param message  Error message (default: `'Unspecified exception message.'`)
      * @param name  Error name (default: `'Exception'`)
-     * @param code  Error code - finite/parsed `integer` (default: `0`)
+     * @param code  Error code - `string` | finite/parsed `integer` (default: `0`)
+     * @param data  Error data
      */
-    static error(message?: string, name?: string, code?: number): IExceptionError;
+    static error(message?: string, name?: string, code?: number, data?: any): IExceptionError;
 }
 export {};

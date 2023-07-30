@@ -278,7 +278,7 @@ describe('\n  _str: (value: any, trim: boolean = false, stringify: boolean = fal
 			label: 'Set instance (stringify)',
 			code: 'new Set<number>([1,1,2]), false, true',
 			args: [new Set<number>([1,1,2]), false, true],
-			expected: '{"[Set]":[1,2]}',
+			expected: '[1,2]',
 		},
 		{
 			label: 'Map instance',
@@ -290,7 +290,7 @@ describe('\n  _str: (value: any, trim: boolean = false, stringify: boolean = fal
 			label: 'Map instance (stringify)',
 			code: `new Map<string,string|number>([['one',1],['two','ii']]), false, true`,
 			args: [new Map<string,string|number>([['one',1],['two','ii']]), false, true],
-			expected: `{"[Map]":[["one",1],["two","ii"]]}`,
+			expected: `[["one",1],["two","ii"]]`,
 		},
 		{
 			label: 'Date instance',

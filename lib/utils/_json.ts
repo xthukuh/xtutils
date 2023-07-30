@@ -41,9 +41,18 @@ export const _jsonStringify = (value: any, space?: string|number|null|undefined,
 	};
 	const _replacer = function(this :any, key: string, value: any): any {
 		if (value === null) return value;
-		if (value instanceof Error) value = {[`[Error]`]: String(value)};
-		if (value instanceof Set) value = {'[Set]': [...value]};
-		if (value instanceof Map) value = {'[Map]': [...value]};
+		if (value instanceof Error){
+			try {
+				value = String(value);
+			}
+			catch (e){
+				const error = '[FAILURE] Parse Error to String failed!';
+				console.warn(error, {value, e});
+				value = error;
+			}
+		}
+		if (value instanceof Set) value = [...value];
+		if (value instanceof Map) value = [...value];
 		if ('object' === typeof value){
 			if (key) _parents(key, value);
 			const other = refs.get(value);

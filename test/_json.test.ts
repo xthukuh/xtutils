@@ -74,19 +74,19 @@ describe('_jsonStringify: (value: any, space?: string | number | undefined, _und
 			label: 'Set instance',
 			code: 'new Set<number>([1,1,2])',
 			args: [new Set<number>([1,1,2])],
-			expected: '{"[Set]":[1,2]}',
+			expected: '[1,2]',
 		},
 		{
 			label: 'Map instance',
 			code: `new Map<string,string|number>([['one',1],['two','ii']])`,
 			args: [new Map<string,string|number>([['one',1],['two','ii']])],
-			expected: '{"[Map]":[["one",1],["two","ii"]]}',
+			expected: '[["one",1],["two","ii"]]',
 		},
 		{
 			label: 'Error instance',
 			code: `new TypeError('example')`,
 			args: [new TypeError('example')],
-			expected: '{"[Error]":"TypeError: example"}',
+			expected: '"TypeError: example"',
 		},
 		{
 			label: 'space indentation',
