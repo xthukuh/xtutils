@@ -18,17 +18,18 @@ export interface IPromiseResult<TResult> {
  * @param callback  Entry callback
  * @returns `Promise<IPromiseResult<TResult>[]>`
  */
-export const _asyncAll = async<T extends any, TResult extends any>(array: T[], callback?: (value: T, index: number, array: T[]) => Promise<TResult>): Promise<IPromiseResult<TResult>[]> => {
+export const _asyncAll = async<T extends any, TResult extends any>(array: T[], callback?: (value: T, index: number, length: number) => Promise<TResult>): Promise<IPromiseResult<TResult>[]> => {
 	return new Promise((resolve) => {
-		const _buffer: IPromiseResult<TResult>[] = [], _len = array.length;
+		const _buffer: IPromiseResult<TResult>[] = [];
 		const _resolve = () => resolve(_buffer);
-		if (!_len) return _resolve();
-		let count = 0;
-		array.forEach((v, i, a) => {
-			(async()=>Promise.resolve(callback ? callback(v, i, a) : v) as Promise<TResult>)()
+		const len = array.length;
+		if (!len) return _resolve();
+		let done = 0;
+		array.forEach((v, i) => {
+			(async()=>Promise.resolve(callback ? callback(v, i, len) : v) as Promise<TResult>)()
 			.then(value => _buffer.push({status: 'resolved', index: i, value}))
 			.catch(reason => _buffer.push({status: 'rejected', index: i, reason}))
-			.finally(() => ++count === _len ? _resolve() : undefined);
+			.finally(() => ++done === len ? _resolve() : undefined);
 		});
 	});
 };

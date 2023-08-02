@@ -15,7 +15,7 @@ export interface IPromiseResult<TResult> {
  * @param callback  Entry callback
  * @returns `Promise<IPromiseResult<TResult>[]>`
  */
-export declare const _asyncAll: <T extends unknown, TResult extends unknown>(array: T[], callback?: ((value: T, index: number, array: T[]) => Promise<TResult>) | undefined) => Promise<IPromiseResult<TResult>[]>;
+export declare const _asyncAll: <T extends unknown, TResult extends unknown>(array: T[], callback?: ((value: T, index: number, length: number) => Promise<TResult>) | undefined) => Promise<IPromiseResult<TResult>[]>;
 /**
  * Get async iterable values (i.e. `for await (const value of _asyncValues(array)){...}`)
  *

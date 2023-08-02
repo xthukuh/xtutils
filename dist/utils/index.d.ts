@@ -14,3 +14,4 @@ export { _flatten, _hasProp, _hasProps, _hasAnyProps, _isClass, _isFunc, _minMax
 export { _debouced } from './_debouced';
 export { _deepClone } from './_deepClone';
 export { _shallowCompare } from './_compare';
+export { _progressTracker } from './_progressTracker';

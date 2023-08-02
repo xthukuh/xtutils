@@ -88,3 +88,6 @@ export { _deepClone } from './_deepClone';
 
 //_compare
 export { _shallowCompare } from './_compare';
+
+//_progressTracker
+export { _progressTracker } from './_progressTracker';
