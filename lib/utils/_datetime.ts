@@ -41,3 +41,44 @@ export const _timestamp = (value?: any, _default?: Date|string|number|null|undef
 	const date = _getDate(value, _default);
 	return !_isDate(date) ? `${date}` : date.toISOString();
 };
+
+
+//TODO: (from yup) parse ISO date string
+//var isoReg = /^(\d{4}|[+\-]\d{6})(?:-?(\d{2})(?:-?(\d{2}))?)?(?:[ T]?(\d{2}):?(\d{2})(?::?(\d{2})(?:[,\.](\d{1,}))?)?(?:(Z)|([+\-])(\d{2})(?::?(\d{2}))?)?)?$/;
+// function parseISO(str, utcMode, xdate) {
+// 	var m = str.match(/^(\d{4})(-(\d{2})(-(\d{2})([T ](\d{2}):(\d{2})(:(\d{2})(\.(\d+))?)?(Z|(([-+])(\d{2})(:?(\d{2}))?))?)?)?)?$/);
+// 	if (m) {
+// 					var d = new Date(UTC(
+// 									m[1],
+// 									m[3] ? m[3] - 1 : 0,
+// 									m[5] || 1,
+// 									m[7] || 0,
+// 									m[8] || 0,
+// 									m[10] || 0,
+// 									m[12] ? Number('0.' + m[12]) * 1000 : 0
+// 					));
+// 					if (m[13]) { // has gmt offset or Z
+// 									if (m[14]) { // has gmt offset
+// 													d.setUTCMinutes(
+// 																	d.getUTCMinutes() +
+// 																	(m[15] == '-' ? 1 : -1) * (Number(m[16]) * 60 + (m[18] ? Number(m[18]) : 0))
+// 													);
+// 									}
+// 					}else{ // no specified timezone
+// 									if (!utcMode) {
+// 													d = coerceToLocal(d);
+// 									}
+// 					}
+// 					return xdate.setTime(d.getTime());
+// 	}
+// }
+// XDate.locales = {
+// 	'': {
+// 					monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+// 					monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+// 					dayNames: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+// 					dayNamesShort: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+// 					amDesignator: 'AM',
+// 					pmDesignator: 'PM'
+// 	}
+// };
