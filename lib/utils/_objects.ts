@@ -100,3 +100,94 @@ export const _dotFlat = (value: any, omit: string[] = []):{[key: string]: any} =
 	_addEntries(value, '');
 	return Object.fromEntries(_entries);
 };
+
+//TODO: dot path objects
+// export const dotPath = (path, operations=false, throwable=false) => {
+// 	try {
+// 		let parts = splitStr(path, '.');
+// 		if (!parts.length) throw 'Invalid dot path.';
+// 		let buffer = [];
+// 		for (let i = 0; i < parts.length; i ++){
+// 			let tmp, part = parts[i], valid = 0;
+// 			if (!part.match(/^[-_0-9a-zA-Z]+$/)){
+// 				if (operations){
+// 					if (['!reverse', '!slice'].includes(tmp = part.toLowerCase())){
+// 						part = tmp;
+// 						valid = 1;
+// 					}
+// 					else if (part.match(/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/)) valid = 1;
+// 				}
+// 			}
+// 			else valid = 1;
+// 			if (!valid) throw `Invalid dot path key [${i}] -> (${part}).`;
+// 			buffer.push(part);
+// 		}
+// 		return buffer.join('.');
+// 	}
+// 	catch (e){
+// 		if (throwable !== false) console.warn(e, {path, operations});
+// 		if (throwable) throw new Error(e);
+// 		return '';
+// 	}
+// };
+
+// export const objDotPath = (obj, path, _default, throwable=false) => {
+// 	let keys = splitStr(dotPath(path, 1, throwable), '.');
+// 	if (!keys.length) return _default === obj ? obj : undefined;
+// 	let exists = 1, value = keys.reduce((val, key) => {
+		
+// 		//val not found
+// 		if (!exists) return val;
+
+// 		//val object get
+// 		if (is(val, 'object')){
+
+// 			//key value
+// 			if (hasProp(val, key)) return val[key];
+
+// 			//val array get
+// 			if (is(val, 'array')){
+// 				let tmp, sk, sv;
+
+// 				//reverse operation
+// 				if (key === '!reverse') return val.reverse();
+				
+// 				//slice operation
+// 				if (key === '!slice') return val.slice();
+// 				if (Number.isInteger(tmp = toNum(key)) && tmp < 0) return val.slice(tmp);
+
+// 				//search operation
+// 				if (val.length && key.indexOf('=') > -1 && (tmp = key.split('=')).length === 2 && (sk = tmp[0].trim())){
+// 					sv = jsonParse(tmp[1], tmp[1]);
+// 					let i = val.findIndex(o => {
+// 						if (!hasProp(o, sk)) return false;
+// 						return isMatch(o[sk], sv);
+// 					});
+// 					if (i < 0){
+// 						exists = 0;
+// 						return undefined;
+// 					}
+// 					return val[i];
+// 				}
+// 			}
+// 		}
+
+// 		//not found
+// 		exists = 0;
+// 		return undefined;
+// 	}, obj);
+// 	return exists ? value : _default;
+// };
+
+// //dot path value
+// export const dotPathValue = (path, value, throwable=false) => {
+// 	let keys = splitStr(dotPath(path, 0, throwable), '.');
+// 	if (!keys.length) return;
+// 	return keys.reverse().reduce((prev, key) => ({[key]: prev}), value);
+// };
+
+// //dot path assign
+// export const objDotPathAssign = (obj, path, value, array_object=false, throwable=false) => {
+// 	let item = dotPathValue(path, value, throwable);
+// 	return deepAssignGet(obj, [item], [], [], !!array_object);
+// };

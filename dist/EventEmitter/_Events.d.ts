@@ -1,13 +1,5 @@
+import { IEventEmitter } from './_EventEmitter';
 /**
- * Global event emitter
+ * Global events emitter
  */
-export declare const Events: {
-    emit: any;
-    addListener: any;
-    on: any;
-    once: any;
-    removeListener: any;
-    removeAllListeners: any;
-    listeners: any;
-    subscribe: any;
-};
+export declare const Events: IEventEmitter;

@@ -123,4 +123,17 @@ export const _commas = (value: any, places: number = 2, zeros: bool = false): st
  */
 export const _rand = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1)) + min;
 
-//TODO: export const _posInt = (value: any, _default: number = NaN): number => {}
+/**
+ * Convert px to rem (or reverse)
+ * 
+ * @param val - convert value [default: `1`]
+ * @param reverse - convert rem to px
+ * @param base - root px [default: `16`]
+ * @returns `number`
+ */
+export const _px2rem = (val: number = 1, reverse: boolean =false, base: number = 16): number => {
+	val = _num(val, 1);
+	base = _num(base, 16);
+	const unit = base === 16 ? 0.0625 : 16/base*0.0625;
+	return reverse ? val/unit : val * unit;
+};

@@ -1,330 +1,300 @@
 /**
- * EventEmitter constructor
+ * Emitted event interface
  */
-export const EventEmitter = function(this: any){
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-} as any;
-
-/**
- * Backwards-compat with node 0.10.x
- */
-EventEmitter.EventEmitter = EventEmitter;
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
-
-/**
- * By default EventEmitters will print a warning if more than 10 listeners are added to it.
- * This is a useful default which helps finding memory leaks.
- */
-EventEmitter.defaultMaxListeners = 10;
-
-/**
- * Set max listeners
- * - Obviously not all Emitters should be limited to 10.
- * - This function allows that to be increased. Set to zero for unlimited.
- * 
- * @param {Number} n  Integer max count
- * @returns {EventEmitter}  Instance
- */
-EventEmitter.prototype.setMaxListeners = function(n: number){
-	if (!(!isNaN(n) && Number.isInteger(n) && n >= 0)) throw TypeError('Set max listeners value (n) must be a positive integer.');
-  this._maxListeners = n;
-  return this;
-};
-
-/**
- * Emit event
- * 
- * @param {*} type  Event type
- * @param {...*} args  Event handler callback arguments
- * @returns {Boolean}  Dispatched
- */
-EventEmitter.prototype.emit = function(type: any){
-  let er, handler, len, args, i, listeners;
-  if (!this._events) this._events = {};
-
-  //If there is no 'error' event listener then throw.
-  if (type === 'error'){
-    if (!this._events.error || (isObject(this._events.error) && !this._events.error.length)){
-      er = arguments[1];
-      if (er instanceof Error) throw er; // Unhandled 'error' event
-      throw TypeError('Uncaught, unspecified "error" event.');
-    }
-  }
-  handler = this._events[type];
-  if (isUndefined(handler)) return false;
-  if (isFunction(handler)){
-    switch (arguments.length){
-      
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-
-      // slower
-      default:
-        len = arguments.length;
-        args = new Array(len - 1);
-        for (i = 1; i < len; i++) args[i - 1] = arguments[i];
-        handler.apply(this, args);
-    }
-  }
-  else if (isObject(handler)){
-    len = arguments.length;
-    args = new Array(len - 1);
-    for (i = 1; i < len; i++) args[i - 1] = arguments[i];
-
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++) listeners[i].apply(this, args);
-  }
-  return true;
-};
-
-/**
- * Add listener
- * 
- * @param {*} type  Event type
- * @param {Function} listener  Event handler
- * @returns {EventEmitter}  Instance
- */
-EventEmitter.prototype.addListener = function(type: any, listener: any){
-  if (!isType(type)) throw TypeError('Add event type must not be null or undefined.');
-  if (!isFunction(listener)) throw TypeError('Add event listener must be a function.');
-  if (!this._events) this._events = {};
-
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener) this.emit('newListener', type, isFunction(listener.listener) ? listener.listener : listener);
-  
-  // Optimize the case of one listener. Don't need the extra array object.
-  if (!this._events[type]) this._events[type] = listener;
-  
-  // If we've already got an array, just append.
-  else if (isObject(this._events[type])) this._events[type].push(listener);
-  
-  // Adding the second element, need to change to array.
-  else this._events[type] = [this._events[type], listener];
-
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned){
-    let m = !isUndefined(this._maxListeners) ? this._maxListeners : EventEmitter.defaultMaxListeners;
-    if (m && m > 0 && this._events[type].length > m){
-      this._events[type].warned = true;
-      let err = '(node) warning: possible EventEmitter memory leak detected. '
-      + '%d listeners added. Use emitter.setMaxListeners() to increase limit.';
-      console.error(err, this._events[type].length);
-    }
-  }
-  return this;
-};
-
-/**
- * Add listener
- * 
- * @param {*} type  Event type
- * @param {Function} listener  Event handler
- * @returns {EventEmitter}  Instance
- */
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-/**
- * Add one time listener
- * 
- * @param {*} type  Event type
- * @param {Function} listener  Event handler
- * @returns {EventEmitter}  Instance
- */
-EventEmitter.prototype.once = function(type: any, listener: (...args: any)=>void){
-  if (!isType(type)) throw TypeError('Once event type must not be null or undefined.');
-  if (!isFunction(listener)) throw TypeError('Once event listener must be a function.');
-  let fired = false;
-  function g(this: any, ...args: any){
-    this.removeListener(type, g);
-    if (!fired){
-      fired = true;
-      listener.apply(this, args);
-    }
-  }
-  g.listener = listener;
-  this.on(type, g);
-  return this;
-};
-
-/**
- * Remove listener ~ emits a 'removeListener' event if the listener was removed
- * 
- * @param {*} type  Event type
- * @param {Function} listener  Event handler
- * @returns {EventEmitter}  Instance
- */
-EventEmitter.prototype.removeListener = function(type: any, listener: (...args: any)=>void){
-  let list, position, length, i;
-	if (!isType(type)) throw TypeError('Remove event type must not be null or undefined.');
-  if (!isFunction(listener)) throw TypeError('Remove event listener must be a function.');
-  if (!this._events || !this._events[type]) return this;
-  list = this._events[type];
-  length = list.length;
-  position = -1;
-  if (list === listener || (isFunction(list.listener) && list.listener === listener)){
-    delete this._events[type];
-    if (this._events.removeListener) this.emit('removeListener', type, listener);
-  }
-  else if (isObject(list)){
-    for (i = length; i-- > 0;){
-      if (list[i] === listener || (list[i].listener && list[i].listener === listener)){
-        position = i;
-        break;
-      }
-    }
-    if (position < 0) return this;
-    if (list.length === 1){
-      list.length = 0;
-      delete this._events[type];
-    }
-    else list.splice(position, 1);
-    if (this._events.removeListener) this.emit('removeListener', type, listener);
-  }
-  return this;
-};
-
-/**
- * Remove all listeners
- * 
- * @param {*} type  Event type
- * @returns {EventEmitter}  Instance
- */
-EventEmitter.prototype.removeAllListeners = function(type: any){
-  let key, listeners;
-  if (!this._events) return this;
-
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener){
-    if (arguments.length === 0) this._events = {};
-    else if (this._events[type]) delete this._events[type];
-    return this;
-  }
-
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0){
-    for (key in this._events){
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
-  listeners = this._events[type];
-  if (isFunction(listeners)) this.removeListener(type, listeners);
-  else {
-    // LIFO order
-    while (listeners.length) this.removeListener(type, listeners[listeners.length - 1]);
-  }
-  delete this._events[type];
-  return this;
-};
-
-/**
- * Get event listeners
- * 
- * @param {*} type  Event type
- * @returns {Function[]}  Handlers
- */
-EventEmitter.prototype.listeners = function(type: any){
-  let ret;
-  if (!this._events || !this._events[type]) ret = [];
-  else if (isFunction(this._events[type])) ret = [this._events[type]];
-  else ret = this._events[type].slice();
-  return ret;
-};
-
-/**
- * Get event listener count
- * 
- * @param {EventEmitter} emitter  EventEmitter instance
- * @param {*} type  Event type
- * @returns {Number}  Int count (>=0)
- */
-EventEmitter.listenerCount = function(emitter: any, type: any){
-  let ret;
-  if (!emitter._events || !emitter._events[type]) ret = 0;
-  else if (isFunction(emitter._events[type])) ret = 1;
-  else ret = emitter._events[type].length;
-  return ret;
-};
-
-/**
- * Add event subscriber
- * 
- * @param {*} type  Event type
- * @param {Function} listener  Event handler
- * @returns {unsubscribe<(()=>void)>}  Unsubscribe function
- */
-EventEmitter.prototype.subscribe = function(type: any, listener: (...args: any)=>void){
-	if (!isType(type)) throw TypeError('Subscribe event type must not be null or undefined.');
-  if (!isFunction(listener)) throw TypeError('Subscribe event listener must be a function.');
-	const _type = type;
-	const _listener = (...args: any) => listener(...args);
-	this.addListener(_type, _listener);
-	return () => {
-		this.removeListener(_type, _listener);
-	};
-};
-
-/**
- * Validate type
- * 
- * @param {*} arg
- * @returns {Boolean}
- */
-function isType(arg: any): boolean {
-  return arg !== null && arg !== undefined;
+export interface IEventEmitter {
+	maxListeners: number;
+	listeners: (type: string) => ((event?:IEmittedEvent)=>void)[];
+	hasListener: (type: string, listener: ((event?:IEmittedEvent)=>void)) => boolean;
+	emit: (type: string, data?: any) => boolean;
+	on: (type: string, listener: ((event?:IEmittedEvent)=>void), once: boolean) => EventEmitter;
+	once: (type: string, listener: ((event?:IEmittedEvent)=>void)) => EventEmitter;
+	subscribe: (type: string, listener: ((event?:IEmittedEvent)=>void)) => ()=>void;
+	addListener: (type: string, listener: ((event?:IEmittedEvent)=>void), once: boolean) => EventEmitter;
+	removeListener: (type: string, listener: ((event?:IEmittedEvent)=>void)) => EventEmitter;
+	removeAllListeners: (type: string) => EventEmitter;
 }
 
 /**
- * Validate function
- * 
- * @param {*} arg
- * @returns {Boolean}
+ * Emitted event interface
  */
-function isFunction(arg: any): boolean {
-  return typeof arg === 'function';
+export interface IEmittedEvent {
+	type: string;
+	data: any;
+	time: number;
 }
 
 /**
- * Validate function
- * 
- * @param {*} arg
- * @returns {Boolean}
+ * Default max listener count
  */
-function isNumber(arg: any): boolean {
-  return typeof arg === 'number';
-}
+let DEFAULT_MAX_LISTENERS: number = 10;
 
 /**
- * Validate object
- * 
- * @param {*} arg
- * @returns {Boolean}
+ * Private props `Symbol` key name
  */
-function isObject(arg: any): boolean{
-  return typeof arg === 'object' && arg !== null;
-}
+const PROPS = Symbol(`__private_props_${Date.now()}__`);
 
 /**
- * Validate undefined
- * 
- * @param {*} arg
- * @returns {Boolean}
+ * @class EventEmitter
  */
-function isUndefined(arg: any): boolean{
-  return arg === void 0;
+export class EventEmitter implements IEventEmitter
+{
+	/**
+	 * Get/set default max listeners count
+	 * - warns if exceeded (helps find memory leaks)
+	 */
+	static get defaultMaxListeners(): number {
+		return DEFAULT_MAX_LISTENERS;
+	}
+	static set defaultMaxListeners(value: any){
+		DEFAULT_MAX_LISTENERS = !isNaN(value = parseInt(value)) && Number.isInteger(value) && value >= 1 ? value : 10;
+	}
+
+	/**
+	 * Instance "private" props
+	 */
+	[PROPS]: {
+		_events: {[type: string]: any};
+		_maxListeners: number;
+	} = {} as any;
+
+	/**
+	 * Get/set max listeners count (default: `0`)
+	 * - Positive integer `number`
+	 * - Set to zero for unlimited
+	 */
+	get maxListeners(): number {
+		return this[PROPS]._maxListeners;
+	}
+	set maxListeners(value: any){
+		const val = parseInt(value);
+		if (!isNaN(val) && Number.isInteger(val) && val >= 0) this[PROPS]._maxListeners = value;
+		else console.warn('Set max listeners value must be a positive integer! Set to zero for unlimited.', {value});
+	}
+
+	/**
+	 * Create new instance
+	 */
+	constructor(){
+		this[PROPS] = {
+			_events: {},
+			_maxListeners: 0,
+		};
+	}
+
+	/**
+	 * Get valid event type
+	 * 
+	 * @param type - event type/name
+	 * @param throwable - enable throwing error when type is invalid
+	 * @returns `string` lowercase event name ~ `''` on error
+	 */
+	static type(type: any, throwable: boolean = false): string {
+		let _type: string = '';
+		if (!('string' === typeof type && (_type = type.trim()))){
+			const error = 'Invalid event type.';
+			console.warn(error, {type});
+			if (throwable) throw new TypeError(error);
+		}
+		return _type;
+	}
+
+	/**
+	 * Get valid event listener callback function.
+	 * 
+	 * @param listener - event listener
+	 * @param throwable - enable throwing error when listener is invalid 
+	 * @returns `(event?:IEmittedEvent)=>void` event handler | `undefined` on error
+	 */
+	static listener(listener: ((event?:IEmittedEvent)=>void), throwable: boolean = false): ((event?:IEmittedEvent)=>void)|undefined {
+		let _listener: ((event?:IEmittedEvent)=>void)|undefined;
+		if ('function' === typeof listener) _listener = listener;
+		else {
+			const error = 'Invalid event listener callback function.';
+			console.warn(error, {listener});
+			if (throwable) throw new TypeError(error);
+		}
+		return _listener;
+	}
+
+	/**
+	 * Get event listeners
+	 * 
+	 * @param type - event type/name
+	 * @returns `((event?:IEmittedEvent)=>void)[]` event handlers
+	 */
+	listeners(type: string): ((event?:IEmittedEvent)=>void)[] {
+		const props = this[PROPS], listeners: ((event?:IEmittedEvent)=>void)[] = [];
+		if (!((type = EventEmitter.type(type)) && props._events.hasOwnProperty(type))){
+			const listener: any = props._events[type];
+			if ('function' === typeof listener) listeners.push(listener);
+			else if (Array.isArray(listener) && listener.length) listeners.push(...listener.filter(v => 'function' === typeof v));
+		}
+		return listeners;
+	}
+
+	/**
+	 * Check if event listener exists
+	 * 
+	 * @param type - event type/name
+	 * @param listener - event listener
+	 * @returns `((event?:IEmittedEvent)=>void)[]` event handlers
+	 */
+	hasListener(type: string, listener: ((event?:IEmittedEvent)=>void)): boolean {
+		return this.listeners(type).findIndex(v => v === listener) > -1;
+	}
+
+	/**
+	 * Emit event
+	 * 
+	 * @param type - event type/name
+	 * @param data - event data
+	 * @returns `boolean` caught
+	 */
+	emit(type: string, data?: any): boolean {
+		const event = {type, data, time: Date.now()};
+		const listeners = this.listeners(type = EventEmitter.type(type, true));
+		if (listeners.length){
+			listeners.forEach(fn => fn.call(this, event));
+			return true;
+		}
+		else if (type === 'error'){
+			if (data instanceof Error) throw data;
+			const error = 'Uncaught, unspecified "error" event.';
+			console.warn(error, {event});
+			throw new Error(error);
+		}
+		return false;
+	}
+
+	/**
+	 * Add event listener ~ emits 'newListener' event if added (alias `emitter.addListener`)
+	 * 
+	 * @param type - event type/name
+	 * @param listener - event listener callback function
+	 * @param once - one time callback
+	 * @returns `EventEmitter` - `this` instance
+	 */
+	on(type: string, listener: ((event?:IEmittedEvent)=>void), once: boolean = false): EventEmitter {
+		return this.addListener(type, listener, once);
+	}
+	
+	/**
+	 * Add one time event listener ~ emits 'newListener' event if added
+	 * 
+	 * @param type - event type/name
+	 * @param listener - event listener callback function
+	 * @returns `EventEmitter` - `this` instance
+	 */
+	once(type: string, listener: ((event?:IEmittedEvent)=>void)): EventEmitter {
+		return this.addListener(type, listener, true);
+	}
+
+	/**
+	 * Add event subscriber
+	 * 
+	 * @param type - event type/name
+	 * @param listener - event callback handler
+	 * @returns `(()=>void)` unsubscribe callback
+	 */
+	subscribe(type: string, listener: ((event?:IEmittedEvent)=>void)): ()=>void {
+		type = EventEmitter.type(type, true);
+		listener = EventEmitter.listener(listener, true) as ((event?:IEmittedEvent)=>void);
+		this.addListener(type, listener);
+		return (): void => void this.removeListener(type, listener);
+	}
+
+	/**
+	 * Add event listener ~ emits 'newListener' event if added
+	 * 
+	 * @param type - event type/name
+	 * @param listener - event listener callback function
+	 * @param once - one time callback
+	 * @returns `EventEmitter` - `this` instance
+	 */
+	addListener(type: string, listener: ((event?:IEmittedEvent)=>void), once: boolean = false): EventEmitter {
+		type = EventEmitter.type(type, true);
+		let handler = (listener = EventEmitter.listener(listener, true) as ((event?:IEmittedEvent)=>void));
+
+		//one time listener
+		if (once){
+			let fired: boolean = false;
+			handler = (event?: IEmittedEvent): void => {
+				if (fired) return;
+				fired = true;
+				listener.call(this, event);
+				this.removeListener(type, handler);
+			};
+		}
+		
+		//Add event listener if new
+		const listeners = this.listeners(type);
+		if (listeners.findIndex(v => v === handler) < 0){
+			const props = this[PROPS];
+			
+			// To avoid recursion in the case that type === "newListener"! Before
+  		// adding it to the listeners, first emit "newListener".
+			if (props._events.newListener) this.emit('newListener', {type, handler});
+
+			// Optimize the case of one listener. don't need the extra array object.
+			props._events[type] = listeners.length ? [...listeners, handler] : handler;
+			
+			// Max listeners leak warning
+			if (Array.isArray(props._events[type])){
+				const len = props._events[type].length;
+				const max = 'number' === typeof props._maxListeners ? props._maxListeners : DEFAULT_MAX_LISTENERS;
+				if ('number' === typeof max && max > 0 && len > max){
+					console.error(`EventEmitter possible memory leak detected - ${len} "${type}" event listeners added, max is ${max}. Use \`emitter.maxListeners = number;\` to increase limit.`);
+				}
+			}
+		}
+		
+		//result
+		return this;
+	}
+
+	/**
+	 * Remove event listener ~ emits 'removeListener' event if removed
+	 * 
+	 * @param type - event type/name
+	 * @param listener - event listener callback function
+	 * @returns `EventEmitter` - `this` instance
+	 */
+	removeListener(type: string, listener: ((event?:IEmittedEvent)=>void)): EventEmitter {
+		if (!(type = EventEmitter.type(type))) return this;
+		const props = this[PROPS];
+		if (!(props._events.hasOwnProperty(type))) return this;
+		let removed: boolean = false;
+		if (Array.isArray(props._events[type])){
+			const _listeners = props._events[type] as ((event?:IEmittedEvent)=>void)[];
+			const index = _listeners.findIndex(v => v === listener);
+			_listeners.splice(index, 1);
+			removed = true;
+		}
+		else if (props._events[type] === listener){
+			delete props._events[type];
+			removed = true;
+		}
+		if (removed){
+			if (!this.listeners(type).length) delete props._events[type];
+			if (props._events.removeListener) this.emit('removeListener', {type, listener});
+		}
+		return this;
+	}
+
+	/**
+	 * Remove all listeners ~ emits 'removeListener' event for each removed listener
+	 * 
+	 * @param type - event type/name 
+	 * @returns `EventEmitter` - `this` instance
+	 */
+	removeAllListeners(type: string): EventEmitter {
+		if (!(type = EventEmitter.type(type))) return this;
+		const props = this[PROPS];
+		if (!(props._events.hasOwnProperty(type))) return this;
+		const emit_remove_listener = type !== 'removeListener' && props._events.removeListener;
+		const listeners = emit_remove_listener ? this.listeners(type) : [];
+		delete props._events[type];
+		if (emit_remove_listener && listeners.length) listeners.forEach(listener => this.emit('removeListener', {type, listener}));
+		return this;
+	}
 }

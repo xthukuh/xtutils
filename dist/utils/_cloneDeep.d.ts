@@ -31,4 +31,4 @@ export interface IDeepCloneOptions {
  * @param options  Clone options
  * @returns `<T>` clone
  */
-export declare function _deepClone<T extends any>(value: T, options?: IDeepCloneOptions): T;
+export declare function _cloneDeep<T extends any>(value: T, options?: IDeepCloneOptions): T;

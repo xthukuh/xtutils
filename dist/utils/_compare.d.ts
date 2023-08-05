@@ -1,9 +1,8 @@
 /**
- * Shallow values match comparison
+ * Compare multiple values with deep matching
+ * - compareTarget	= `args[0]`
+ * - compareWith	= `args[1*]`
  *
- * @param a  Compare value 1
- * @param b  Compare value 2
- * @param looseEquality  Use `==` instead of `===` during comparison
- * @returns `boolean` values match
+ * @returns `boolean` is match
  */
-export declare const _shallowCompare: (a: any, b: any, looseEquality?: boolean) => boolean;
+export declare const _compare: (...args: any[]) => boolean;

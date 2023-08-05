@@ -6,3 +6,4 @@ export * from './Term';
 export * from './Animate';
 export * from './EventEmitter';
 export * from './Exception';
+export * from './ProgressTracker';

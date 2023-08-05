@@ -1,10 +1,34 @@
-//_hello
+export { _batchValues } from './_batch';
+export { _clone } from './_clone';
+export { _cloneDeep } from './_cloneDeep';
+export { _compare } from './_compare';
+export { _compareShallow } from './_compareShallow';
+export { _isDate, _getDate, _datetime, _timestamp } from './_datetime';
+export { _debouced } from './_debouced';
 export { _sayHello } from './_hello';
-
-//_json
 export { _jsonStringify, _jsonParse, _jsonClone } from './_json';
-
-//_string
+export {
+	_isNum,
+	_toNum,
+	_num,
+	_int,
+	_round,
+	_commas,
+	_rand,
+	_px2rem,
+} from './_number';
+export {
+	_flatten,
+	_hasProp,
+	_hasProps,
+	_hasAnyProps,
+	_isClass,
+	_isFunc,
+	_minMax,
+	_dotFlat,
+} from './_objects';
+export { IPromiseResult, _asyncAll, _asyncValues, _sleep } from './_promise';
+export { IQueue, _queue } from './_queue';
 export {
 	_uuid,
 	_string,
@@ -33,61 +57,4 @@ export {
 	_isEmail,
 	_escapeSql,
 } from './_string';
-
-//_batch
-export { _batchValues } from './_batch';
-
-//_datetime
-export {
-	_isDate,
-	_getDate,
-	_datetime,
-	_timestamp,
-} from './_datetime';
-
-//_number
-export {
-	_isNum,
-	_toNum,
-	_num,
-	_int,
-	_round,
-	_commas,
-	_rand,
-} from './_number';
-
-//_promise
-export type { IPromiseResult } from './_promise';
-export { _asyncAll, _asyncValues, _sleep } from './_promise';
-
-//_queue
-export type { IQueue } from './_queue';
-export { _queue } from './_queue';
-
-//_sort
-export type { SortDirection, SortOrder } from './_sort';
-export { _sortValues } from './_sort';
-
-//_objects
-export {
-	_flatten,
-	_hasProp,
-	_hasProps,
-	_hasAnyProps,
-	_isClass,
-	_isFunc,
-	_minMax,
-	_dotFlat,
-} from './_objects';
-
-//_debounced
-export { _debouced } from './_debouced';
-
-//_deepClone
-export { _deepClone } from './_deepClone';
-
-//_compare
-export { _shallowCompare } from './_compare';
-
-//_progressTracker
-export { _progressTracker } from './_progressTracker';
+export { SortDirection, SortOrder, _sortValues } from './_sort';

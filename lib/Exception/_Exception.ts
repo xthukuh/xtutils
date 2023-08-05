@@ -2,32 +2,11 @@
  * Exception error interface
  */
 export interface IExceptionError {
-	
-	/** 
-	 * Error message (default: `'Unspecified exception message.'`)
-	 */
 	message: string;
-	
-	/** 
-	 * Error name (default: `'Exception'`)
-	 */
 	name: string;
-	
-	/** 
-	 * Error code - `string` | finite/parsed `integer` (default: `0`)
-	 */
 	code: string|number;
-
-	/**
-	 * Error data
-	 */
 	data: any;
-	
-	/**
-	 * Get error string
-	 * 
-	 * @returns `{name}: {message}` | `{name}[{code}]: {message}`
-	 */
+	time: number;
 	toString: () => string;
 }
 
@@ -54,6 +33,7 @@ export class Exception extends Error implements IExceptionError
 		name: string;
 		code: string|number;
 		data: any;
+		time: number;
 	} = {} as any;
 	
 	/**
@@ -83,16 +63,26 @@ export class Exception extends Error implements IExceptionError
 	get data(): any {
 		return this[PRIVATE].data;
 	}
+	
+	/**
+	 * Error data
+	 */
+	get time(): any {
+		return this[PRIVATE].time;
+	}
 
 	/**
 	 * New `IExceptionError` instance
 	 * 
-	 * @param message  Error message (default: `'Unspecified exception message.'`)
-	 * @param name  Error name (default: `'Exception'`)
-	 * @param code  Error code - `string` | finite/parsed `integer` (default: `0`)
-	 * @param data  Error data
+	 * @param message - error message (default: `'Unspecified exception message.'`)
+	 * @param name - error name (default: `'Exception'`)
+	 * @param code - error code - `string` | finite/parsed `integer` (default: `0`)
+	 * @param data - error data
+	 * @param time - error timestamp milliseconds (default: `Date.now()`)
+	 * @returns `IExceptionError`
 	 */
-	constructor(message?: string, name?: string, code?: string|number, data?: any){
+	constructor(message?: string, name?: string, code?: string|number, data?: any, time?: number){
+		const _time = Date.now();
 		super(message = message && 'string' === typeof message && (message = message.trim()) ? message : 'Unspecified exception message.');
 		if ('string' === typeof code) code = (code = code.trim()) ? code : 0;
 		else if (!('number' === typeof code && !isNaN(code = parseInt(`${code}`)) && Number.isInteger(code) && Number.isFinite(code))) code = 0;
@@ -101,6 +91,7 @@ export class Exception extends Error implements IExceptionError
 			name: name && 'string' === typeof name && (name = name.trim()) ? name : 'Exception',
 			code,
 			data,
+			time: time && !isNaN(time = parseInt(time as any)) && Number.isInteger(time) && Number.isFinite(time) && time >= 0 ? time : _time,
 		};
 	}
 	
@@ -109,18 +100,88 @@ export class Exception extends Error implements IExceptionError
 	 */
 	toString(): string {
 		const {message, name, code} = this;
-		return `${name}${code !== 0 ? `[${code}]` : ''}: ${message}`;
+		let text = name + ':';
+		if (code !== 0) text += ' [' + code + ']';
+		text += ' ' + message;
+		return text;
 	}
 
 	/**
-	 * Create new `IExceptionError` instance
+	 * Create new `Exception`
 	 * 
-	 * @param message  Error message (default: `'Unspecified exception message.'`)
-	 * @param name  Error name (default: `'Exception'`)
-	 * @param code  Error code - `string` | finite/parsed `integer` (default: `0`)
-	 * @param data  Error data
+	 * @param message - error message (default: `'Unspecified exception message.'`)
+	 * @param name - error name (default: `'Exception'`)
+	 * @param code - error code - `string` | finite/parsed `integer` (default: `0`)
+	 * @param data - error data
+	 * @param time - error timestamp milliseconds (default: `Date.now()`)
+	 * @returns `IExceptionError`
 	 */
-	static error(message?: string, name?: string, code?: number, data?: any): IExceptionError {
-		return new Exception(message, name, code, data);
+	static error(message?: string, name?: string, code?: string|number, data?: any, time?: number): IExceptionError {
+		return new Exception(message, name, code, data, time);
+	}
+	
+	/**
+	 * Create new `Exception` from parsed error
+	 * 
+	 * @param error - parse error value (i.e. `string` message or Error/object/values {message: `string`, name: `string|undefined`, code: `string|number|undefined`, data: `any`, time: `number` ?? `Date.now()`})
+	 * @returns `IExceptionError`
+	 */
+	static parse(error?: any): IExceptionError {
+		const time = Date.now();
+		const _error: {
+			message: string|undefined,
+			name: string|undefined,
+			code: string|number|undefined,
+			data: any|undefined,
+			time: number|undefined,
+		} = {} as any;
+		const _get_str = (val: any): string|undefined => 'string' === typeof val && (val = val.trim()) ? val : undefined;
+		const _get_int = (val: any): number|undefined => !isNaN(val = parseInt(val)) && Number.isInteger(val) && Number.isFinite(val) && val >= 0 ? val : undefined;
+		const _get_code = (val: any): string|number|undefined => {
+			let tmp: string|number|undefined = undefined;
+			if ((tmp = _get_int(val)) !== undefined) return tmp;
+			if ((tmp = _get_str(val)) !== undefined) return tmp;
+			return tmp;
+		};
+		if (error && 'object' === typeof error){
+			let parsed: boolean = false;
+			if (Array.isArray(error)){
+				const it = error[Symbol.iterator];
+				if (['values', 'entries'].includes(it?.name) || 'function' === typeof it) error = [...error];
+				if (error.length){
+					_error.message = _get_str(error[0]);
+					_error.name = _get_str(error[1]);
+					_error.code = _get_code(error[2]);
+					_error.data = error[3];
+					_error.time = _get_int(error[4]);
+					parsed = true;
+				}
+			}
+			if (!parsed && error instanceof Error){
+				const err: any = error;
+				_error.message = _get_str(err.message);
+				_error.name = _get_str(err.name);
+				_error.code = _get_code(err.code);
+				_error.data = err.data;
+				_error.time = _get_int(err.time);
+				parsed = true;
+			}
+			if (!parsed){
+				_error.message = _get_str(error.message);
+				_error.name = _get_str(error.name);
+				_error.code = _get_code(error.code);
+				_error.data = error.data;
+				_error.time = _get_int(error.time);
+				parsed = true;
+			}
+		}
+		else _error.message = _get_str(error);
+		return new Exception(
+			_error.message ?? 'Unknown exception error.',
+			_error.name ?? 'Error',
+			_error.code,
+			_error.data,
+			_error.time ?? time,
+		);
 	}
 }

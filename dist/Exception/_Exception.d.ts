@@ -2,27 +2,11 @@
  * Exception error interface
  */
 export interface IExceptionError {
-    /**
-     * Error message (default: `'Unspecified exception message.'`)
-     */
     message: string;
-    /**
-     * Error name (default: `'Exception'`)
-     */
     name: string;
-    /**
-     * Error code - `string` | finite/parsed `integer` (default: `0`)
-     */
     code: string | number;
-    /**
-     * Error data
-     */
     data: any;
-    /**
-     * Get error string
-     *
-     * @returns `{name}: {message}` | `{name}[{code}]: {message}`
-     */
+    time: number;
     toString: () => string;
 }
 /**
@@ -46,6 +30,7 @@ export declare class Exception extends Error implements IExceptionError {
         name: string;
         code: string | number;
         data: any;
+        time: number;
     };
     /**
      * Error message (default: `'Unspecified exception message.'`)
@@ -64,26 +49,41 @@ export declare class Exception extends Error implements IExceptionError {
      */
     get data(): any;
     /**
+     * Error data
+     */
+    get time(): any;
+    /**
      * New `IExceptionError` instance
      *
-     * @param message  Error message (default: `'Unspecified exception message.'`)
-     * @param name  Error name (default: `'Exception'`)
-     * @param code  Error code - `string` | finite/parsed `integer` (default: `0`)
-     * @param data  Error data
+     * @param message - error message (default: `'Unspecified exception message.'`)
+     * @param name - error name (default: `'Exception'`)
+     * @param code - error code - `string` | finite/parsed `integer` (default: `0`)
+     * @param data - error data
+     * @param time - error timestamp milliseconds (default: `Date.now()`)
+     * @returns `IExceptionError`
      */
-    constructor(message?: string, name?: string, code?: string | number, data?: any);
+    constructor(message?: string, name?: string, code?: string | number, data?: any, time?: number);
     /**
      * Get error `string`
      */
     toString(): string;
     /**
-     * Create new `IExceptionError` instance
+     * Create new `Exception`
      *
-     * @param message  Error message (default: `'Unspecified exception message.'`)
-     * @param name  Error name (default: `'Exception'`)
-     * @param code  Error code - `string` | finite/parsed `integer` (default: `0`)
-     * @param data  Error data
+     * @param message - error message (default: `'Unspecified exception message.'`)
+     * @param name - error name (default: `'Exception'`)
+     * @param code - error code - `string` | finite/parsed `integer` (default: `0`)
+     * @param data - error data
+     * @param time - error timestamp milliseconds (default: `Date.now()`)
+     * @returns `IExceptionError`
      */
-    static error(message?: string, name?: string, code?: number, data?: any): IExceptionError;
+    static error(message?: string, name?: string, code?: string | number, data?: any, time?: number): IExceptionError;
+    /**
+     * Create new `Exception` from parsed error
+     *
+     * @param error - parse error value (i.e. `string` message or Error/object/values {message: `string`, name: `string|undefined`, code: `string|number|undefined`, data: `any`, time: `number` ?? `Date.now()`})
+     * @returns `IExceptionError`
+     */
+    static parse(error?: any): IExceptionError;
 }
 export {};

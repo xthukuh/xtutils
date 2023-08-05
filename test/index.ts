@@ -1,6 +1,6 @@
 import {
 	_sayHello,
-	_deepClone,
+	_cloneDeep,
 	_jsonStringify,
 	_animate,
 	Easings,
@@ -11,28 +11,29 @@ import {
 	_uuid,
 	_round,
 	_minMax,
-	_shallowCompare,
-	_progressTracker,
+	_compareShallow,
 	_rand,
 	_asyncAll,
 	_sleep,
 	_asyncValues,
 	Term,
+	ProgressTracker,
 } from '../lib';
 
 (async()=>{
 	// _sayHello();
 
-	console.log('-- Test _progressTracker');
-	const prog_tracker = _progressTracker(p => {
+	console.log('-- Test ProgressTracker');
+	const prog_tracker = new ProgressTracker(p => {
 		Term.success(`-- tracker progress callback: ${p}%`);
 	});
 	const arr: number[] = [...Array(5)].map(_ => _rand(1000, 3000));
 	arr.forEach((val, i) => {
 		const name = `test-${i}`;
-		prog_tracker.add(name, val, p => {
-			Term.info(`-- [${name}] item progress callback: ${p}%`);
-		});
+		// prog_tracker.add(name, val, p => {
+		// 	Term.info(`-- [${name}] item progress callback: ${p}%`);
+		// });
+		prog_tracker.add(name, val);
 	});
 	await _asyncAll(arr, async (val, i, len) => {
 		const name = `test-${i}`;
@@ -50,28 +51,28 @@ import {
 			await _sleep(_rand(500, 1500));
 			if (i === 2 && x === 1){
 				const res = prog_tracker.complete(name);
-				Term.error(`--- prog_tracker.complete(${name})`, res);
+				Term.warn(`--- prog_tracker.complete(${name})`, res);
 			}
 			const res = prog_tracker.update(name, sum);
-			Term.debug(`--- prog_tracker.update(${name}, ${sum}):`, res);
+			// Term.debug(`--- prog_tracker.update(${name}, ${sum}):`, res);
 		});
 	});
 	setTimeout(() => {
-		Term.warn(`--- prog_tracker.progress()`, prog_tracker.progress());
-		Term.warn(`--- prog_tracker.done()`, prog_tracker.done());
+		Term.log(`--- prog_tracker.progress()`, prog_tracker.progress());
+		Term.log(`--- prog_tracker.done()`, prog_tracker.done());
 	});
 
-	// console.log('-- Test _shallowCompare');
+	// console.log('-- Test _compareShallow');
 	// const a = {name: 'Thuku', age: 30, val: undefined};
 	// const b = {name: 'Thuku', age: 30, val: null};
 	// const c = {name: 'Thuku', age: 30, val: undefined, phone: 555555};
 	// console.log(`const a = {name: 'Thuku', age: 30, val: undefined};`);
 	// console.log(`const b = {name: 'Thuku', age: 30, val: null};`);
 	// console.log(`const c = {name: 'Thuku', age: 30, val: undefined, phone: 555555};`);
-	// console.log('_shallowCompare(a, b)', _shallowCompare(a, b));
-	// console.log('_shallowCompare(a, b, true)', _shallowCompare(a, b, true));
-	// console.log('_shallowCompare(a, c)', _shallowCompare(a, c));
-	// console.log('_shallowCompare(a, c, true)', _shallowCompare(a, c));
+	// console.log('_compareShallow(a, b)', _compareShallow(a, b));
+	// console.log('_compareShallow(a, b, true)', _compareShallow(a, b, true));
+	// console.log('_compareShallow(a, c)', _compareShallow(a, c));
+	// console.log('_compareShallow(a, c, true)', _compareShallow(a, c));
 
 	// console.log('-- Test _minMax');
 	// console.log(`_minMax(20, 10) = `, _minMax(20, 10));
@@ -130,9 +131,9 @@ import {
 	// 	console.log(`<< hash: ${hash} (${len})`);
 	// });
 	
-	// //_deepClone
+	// //_cloneDeep
 	// console.log('');
-	// console.log('--test _deepClone');
+	// console.log('--test _cloneDeep');
 	// const language = {
 	// 	set current(name: any){
 	// 		this.log.push(name);
@@ -142,13 +143,13 @@ import {
 	// language.current = 'EN';
 	// language.current = {name: 'test', items: [1, {age: 30}, 3], date: new Date()}
 	// const a = language;
-	// const b = _deepClone(a, {});
+	// const b = _cloneDeep(a, {});
 	// b.current = 'BB';
 	// console.log({a, b}, a === b);
 
 	// let x: any = new Date(0);
 	// x.extra = 'epoch';
-	// let y: any = _deepClone(x);
+	// let y: any = _cloneDeep(x);
 	// x.extra = 'changed';
 	// console.log({x, y}, x === y);
 

@@ -61,7 +61,7 @@ export interface IDeepCloneOptions {
  * @param options  Clone options
  * @returns `<T>` clone
  */
-export function _deepClone<T extends any>(value: T, options?: IDeepCloneOptions): T {
+export function _cloneDeep<T extends any>(value: T, options?: IDeepCloneOptions): T {
 	const {
 		circular: _circular = true,
 		depth: _depth = Infinity,

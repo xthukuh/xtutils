@@ -60,3 +60,12 @@ export declare const _commas: (value: any, places?: number, zeros?: bool) => str
  * @returns  `number` Random `integer`
  */
 export declare const _rand: (min: number, max: number) => number;
+/**
+ * Convert px to rem (or reverse)
+ *
+ * @param val - convert value [default: `1`]
+ * @param reverse - convert rem to px
+ * @param base - root px [default: `16`]
+ * @returns `number`
+ */
+export declare const _px2rem: (val?: number, reverse?: boolean, base?: number) => number;
