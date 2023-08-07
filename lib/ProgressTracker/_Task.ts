@@ -1,3 +1,5 @@
+import { IEventEmitter, EventEmitter } from '../EventEmitter';
+
 /**
  * Task status type
  */
@@ -14,6 +16,8 @@ export const TASK_STATUSES: TaskStatus[] = ['new', 'running', 'stopped', 'failed
 export interface ITask {
 	name: string;
 	label: string;
+	linked: boolean;
+	precision: number;
 	progress: number;
 	total: number;
 	value: number;
@@ -22,8 +26,24 @@ export interface ITask {
 	startTime: number;
 	endTime: number;
 	elapsedTime: number;
-	data: any;
+	complete: boolean;
+	item: any;
+	emitter: IEventEmitter;
+	update: ()=>ITask;
+	start: (restart: boolean)=>ITask;
+	stop: ()=>ITask;
+	failure: (error?: any)=>ITask;
+	done: (fullProgress: boolean)=>ITask;
+	setProgress: (progress: number)=>ITask;
+	setTotal: (total: number)=>ITask;
+	setValue: (value: number)=>ITask;
+	setItem: (item: any)=>ITask;
 }
+
+/**
+ * Task default `_round` precision
+ */
+let DEFAULT_PRECISION: number = 2;
 
 /**
  * Helper - parse positive number
@@ -50,14 +70,14 @@ const _pos_num = (val: any, _default: number = 0, _blank: number = 0): number =>
 const _pos_int = (val: any, _default: number = 0, _blank: number = 0): number => parseInt(_pos_num(val, _default, _blank) + '');
 
 /**
- * Helper - round number to `x` decimal places
+ * Helper - round number
  * 
- * @param val
- * @param places
+ * @param val - round value
+ * @param places - precision decimal places [default: `DEFAULT_PRECISION`]
  * @returns `number` rounded
  */
 const _round = (val: number, places?: number): number => {
-	const p = 10 ** _pos_int(places, 2, 2);
+	const p = 10 ** _pos_int(places, DEFAULT_PRECISION, DEFAULT_PRECISION);
 	return Math.round((val + Number.EPSILON) * p) / p;
 };
 
@@ -115,60 +135,6 @@ const _get_error = (val: any): string => {
 };
 
 /**
- * Helper - parse status value ~ adjusted to task progress/error/started state
- * 
- * @param val - status value 
- * @param progress - current progress
- * @param error - current error
- * @param started - task was started
- * @param warning - whether to console.warn on any adjustments
- * @returns `TaskStatus`
- */
-const _get_status = (val: any, progress: number, error: string, started: boolean = false, warning: boolean = true): TaskStatus => {
-	
-	//parse status value
-	let status: any = _get_str(val).toLowerCase();
-	if (!TASK_STATUSES.includes(status)) status = '';
-	
-	//get actual status
-	let _status: string = '';
-	if (!!error){
-		_status = 'failed';
-		if (warning && status && status !== _status) console.warn(`Task \`status\` changed from '${status}' to '${_status}' because of an error ("${error}").`);
-		status = _status;
-	}
-	else if (progress === 0){
-		_status = 'new';
-		if (warning && status && status !== _status) console.warn(`Task \`status\` changed from '${status}' to '${_status}' because progress is 0%.`);
-		status = _status;
-	}
-	else if (progress === 100){
-		_status = 'done';
-		if (warning && status && status !== _status) console.warn(`Task \`status\` changed from '${status}' to '${_status}' because progress is 100%.`);
-		status = _status;
-	}
-	else if (started){
-		_status = 'running';
-		if (warning && status && status !== _status) console.warn(`Task \`status\` changed from '${status}' to '${_status}' because started incomplete progress is ${progress}%.`);
-		status = _status;
-	}
-	else {
-		_status = 'stopped';
-		if (warning && status && status !== _status) console.warn(`Task \`status\` changed from '${status}' to '${_status}' because restored incomplete progress is ${progress}% pending restart.`);
-		status = _status;
-	}
-
-	//result
-	const res: TaskStatus = TASK_STATUSES.includes(status) ? status : 'new';
-	return res;
-};
-
-/**
- * Task default decimal places
- */
-let DEFAULT_DECIMAL_PLACES: number = 2;
-
-/**
  * `Symbol` private props key name
  */
 const PROPS = Symbol(`__private_props_${Date.now()}__`);
@@ -176,17 +142,17 @@ const PROPS = Symbol(`__private_props_${Date.now()}__`);
 /**
  * @class Task
  */
-class Task implements ITask
+export class Task implements ITask
 {
 	/**
 	 * Get/set default max listeners count
 	 * - warns if exceeded (helps find memory leaks)
 	 */
-	static get decimalPlaces(): number {
-		return DEFAULT_DECIMAL_PLACES;
+	static get decimal_precision(): number {
+		return DEFAULT_PRECISION;
 	}
-	static set decimalPlaces(value: any){
-		DEFAULT_DECIMAL_PLACES = (value = _pos_int(value, 0, -1)) > 0 ? value : 2;
+	static set decimal_precision(value: any){
+		DEFAULT_PRECISION = _pos_int(value, DEFAULT_PRECISION, DEFAULT_PRECISION);
 	}
 
 	/**
@@ -195,6 +161,8 @@ class Task implements ITask
 	[PROPS]: {
 		name: string;
 		label: string;
+		linked: boolean;
+		precision: number;
 		progress: number;
 		total: number;
 		value: number;
@@ -203,8 +171,10 @@ class Task implements ITask
 		startTime: number;
 		endTime: number;
 		elapsedTime: number;
-		data: any;
-		_running: boolean;
+		complete: boolean;
+		item: any;
+		_emitter: IEventEmitter;
+		_round: (val: number) => number;
 	} = {} as any;
 
 	/**
@@ -219,6 +189,20 @@ class Task implements ITask
 	 */
 	get label(): string {
 		return this[PROPS].label;
+	}
+
+	/**
+	 * Task linked - value/total/progress (recalculate on change)
+	 */
+	get linked(): boolean {
+		return this[PROPS].linked;
+	}
+
+	/**
+	 * Task math precision ~ positive `integer` [default `2`]
+	 */
+	get precision(): number {
+		return this[PROPS].precision;
 	}
 
 	/**
@@ -278,21 +262,39 @@ class Task implements ITask
 	}
 
 	/**
-	 * Task data
+	 * Task complete
 	 */
-	get data(): any {
-		return this[PROPS].data;
+	get complete(): boolean {
+		return this[PROPS].complete;
+	}
+	
+	/**
+	 * Task item
+	 */
+	get item(): any {
+		return this[PROPS].item;
+	}
+
+	/**
+	 * Task event emitter
+	 */
+	get emitter(): IEventEmitter {
+		return this[PROPS]._emitter;
 	}
 
 	/**
 	 * Create new instance
 	 * 
 	 * @param name - task name
+	 * @param linked - task value/total/progress (recalculate on change)
+	 * @param precision - task math precision ~ positive `integer` [default `2`]
 	 */
-	constructor(name?: string){
+	constructor(name?: string, linked: boolean = false, precision?: number){
 		this[PROPS] = {
 			name: (name = _get_str(name)) ? name : 'task_' + Date.now(),
 			label: '',
+			linked,
+			precision: _pos_int(precision, Task.decimal_precision, Task.decimal_precision),
 			progress: 0,
 			total: 0,
 			value: 0,
@@ -301,21 +303,21 @@ class Task implements ITask
 			startTime: 0,
 			endTime: 0,
 			elapsedTime: 0,
-			data: undefined,
-			_running: false,
+			complete: false,
+			item: undefined,
+			_emitter: new EventEmitter(),
+			_round: (val: number): number => _round(val, this[PROPS].precision),
 		};
 	}
 
 	/**
-	 * Update changes ~ triggers event
+	 * Change update ~ trigger task status event
 	 * 
 	 * @returns `ITask` `this` instance
 	 */
 	update(): ITask {
 		const props = this[PROPS];
-		if (!props._running) return this; //ignore if not running
-		//TODO: emit event
-		//..
+		props._emitter.emit(props.status, this);
 		return this;
 	}
 
@@ -324,19 +326,48 @@ class Task implements ITask
 	 * 
 	 * @returns `ITask` `this` instance
 	 */
-	start(): ITask {
+	start(restart: boolean = false): ITask {
 		const props = this[PROPS];
-		if (props._running) return this; //ignore already running
-		if (props.status === 'done'){ //ignore done
-			console.warn(`Task start cancelled because status is "${props.status}".`);
+		let changes = 0;
+
+		//restart check
+		if (props.complete && !restart){
+			console.warn('Task start ignored because task is complete. Try using `task.start(restart=true)` to override.');
 			return this;
 		}
-		props._running = true;
-		props.status = 'running';
-		props.error = '';
-		if (!props.startTime) props.startTime = Date.now();
-		props.endTime = 0;
-		this.update();
+		
+		//-- complete = false
+		if (props.complete){
+			changes ++;
+			props.complete = false;
+		}
+		
+		//-- status = running
+		if (props.status !== 'running'){
+			changes ++;
+			props.status = 'running';
+		}
+
+		//-- startTime
+		if (!props.startTime || restart){
+			changes ++;
+			props.startTime = Date.now();
+		}
+
+		//-- endTime
+		if (props.endTime){
+			changes ++;
+			props.endTime = 0;
+		}
+
+		//-- error
+		if (props.error){
+			changes ++;
+			props.error = '';
+		}
+
+		//changes - update
+		if (changes) this.update();
 		return this;
 	}
 
@@ -347,14 +378,23 @@ class Task implements ITask
 	 */
 	stop(): ITask {
 		const props = this[PROPS];
-		if (!props._running) return this; //ignore already stopped
-		if (props.status !== 'running'){ //ignore status not 'running'
-			console.warn(`Task stop cancelled because status is "${props.status}".`);
-			return this;
+		let changes = 0;
+
+		//-- status = stopped
+		if (props.status === 'running'){
+			changes ++;
+			props.status = 'stopped';
 		}
-		props.status = 'stopped';
-		props.endTime = Date.now();
-		this.update();
+
+		//-- endTime, startTime
+		if (!props.endTime){
+			changes ++;
+			props.endTime = Date.now();
+			if (!props.startTime) props.startTime = props.endTime;
+		}
+
+		//changes - update
+		if (changes) this.update();
 		return this;
 	}
 
@@ -363,85 +403,144 @@ class Task implements ITask
 	 * 
 	 * @returns `ITask` `this` instance
 	 */
-	fail(error?: string): ITask {
+	failure(error?: any): ITask {
+		error = (error = _get_error(error)) ? error : 'Unknown task error.';
 		const props = this[PROPS];
-		if (props.status === 'done'){ //ignore status done
-			console.warn(`Task fail cancelled because status is "${props.status}".`);
-			return this;
+		let changes = 0;
+		
+		//-- error
+		if (props.error !== error){
+			changes ++;
+			props.error = error;
 		}
-		props._running = false;
-		props.error = (error = _get_error(error)) ? error : 'Unspecified task error.';
-		props.status = 'failed';
-		props.endTime = Date.now();
-		if (!props.startTime) props.startTime = props.endTime;
-		this.update();
+
+		//-- status
+		if (props.status !== 'failed'){
+			changes ++;
+			props.status = 'failed';
+		}
+
+		//-- endTime, startTime
+		if (!props.endTime){
+			changes ++;
+			props.endTime = Date.now();
+			if (!props.startTime) props.startTime = props.endTime;
+		}
+
+		//changes - update
+		if (changes) this.update();
 		return this;
 	}
 
 	/**
 	 * Task done
 	 * 
+	 * @param fullProgress - [default: `true`] set `progress` to `100`% (linked default) //TODO: test fullProgress = true/false
 	 * @returns `ITask` `this` instance
 	 */
-	done(): ITask {
+	done(fullProgress: boolean = true): ITask {
 		const props = this[PROPS];
-		if (props.status === 'done'){ //ignore status done
-			console.warn(`Task done cancelled because status is "${props.status}".`);
-			return this;
+		let changes = 0;
+
+		//-- complete = true
+		if (!props.complete){
+			changes ++;
+			props.complete = true;
 		}
-		if (props.total) props.value = props.total = _round(props.total, Task.decimalPlaces);
-		props._running = false;
-		props.progress = 100;
-		props.status = _get_status('done', props.progress, props.error, true);
-		props.endTime = Date.now();
-		if (!props.startTime) props.startTime = props.endTime;
-		this.update();
+
+		//-- status = done|failed
+		const status = props.error ? 'failed' : 'done';
+		if (props.status !== status){
+			changes ++;
+			props.status = status;
+		}
+
+		//-- progress = 100 (linked/fullProgress)
+		if (props.linked || fullProgress){
+			let progress = 100;
+			if (progress !== props.progress){
+				changes ++;
+				props.progress = progress;
+			}
+		}
+
+		//-- value = total (linked)
+		if (props.linked && props.total){
+			if (props.value !== props.total){
+				changes ++;
+				props.value = props.total;
+			}
+		}
+
+		//-- startTime, endTime = now
+		if (!props.endTime){
+			changes ++;
+			props.endTime = Date.now();
+			if (!props.startTime) props.startTime = props.endTime;
+		}
+
+		//changes - update
+		if (changes) this.update();
 		return this;
 	}
 
 	/**
-	 * Set progress percentage ~ updates current value (% total)
-	 * - if `progress > 100` - progress is set to 100%. (i.e. `progress = 100`)
-	 * - if `total > 0 && progress === 100` - value is set to total value. (i.e. `value = total`)
-	 * - if `total > 0` - value is set to progress % of total. (i.e.  `value = progress/100 * total`)
+	 * Set progress
 	 * 
-	 * @param progress
+	 * @param progress - task percentage progress (`0-100`)
+	 * @param _value - unlinked task `value` update ~ ignores `undefined`
+	 * @param _total - unlinked task `total` update ~ ignores `undefined`
 	 * @returns `ITask` `this` instance
 	 */
-	setProgress(progress: number): ITask {
+	setProgress(progress: number, _value?: number, _total?: number): ITask {
 		const props = this[PROPS];
 
-		//not running - cancel updates
-		if (['failed', 'stopped', 'done'].includes(props.status)){
+		//ignore if not running
+		if (props.status !== 'running'){
 			console.warn(`Set task progress cancelled because current status is "${props.status}".`);
 			return this;
 		}
 
-		//set progress adjustments
-		let tmp: any = progress;
-		if ((progress = _pos_num(progress, -1, -1)) < 0) throw new TypeError(`Invalid set task \`progress\` value (${tmp}).`);
-		progress = _round(progress, Task.decimalPlaces);
-		if (progress > 100){
-			console.warn(`Set task \`progress\` value (${progress}) must be a percentage within range (0 - 100) - changed to max percent 100 instead.`);
+		//parse progress/adjust
+		let tmp: number = _pos_num(progress, -1, -1);
+		if (tmp < 0) throw new TypeError(`Invalid set task \`progress\` value (${progress}).`);
+		if ((progress = props._round(tmp)) > 100){
+			console.warn(`Set task \`progress\` value (${progress}) must be a percentage within range (0 - 100). Using 100 instead.`);
 			progress = 100;
 		}
-		if (props.total){
-			props.total = _round(props.total, Task.decimalPlaces);
-			props.value = _round(progress/100 * props.total, Task.decimalPlaces);
-		}
 
-		//trigger update
-		if (props.progress !== progress){
-			props.progress = progress;
-			this.update();
+		//total/value - unlinked update/linked recalculate
+		let value = props.value;
+		let total = props.total;
+		if (!props.linked){
+			if ((_total = _pos_num(_total, -1, -1)) >= 0) total = props._round(_total);
+			if ((_value = _pos_num(_value, -1, -1)) >= 0) value = props._round(_value);
 		}
+		else if (total){
+			if (progress === 100) value = total;
+			else value = props._round(progress/100 * total);
+		}
+		
+		//changes - update
+		let changes = 0;
+		if (progress !== props.progress){
+			changes ++;
+			props.progress = progress;
+		}
+		if (value !== props.value){
+			changes ++;
+			props.value = value;
+		}
+		if (total !== props.total){
+			changes ++;
+			props.total = total;
+		}
+		if (changes) this.update();
 		return this;
 	}
 	
 	/**
-	 * Set total value ~ updates current progress/value
-	 * - if `total > 0 && total < value` - value is set to total and progress set to 100. (i.e `value = total; progress = 100`) 
-	 * - if `total > 0 && value > 0 && value < total` - progress % is recalculated. (i.e.  `progress = value/total * 100`)
+	 * Set total
 	 * 
 	 * @param total
 	 * @returns `ITask` `this` instance
@@ -449,169 +548,221 @@ class Task implements ITask
 	setTotal(total: number): ITask {
 		const props = this[PROPS];
 
-		//not running - cancel updates
-		if (['failed', 'stopped', 'done'].includes(props.status)){
+		//ignore if not running
+		if (props.status !== 'running'){
 			console.warn(`Set task total cancelled because current status is "${props.status}".`);
 			return this;
 		}
 
-		//set total adjustments
-		let tmp: any = total;
-		if ((total = _pos_num(total, -1, -1)) < 0) throw new TypeError(`Invalid set task \`total\` value (${tmp}).`);
-		total = _round(total, Task.decimalPlaces);
-		let progress = _round(props.progress, Task.decimalPlaces);
-		let value = _round(props.value, Task.decimalPlaces);
-		if (total && value){
-			if (value > total){
-				value = total;
-				progress = 100;
-			}
-			else progress = _round(value/total * 100, Task.decimalPlaces);
-		}
-		props.value = value;
-		props.total = total
+		//parse total/adjust
+		let tmp: number = _pos_num(total, -1, -1);
+		if (tmp < 0) throw new TypeError(`Invalid set task \`total\` value (${total}).`);
+		total = props._round(tmp);
 
-		//trigger update
-		if (props.progress !== progress){
-			props.progress = progress;
-			this.update();
+		//linked - recalculate value/progress
+		let progress = props.progress;
+		let value = props.value;
+		if (props.linked){
+			if (!total){
+				value = 0;
+				progress = 0;
+			}
+			else if (value){
+				if (value >= total){
+					value = total;
+					progress = 100;
+				}
+				else progress = props._round(value/total * 100);
+			}
+			else if (progress) value = props._round(progress/100 * total);
 		}
+
+		//changes - update
+		let changes = 0;
+		if (progress !== props.progress){
+			changes ++;
+			props.progress = progress;
+		}
+		if (value !== props.value){
+			changes ++;
+			props.value = value;
+		}
+		if (total !== props.total){
+			changes ++;
+			props.total = total;
+		}
+		if (changes) this.update();
 		return this;
 	}
 
 	/**
-	 * Set current value (out of total) ~ updates progress
-	 * - if `total > 0 && total < value` - value is set to total and progress set to 100. (i.e `value = total; progress = 100`) 
-	 * - if `total > 0 && value > 0 && value < total` - progress % is recalculated. (i.e.  `progress = value/total * 100`)
+	 * Set value
 	 * 
 	 * @param value
 	 * @returns `ITask` `this` instance
 	 */
 	setValue(value: number): ITask {
 		const props = this[PROPS];
-
-		//not running - cancel updates
-		if (['failed', 'stopped', 'done'].includes(props.status)){
+		
+		//ignore if not running
+		if (props.status !== 'running'){
 			console.warn(`Set task value cancelled because current status is "${props.status}".`);
 			return this;
 		}
 
-		//set value adjustments
-		let tmp: any = value;
-		if ((value = _pos_num(value, -1, -1)) < 0) throw new TypeError(`Invalid set task \`value\` value (${tmp}).`);
-		value = _round(value, Task.decimalPlaces);
-		const total = _round(props.total, Task.decimalPlaces);
-		let progress = _round(props.progress, Task.decimalPlaces);
-		if (total && value){
-			if (value > total){
-				console.warn(`Set task \`value\` (${value}) must not be greater than current total value (${total}) - changed to max value ${total} instead${progress !== 100 ? ' (progress also changed from ' + progress + ' to 100%)' : ''}.`);
-				value = total;
-				progress = 100;
-			}
-			else progress = _round(value/total * 100, Task.decimalPlaces);
-		}
-		props.value = value;
-		props.total = total
+		//parse value/adjust
+		let tmp: number = _pos_num(value, -1, -1);
+		if (tmp < 0) throw new TypeError(`Invalid set task \`value\` value (${value}).`);
+		value = props._round(tmp);
 
-		//trigger update
-		if (props.progress !== progress){
-			props.progress = progress;
-			this.update();
+		//linked - recalculate progress
+		let total = props.total;
+		let progress = props.progress;
+		if (props.linked){
+			if (!value) progress = 0;
+			else if (total){
+				if (value > total){
+					total = value;
+					progress = 100;
+				}
+				else progress = props._round(value/total * 100);
+			}
+			else if (progress) total = props._round(100/progress * value);
 		}
+
+		//changes - update
+		let changes = 0;
+		if (progress !== props.progress){
+			changes ++;
+			props.progress = progress;
+		}
+		if (value !== props.value){
+			changes ++;
+			props.value = value;
+		}
+		if (total !== props.total){
+			changes ++;
+			props.total = total;
+		}
+		if (changes) this.update();
 		return this;
 	}
 
 	/**
-	 * Create instance from existing task
+	 * Set item
+	 * 
+	 * @param item
+	 * @returns `ITask` `this` instance
+	 */
+	setItem(item: any): ITask {
+		this[PROPS].item = item;
+		return this;
+	}
+
+	/**
+	 * Create instance
 	 * 
 	 * @param options
 	 * @returns `Task`
-	 * @throws `Error` on parse failure
+	 * @throws validation `Error`
 	 */
-	static restore(options: any): ITask {
+	static create(options: any): ITask {
 		let {
 			name,
 			label,
+			linked,
+			precision,
 			progress,
 			total,
 			value,
 			error,
-			status: _status,
+			status,
 			startTime,
 			endTime,
-			data,
+			complete,
+			item,
 		} = Object(options);
 		try {
 			
-			//parse name
-			if (!(name = _get_str(name))) throw new TypeError('Invalid task `name` value.');
-			
-			//parse label
+			//parse options
+			let tmp: any;
+			if (!(tmp = _get_str(name))) throw new TypeError('Invalid task `name` value.');
+			name = tmp;
 			label = _get_str(label);
+			linked = !!linked;
+			
+			//-- precision
+			if ((tmp = _pos_num(precision, -1, Task.decimal_precision)) < 0){
+				console.warn(`Task math \`precision\` (${precision}) is invalid. Using default precision ${Task.decimal_precision}.`);
+				precision = Task.decimal_precision;
+			}
+			else precision = tmp;
 
-			//parse progress/adjustments
-			if ((progress = _pos_num(progress, -1)) < 0) throw new TypeError('Invalid task `progress` value.');
-			progress = _round(progress, Task.decimalPlaces);
-			if (progress > 100){
+			//-- precision round
+			const _round_p = (val: number): number => _round(val, precision);
+
+			//-- parse/adjust: progress, total, value
+			if ((tmp = _pos_num(progress, -1)) < 0) throw new TypeError('Invalid task `progress` value.');
+			if ((progress = _round_p(tmp)) > 100){
 				console.warn(`Task \`progress\` value (${progress}) must be a percentage within range (0 - 100) - changed to max percent 100 instead.`);
 				progress = 100;
 			}
-
-			//parse total
-			total = _pos_num(total, 0);
-			total = _round(total, Task.decimalPlaces);
-			
-			//parse value/adjustments
-			value = _pos_num(value, 0);
-			value = _round(value, Task.decimalPlaces);
-			if (total && value){
-				if (progress === 100 && value !== total){
-					console.warn(`Task \`value\` (${value}) changed to match total value (${total}) because progress is 100%`);
-					value = total;
+			if ((tmp = _pos_num(total, -1)) < 0) throw new TypeError('Invalid task `total` value.');
+			total = _round_p(tmp);
+			if ((tmp = _pos_num(value, -1)) < 0) throw new TypeError('Invalid task `value` value.');
+			value = _round_p(tmp);
+			if (linked){
+				if (!value){
+					if (progress) console.warn(`Task restore linked progress (${progress}) changed to 0 because current value is 0.`);
+					progress = 0;
 				}
-				else if (progress > 0){
-					const value_progress = _round(value/total * 100, Task.decimalPlaces);
-					if (progress !== value_progress){
-						const progress_value = _round(progress/100 * total, Task.decimalPlaces);
-						console.warn(`Task \`value\` (${value} - ${value_progress}%) changed to (${progress_value}) to match current progress ${progress}% of total value (${total}).`);
-						value = progress_value;
+				else if (total){
+					if (value > total){
+						console.warn(`Task restore linked value (${value}) is greater than total (${total}). Using value as new total${progress !== 100 ? ' - updating progress' : ''}.`);
+						total = value;
+						progress = 100;
+					}
+					else {
+						const prog = _round_p(value/total * 100);
+						if (progress !== prog){
+							if (progress) console.warn(`Task restore linked progress (${progress}) recalculated to (${prog}) using current value/total (${value}/${total}) %.`);
+							progress = prog;
+						}
 					}
 				}
-				else if (value > total){
-					console.warn(`Task \`value\` (${value}) must not be greater than total value (${total}) - changed to max value ${total} instead${progress !== 100 ? ' (progress also changed from ' + progress + ' to 100%)' : ''}.`);
-					value = total;
-					if (progress !== 100) progress = 100;
-				}
+				else if (progress) total = _round_p(100/progress * value);
 			}
 
-			//error
+			//-- parse/adjust: error, status, startTime, endTime, complete
+			complete = !!complete;
 			error = _get_error(error);
-
-			//status
-			let status: TaskStatus = _get_status(_status, progress, error, false);
-			
-			//startTime
-			if ((startTime = _pos_int(startTime, -1)) < 0) throw new TypeError('Invalid task `startTime` value.');
-			
-			//endTime/adjustments
-			if ((endTime = _pos_int(endTime, -1)) < 0) throw new TypeError('Invalid task `endTime` value.');
-			if (endTime < startTime) throw new TypeError(`Task \`endTime\` value (${endTime}) must not be less than \`startTime\` value (${startTime}).`);
-			if (['done', 'stopped'].includes(status) && !endTime){
-				const now = Date.now();
-				let warning = `Task \`endTime\` changed from ${endTime} to now (${now}) because status is '${status}'.`;
-				if (!startTime){
-					warning += ` Task \`startTime\` also changed from ${startTime} to the same timestamp (${now}).`;
-					startTime = now;
-				}
-				endTime = now;
-				console.warn(warning);
+			if (!(status = _get_str(status).toLowerCase())) status = 'new';
+			else if (!TASK_STATUSES.includes(status)){
+				console.warn(`Task restore \`status\` (${status}) must be one of [${TASK_STATUSES.map(v => `'${v}'`).join(', ')}]. Using 'new' status.`);
+				status = 'new';
 			}
+			if ((tmp = _pos_int(startTime, -1)) < 0) throw new TypeError('Invalid task \`startTime\` value.');
+			startTime = tmp;
+			if ((tmp = _pos_int(endTime, -1)) < 0) throw new TypeError('Invalid task `endTime` value.');
+			endTime = tmp;
+			if (!(['stopped', 'failed', 'done'].includes(status) && startTime && endTime && startTime < endTime)){
+				status = 'new';
+				startTime = 0;
+				endTime = 0;
+				error = '';
+				complete = false;
+			}
+			else if (error && status !== 'failed') status = 'failed';
+			else if (status === 'done' && !complete) complete = true;
+			if (!TASK_STATUSES.includes(status)) throw new TypeError('Invalid task \`status\` value.');
 
-			//Create new task
+			//create
 			const t = new Task(name);
 			const props = t[PROPS];
 			props.name = name;
 			props.label = label;
+			props.linked = linked;
+			props.precision = precision;
 			props.progress = progress;
 			props.total = total;
 			props.value = value;
@@ -619,17 +770,14 @@ class Task implements ITask
 			props.status = status;
 			props.startTime = startTime;
 			props.endTime = endTime;
-			props.data = data;
-			props._running = false;
+			props.item = item; //-- item
 			return t;
 		}
 		catch (e){
 			const error = `Task Restore Failure: ${e}`;
-			const opts = {name, label, progress, total, value, error, status, startTime, endTime, data};
+			const opts = {name, label, linked, precision, progress, total, value, error, status, startTime, endTime, complete, item};
 			console.error(error, {options}, opts);
 			throw new Error(error);
 		}
 	}
 }
-
-//TODO: test/export Task
