@@ -1,5 +1,5 @@
-import { IEventEmitter } from './_EventEmitter';
+import { EventEmitter } from './_EventEmitter';
 /**
  * Global events emitter
  */
-export declare const Events: IEventEmitter;
+export declare const Events: EventEmitter;

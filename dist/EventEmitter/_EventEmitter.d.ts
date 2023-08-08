@@ -1,22 +1,7 @@
 /**
  * Emitted event interface
  */
-export interface IEventEmitter {
-    maxListeners: number;
-    listeners: (type: string) => ((event?: IEmittedEvent) => void)[];
-    hasListener: (type: string, listener: ((event?: IEmittedEvent) => void)) => boolean;
-    emit: (type: string, data?: any) => boolean;
-    on: (type: string, listener: ((event?: IEmittedEvent) => void), once: boolean) => EventEmitter;
-    once: (type: string, listener: ((event?: IEmittedEvent) => void)) => EventEmitter;
-    subscribe: (type: string, listener: ((event?: IEmittedEvent) => void)) => () => void;
-    addListener: (type: string, listener: ((event?: IEmittedEvent) => void), once: boolean) => EventEmitter;
-    removeListener: (type: string, listener: ((event?: IEmittedEvent) => void)) => EventEmitter;
-    removeAllListeners: (type: string) => EventEmitter;
-}
-/**
- * Emitted event interface
- */
-export interface IEmittedEvent {
+export interface IEvent {
     type: string;
     data: any;
     time: number;
@@ -28,13 +13,13 @@ declare const PROPS: unique symbol;
 /**
  * @class EventEmitter
  */
-export declare class EventEmitter implements IEventEmitter {
+export declare class EventEmitter {
     /**
-     * Get/set default max listeners count
+     * EventEmitter global max listeners
      * - warns if exceeded (helps find memory leaks)
      */
-    static get defaultMaxListeners(): number;
-    static set defaultMaxListeners(value: any);
+    static get max_listeners(): number;
+    static set max_listeners(value: any);
     /**
      * Instance "private" props
      */
@@ -42,15 +27,15 @@ export declare class EventEmitter implements IEventEmitter {
         _events: {
             [type: string]: any;
         };
-        _maxListeners: number;
+        _max_listeners: number | undefined;
     };
     /**
-     * Get/set max listeners count (default: `0`)
-     * - Positive integer `number`
+     * Max listeners count (default: `undefiend` ~ `EventEmitter.max_listeners`)
+     * - Accepts positive integer `number`
      * - Set to zero for unlimited
      */
-    get maxListeners(): number;
-    set maxListeners(value: any);
+    get max_listeners(): number | undefined;
+    set max_listeners(value: any);
     /**
      * Create new instance
      */
@@ -68,24 +53,24 @@ export declare class EventEmitter implements IEventEmitter {
      *
      * @param listener - event listener
      * @param throwable - enable throwing error when listener is invalid
-     * @returns `(event?:IEmittedEvent)=>void` event handler | `undefined` on error
+     * @returns `(event:IEvent)=>void` event handler | `undefined` on error
      */
-    static listener(listener: ((event?: IEmittedEvent) => void), throwable?: boolean): ((event?: IEmittedEvent) => void) | undefined;
+    static listener(listener: (event: IEvent) => void, throwable?: boolean): ((event: IEvent) => void) | undefined;
     /**
      * Get event listeners
      *
      * @param type - event type/name
-     * @returns `((event?:IEmittedEvent)=>void)[]` event handlers
+     * @returns `((event:IEvent)=>void)[]` event handlers
      */
-    listeners(type: string): ((event?: IEmittedEvent) => void)[];
+    listeners(type: string): ((event: IEvent) => void)[];
     /**
      * Check if event listener exists
      *
      * @param type - event type/name
      * @param listener - event listener
-     * @returns `((event?:IEmittedEvent)=>void)[]` event handlers
+     * @returns `((event:IEvent)=>void)[]` event handlers
      */
-    hasListener(type: string, listener: ((event?: IEmittedEvent) => void)): boolean;
+    hasListener(type: string, listener: (event: IEvent) => void): boolean;
     /**
      * Emit event
      *
@@ -102,7 +87,7 @@ export declare class EventEmitter implements IEventEmitter {
      * @param once - one time callback
      * @returns `EventEmitter` - `this` instance
      */
-    on(type: string, listener: ((event?: IEmittedEvent) => void), once?: boolean): EventEmitter;
+    on(type: string, listener: (event: IEvent) => void, once?: boolean): EventEmitter;
     /**
      * Add one time event listener ~ emits 'newListener' event if added
      *
@@ -110,7 +95,7 @@ export declare class EventEmitter implements IEventEmitter {
      * @param listener - event listener callback function
      * @returns `EventEmitter` - `this` instance
      */
-    once(type: string, listener: ((event?: IEmittedEvent) => void)): EventEmitter;
+    once(type: string, listener: (event: IEvent) => void): EventEmitter;
     /**
      * Add event subscriber
      *
@@ -118,7 +103,7 @@ export declare class EventEmitter implements IEventEmitter {
      * @param listener - event callback handler
      * @returns `(()=>void)` unsubscribe callback
      */
-    subscribe(type: string, listener: ((event?: IEmittedEvent) => void)): () => void;
+    subscribe(type: string, listener: (event: IEvent) => void): () => void;
     /**
      * Add event listener ~ emits 'newListener' event if added
      *
@@ -127,7 +112,7 @@ export declare class EventEmitter implements IEventEmitter {
      * @param once - one time callback
      * @returns `EventEmitter` - `this` instance
      */
-    addListener(type: string, listener: ((event?: IEmittedEvent) => void), once?: boolean): EventEmitter;
+    addListener(type: string, listener: (event: IEvent) => void, once?: boolean): EventEmitter;
     /**
      * Remove event listener ~ emits 'removeListener' event if removed
      *
@@ -135,7 +120,7 @@ export declare class EventEmitter implements IEventEmitter {
      * @param listener - event listener callback function
      * @returns `EventEmitter` - `this` instance
      */
-    removeListener(type: string, listener: ((event?: IEmittedEvent) => void)): EventEmitter;
+    removeListener(type: string, listener: (event: IEvent) => void): EventEmitter;
     /**
      * Remove all listeners ~ emits 'removeListener' event for each removed listener
      *

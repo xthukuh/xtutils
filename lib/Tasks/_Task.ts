@@ -1,4 +1,4 @@
-import { IEventEmitter, EventEmitter } from '../EventEmitter';
+import { EventEmitter, IEvent } from '../EventEmitter';
 
 /**
  * Task status type
@@ -18,6 +18,7 @@ export interface ITask {
 	label: string;
 	linked: boolean;
 	precision: number;
+	event_debounce: number;
 	progress: number;
 	total: number;
 	value: number;
@@ -27,21 +28,17 @@ export interface ITask {
 	endTime: number;
 	elapsedTime: number;
 	complete: boolean;
+	updated: boolean;
 	item: any;
-	emitter: IEventEmitter;
-	update: ()=>ITask;
-	start: (restart: boolean)=>ITask;
-	stop: ()=>ITask;
-	failure: (error?: any)=>ITask;
-	done: (fullProgress: boolean)=>ITask;
-	setProgress: (progress: number)=>ITask;
-	setTotal: (total: number)=>ITask;
-	setValue: (value: number)=>ITask;
-	setItem: (item: any)=>ITask;
 }
 
 /**
- * Task default `_round` precision
+ * Default event debounce milliseconds
+ */
+let DEFAULT_EVENT_DEBOUNCE: number = 200;
+
+/**
+ * Default precision ~ round decimal places
  */
 let DEFAULT_PRECISION: number = 2;
 
@@ -135,6 +132,21 @@ const _get_error = (val: any): string => {
 };
 
 /**
+ * Helper - debounced callback
+ * 
+ * @param callback - callback handler
+ * @param timeout - timeout milliseconds
+ * @returns `()=>void` debounced callback
+ */
+const _debounce = (callback: ()=>void, timeout: number = 200): () => void => {
+	let timer: any;
+	return () => {
+		clearTimeout(timer);
+		timer = setTimeout(callback, timeout);
+	};
+};
+
+/**
  * `Symbol` private props key name
  */
 const PROPS = Symbol(`__private_props_${Date.now()}__`);
@@ -145,14 +157,23 @@ const PROPS = Symbol(`__private_props_${Date.now()}__`);
 export class Task implements ITask
 {
 	/**
-	 * Get/set default max listeners count
-	 * - warns if exceeded (helps find memory leaks)
+	 * Task global event debounce milliseconds (default: `200`)
+	 */
+	static get event_debounce(): number {
+		return DEFAULT_EVENT_DEBOUNCE;
+	}
+	static set event_debounce(value: any){
+		DEFAULT_EVENT_DEBOUNCE = _pos_int(value, DEFAULT_EVENT_DEBOUNCE, 200);
+	}
+
+	/**
+	 * Task global precision ~ round decimal places  (default: `2`)
 	 */
 	static get decimal_precision(): number {
 		return DEFAULT_PRECISION;
 	}
 	static set decimal_precision(value: any){
-		DEFAULT_PRECISION = _pos_int(value, DEFAULT_PRECISION, DEFAULT_PRECISION);
+		DEFAULT_PRECISION = _pos_int(value, DEFAULT_PRECISION, 2);
 	}
 
 	/**
@@ -163,6 +184,7 @@ export class Task implements ITask
 		label: string;
 		linked: boolean;
 		precision: number;
+		event_debounce: number;
 		progress: number;
 		total: number;
 		value: number;
@@ -170,11 +192,12 @@ export class Task implements ITask
 		status: TaskStatus;
 		startTime: number;
 		endTime: number;
-		elapsedTime: number;
 		complete: boolean;
+		updated: boolean;
 		item: any;
-		_emitter: IEventEmitter;
 		_round: (val: number) => number;
+		_emitter: EventEmitter;
+		_debounced_update: ()=>void;
 	} = {} as any;
 
 	/**
@@ -199,10 +222,17 @@ export class Task implements ITask
 	}
 
 	/**
-	 * Task math precision ~ positive `integer` [default `2`]
+	 * Task precision ~ positive `integer` [default `2`]
 	 */
 	get precision(): number {
 		return this[PROPS].precision;
+	}
+	
+	/**
+	 * Task event debounce milliseconds (default: `Tasks.event_debounce` ~ `200`)
+	 */
+	get event_debounce(): number {
+		return this[PROPS].event_debounce;
 	}
 
 	/**
@@ -241,21 +271,21 @@ export class Task implements ITask
 	}
 
 	/**
-	 * Task startTime
+	 * Task startTime - timestamp milliseconds (i.e. `Date.now()`)
 	 */
 	get startTime(): number {
 		return this[PROPS].startTime;
 	}
 
 	/**
-	 * Task endTime
+	 * Task endTime - timestamp milliseconds (i.e. `Date.now()`)
 	 */
 	get endTime(): number {
 		return this[PROPS].endTime;
 	}
 
 	/**
-	 * Task elapsedTime (endTime - startTime)
+	 * Task elapsedTime - millisecond timestamps difference (i.e. `endTime - startTime`)
 	 */
 	get elapsedTime(): number {
 		return this.endTime ? this.endTime - this.startTime : 0;
@@ -269,6 +299,13 @@ export class Task implements ITask
 	}
 	
 	/**
+	 * Task updated
+	 */
+	get updated(): boolean {
+		return this[PROPS].updated;
+	}
+	
+	/**
 	 * Task item
 	 */
 	get item(): any {
@@ -276,25 +313,23 @@ export class Task implements ITask
 	}
 
 	/**
-	 * Task event emitter
-	 */
-	get emitter(): IEventEmitter {
-		return this[PROPS]._emitter;
-	}
-
-	/**
 	 * Create new instance
 	 * 
 	 * @param name - task name
-	 * @param linked - task value/total/progress (recalculate on change)
-	 * @param precision - task math precision ~ positive `integer` [default `2`]
+	 * @param linked - task value/total/progress linked ~ recalculate on change
+	 * @param precision - decimal places (default: `Task.decimal_precision` ~ `2`)
+	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce` ~ `200`)
 	 */
-	constructor(name?: string, linked: boolean = false, precision?: number){
+	constructor(name: string, linked: boolean = false, precision: number = Task.decimal_precision, event_debounce: number = Task.event_debounce){
+		if (!(name = _get_str(name))) throw new TypeError('Invalid new task name.');
+		precision = _pos_int(precision, Task.decimal_precision, Task.decimal_precision);
+		event_debounce = _pos_int(event_debounce, Task.event_debounce, Task.event_debounce);
 		this[PROPS] = {
-			name: (name = _get_str(name)) ? name : 'task_' + Date.now(),
+			name,
 			label: '',
 			linked,
-			precision: _pos_int(precision, Task.decimal_precision, Task.decimal_precision),
+			precision,
+			event_debounce,
 			progress: 0,
 			total: 0,
 			value: 0,
@@ -302,31 +337,59 @@ export class Task implements ITask
 			status: 'new',
 			startTime: 0,
 			endTime: 0,
-			elapsedTime: 0,
 			complete: false,
 			item: undefined,
-			_emitter: new EventEmitter(),
+			updated: false,
 			_round: (val: number): number => _round(val, this[PROPS].precision),
+			_emitter: new EventEmitter(),
+			_debounced_update: _debounce(() => {
+				const props = this[PROPS];
+				if (!props.updated) props.updated = true;
+				props._emitter.emit('update', this.data());
+			}, this.event_debounce),
 		};
 	}
 
 	/**
-	 * Change update ~ trigger task status event
+	 * Get task data
 	 * 
-	 * @returns `ITask` `this` instance
+	 * @returns `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, updated, item}`
 	 */
-	update(): ITask {
-		const props = this[PROPS];
-		props._emitter.emit(props.status, this);
-		return this;
+	get data(): ()=>ITask {
+		return (): ITask => {
+			const { name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, elapsedTime, complete, updated, item } = this;
+			return {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, elapsedTime, complete, updated, item};
+		};
+	}
+
+	/**
+	 * Update event trigger
+	 * 
+	 * @returns `Task` instance
+	 */
+	get update(): ()=>Task {
+		return (): Task => {
+			this[PROPS]._debounced_update();
+			return this;
+		};
+	}
+
+	/**
+	 * Add update event subscriber ~ `event = {type: 'update', data: ITask}`
+	 * 
+	 * @param listener - event callback listener
+	 * @returns `(()=>void)` unsubscribe callback
+	 */
+	subscribe(listener: (event:IEvent)=>void): ()=>void {
+		return this[PROPS]._emitter.subscribe('update', listener);
 	}
 
 	/**
 	 * Task start
 	 * 
-	 * @returns `ITask` `this` instance
+	 * @returns `Task` instance
 	 */
-	start(restart: boolean = false): ITask {
+	start(restart: boolean = false): Task {
 		const props = this[PROPS];
 		let changes = 0;
 
@@ -359,7 +422,7 @@ export class Task implements ITask
 			changes ++;
 			props.endTime = 0;
 		}
-
+		
 		//-- error
 		if (props.error){
 			changes ++;
@@ -374,9 +437,9 @@ export class Task implements ITask
 	/**
 	 * Task stop
 	 * 
-	 * @returns `ITask` `this` instance
+	 * @returns `Task` instance
 	 */
-	stop(): ITask {
+	stop(): Task {
 		const props = this[PROPS];
 		let changes = 0;
 
@@ -401,9 +464,9 @@ export class Task implements ITask
 	/**
 	 * Task failed
 	 * 
-	 * @returns `ITask` `this` instance
+	 * @returns `Task` instance
 	 */
-	failure(error?: any): ITask {
+	failure(error?: any): Task {
 		error = (error = _get_error(error)) ? error : 'Unknown task error.';
 		const props = this[PROPS];
 		let changes = 0;
@@ -436,9 +499,9 @@ export class Task implements ITask
 	 * Task done
 	 * 
 	 * @param fullProgress - [default: `true`] set `progress` to `100`% (linked default) //TODO: test fullProgress = true/false
-	 * @returns `ITask` `this` instance
+	 * @returns `Task` instance
 	 */
-	done(fullProgress: boolean = true): ITask {
+	done(fullProgress: boolean = true): Task {
 		const props = this[PROPS];
 		let changes = 0;
 
@@ -490,9 +553,9 @@ export class Task implements ITask
 	 * @param progress - task percentage progress (`0-100`)
 	 * @param _value - unlinked task `value` update ~ ignores `undefined`
 	 * @param _total - unlinked task `total` update ~ ignores `undefined`
-	 * @returns `ITask` `this` instance
+	 * @returns `Task` instance
 	 */
-	setProgress(progress: number, _value?: number, _total?: number): ITask {
+	setProgress(progress: number, _value?: number, _total?: number): Task {
 		const props = this[PROPS];
 
 		//ignore if not running
@@ -543,9 +606,9 @@ export class Task implements ITask
 	 * Set total
 	 * 
 	 * @param total
-	 * @returns `ITask` `this` instance
+	 * @returns `Task` instance
 	 */
-	setTotal(total: number): ITask {
+	setTotal(total: number): Task {
 		const props = this[PROPS];
 
 		//ignore if not running
@@ -599,9 +662,9 @@ export class Task implements ITask
 	 * Set value
 	 * 
 	 * @param value
-	 * @returns `ITask` `this` instance
+	 * @returns `Task` instance
 	 */
-	setValue(value: number): ITask {
+	setValue(value: number): Task {
 		const props = this[PROPS];
 		
 		//ignore if not running
@@ -652,26 +715,29 @@ export class Task implements ITask
 	 * Set item
 	 * 
 	 * @param item
-	 * @returns `ITask` `this` instance
+	 * @returns `Task` instance
 	 */
-	setItem(item: any): ITask {
+	setItem(item: any): Task {
 		this[PROPS].item = item;
 		return this;
 	}
 
 	/**
-	 * Create instance
+	 * Create instance from existing task options
 	 * 
-	 * @param options
-	 * @returns `Task`
+	 * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, updated, item}`
+	 * @param precision - decimal places (default: `Task.decimal_precision` ~ `2`)
+	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce` ~ `200`)
+	 * @returns `Task` instance
 	 * @throws validation `Error`
 	 */
-	static create(options: any): ITask {
+	static create(options: ITask, precision?: number, event_debounce?: number): Task {
 		let {
 			name,
 			label,
 			linked,
-			precision,
+			precision: _precision,
+			event_debounce: _event_debounce,
 			progress,
 			total,
 			value,
@@ -680,6 +746,7 @@ export class Task implements ITask
 			startTime,
 			endTime,
 			complete,
+			updated,
 			item,
 		} = Object(options);
 		try {
@@ -692,11 +759,20 @@ export class Task implements ITask
 			linked = !!linked;
 			
 			//-- precision
-			if ((tmp = _pos_num(precision, -1, Task.decimal_precision)) < 0){
+			tmp = _pos_int(_precision, -1, Task.decimal_precision);
+			if ((tmp = _pos_int(precision, -1, tmp)) < 0){
 				console.warn(`Task math \`precision\` (${precision}) is invalid. Using default precision ${Task.decimal_precision}.`);
 				precision = Task.decimal_precision;
 			}
 			else precision = tmp;
+
+			//-- event_debounce
+			tmp = _pos_int(_event_debounce, -1, Task.event_debounce);
+			if ((tmp = _pos_int(event_debounce, -1, tmp)) < 0){
+				console.warn(`Task \`event_debounce\` (${event_debounce}) is invalid. Using default event_debounce ${Task.event_debounce}.`);
+				event_debounce = Task.event_debounce;
+			}
+			else event_debounce = tmp;
 
 			//-- precision round
 			const _round_p = (val: number): number => _round(val, precision);
@@ -713,19 +789,19 @@ export class Task implements ITask
 			value = _round_p(tmp);
 			if (linked){
 				if (!value){
-					if (progress) console.warn(`Task restore linked progress (${progress}) changed to 0 because current value is 0.`);
+					if (progress) console.warn(`Task linked \`progress\` (${progress}) changed to 0 because current value is 0.`);
 					progress = 0;
 				}
 				else if (total){
 					if (value > total){
-						console.warn(`Task restore linked value (${value}) is greater than total (${total}). Using value as new total${progress !== 100 ? ' - updating progress' : ''}.`);
+						console.warn(`Task linked \`value\` (${value}) is greater than \`total\` (${total}). Using value as new total${progress !== 100 ? ' - updating progress' : ''}.`);
 						total = value;
 						progress = 100;
 					}
 					else {
 						const prog = _round_p(value/total * 100);
 						if (progress !== prog){
-							if (progress) console.warn(`Task restore linked progress (${progress}) recalculated to (${prog}) using current value/total (${value}/${total}) %.`);
+							if (progress) console.warn(`Task linked \`progress\` (${progress}) recalculated to (${prog}) using current value/total (${value}/${total}) %.`);
 							progress = prog;
 						}
 					}
@@ -738,7 +814,7 @@ export class Task implements ITask
 			error = _get_error(error);
 			if (!(status = _get_str(status).toLowerCase())) status = 'new';
 			else if (!TASK_STATUSES.includes(status)){
-				console.warn(`Task restore \`status\` (${status}) must be one of [${TASK_STATUSES.map(v => `'${v}'`).join(', ')}]. Using 'new' status.`);
+				console.warn(`Task \`status\` (${status}) must be one of [${TASK_STATUSES.map(v => `'${v}'`).join(', ')}]. Using 'new' status.`);
 				status = 'new';
 			}
 			if ((tmp = _pos_int(startTime, -1)) < 0) throw new TypeError('Invalid task \`startTime\` value.');
@@ -756,13 +832,14 @@ export class Task implements ITask
 			else if (status === 'done' && !complete) complete = true;
 			if (!TASK_STATUSES.includes(status)) throw new TypeError('Invalid task \`status\` value.');
 
-			//create
-			const t = new Task(name);
+			//create task
+			const t = new Task(name, linked, precision, event_debounce);
 			const props = t[PROPS];
 			props.name = name;
 			props.label = label;
 			props.linked = linked;
-			props.precision = precision;
+			props.precision = precision as number;
+			props.event_debounce = event_debounce as number;
 			props.progress = progress;
 			props.total = total;
 			props.value = value;
@@ -770,14 +847,17 @@ export class Task implements ITask
 			props.status = status;
 			props.startTime = startTime;
 			props.endTime = endTime;
+			props.complete = complete;
+			props.updated = !!updated;
 			props.item = item; //-- item
 			return t;
 		}
-		catch (e){
-			const error = `Task Restore Failure: ${e}`;
-			const opts = {name, label, linked, precision, progress, total, value, error, status, startTime, endTime, complete, item};
-			console.error(error, {options}, opts);
-			throw new Error(error);
+		catch (e: any){
+			const error = `Create Task Failure! ${e instanceof Error ? e.message : e}`.trim();
+			const _options = {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, updated, item};
+			console.warn(error, {_options});
+			if (e.name === 'TypeError') throw new TypeError(error);
+			else throw new Error(error);
 		}
 	}
 }

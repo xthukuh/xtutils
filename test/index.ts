@@ -17,50 +17,52 @@ import {
 	_sleep,
 	_asyncValues,
 	Term,
-	ProgressTracker,
+	Tasks,
 } from '../lib';
 
 (async()=>{
 	// _sayHello();
 
-	console.log('-- Test ProgressTracker');
-	const prog_tracker = new ProgressTracker(p => {
-		Term.success(`-- tracker progress callback: ${p}%`);
-	});
-	const arr: number[] = [...Array(5)].map(_ => _rand(1000, 3000));
-	arr.forEach((val, i) => {
-		const name = `test-${i}`;
-		// prog_tracker.add(name, val, p => {
-		// 	Term.info(`-- [${name}] item progress callback: ${p}%`);
-		// });
-		prog_tracker.add(name, val);
-	});
-	await _asyncAll(arr, async (val, i, len) => {
-		const name = `test-${i}`;
-		Term.debug(`[${i}/${len}] test item:`, {name, val});
-		const values = [], inc = 500;
-		let sum = 0;
-		while (1){
-			sum += inc;
-			values.push(inc);
-			if (sum > val) break;
-		}
-		sum = 0;
-		await _asyncValues(values).each(async (v, x) => {
-			sum += v;
-			await _sleep(_rand(500, 1500));
-			if (i === 2 && x === 1){
-				const res = prog_tracker.complete(name);
-				Term.warn(`--- prog_tracker.complete(${name})`, res);
-			}
-			const res = prog_tracker.update(name, sum);
-			// Term.debug(`--- prog_tracker.update(${name}, ${sum}):`, res);
-		});
-	});
-	setTimeout(() => {
-		Term.log(`--- prog_tracker.progress()`, prog_tracker.progress());
-		Term.log(`--- prog_tracker.done()`, prog_tracker.done());
-	});
+	//TODO: test Tasks
+
+	// console.log('-- Test ProgressTracker');
+	// const prog_tracker = new ProgressTracker(p => {
+	// 	Term.success(`-- tracker progress callback: ${p}%`);
+	// });
+	// const arr: number[] = [...Array(5)].map(_ => _rand(1000, 3000));
+	// arr.forEach((val, i) => {
+	// 	const name = `test-${i}`;
+	// 	// prog_tracker.add(name, val, p => {
+	// 	// 	Term.info(`-- [${name}] item progress callback: ${p}%`);
+	// 	// });
+	// 	prog_tracker.add(name, val);
+	// });
+	// await _asyncAll(arr, async (val, i, len) => {
+	// 	const name = `test-${i}`;
+	// 	Term.debug(`[${i}/${len}] test item:`, {name, val});
+	// 	const values = [], inc = 500;
+	// 	let sum = 0;
+	// 	while (1){
+	// 		sum += inc;
+	// 		values.push(inc);
+	// 		if (sum > val) break;
+	// 	}
+	// 	sum = 0;
+	// 	await _asyncValues(values).each(async (v, x) => {
+	// 		sum += v;
+	// 		await _sleep(_rand(500, 1500));
+	// 		if (i === 2 && x === 1){
+	// 			const res = prog_tracker.complete(name);
+	// 			Term.warn(`--- prog_tracker.complete(${name})`, res);
+	// 		}
+	// 		const res = prog_tracker.update(name, sum);
+	// 		// Term.debug(`--- prog_tracker.update(${name}, ${sum}):`, res);
+	// 	});
+	// });
+	// setTimeout(() => {
+	// 	Term.log(`--- prog_tracker.progress()`, prog_tracker.progress());
+	// 	Term.log(`--- prog_tracker.done()`, prog_tracker.done());
+	// });
 
 	// console.log('-- Test _compareShallow');
 	// const a = {name: 'Thuku', age: 30, val: undefined};
