@@ -7,7 +7,6 @@ import { ITask, Task } from './_Task';
 export interface ITasksData {
 	precision: number;
 	event_debounce: number;
-	updated: boolean;
 	size: number;
 	progress: number;
 	running: boolean;
@@ -72,11 +71,19 @@ const _round = (val: number, places?: number): number => {
  * @param timeout - timeout milliseconds
  * @returns `()=>void` debounced callback
  */
-const _debounce = (callback: ()=>void, timeout: number = 200): () => void => {
-	let timer: any;
-	return () => {
+const _debounce = (callback: ()=>void, timeout: number = 0): () => void => {
+	let timer: any, max_wait: any;
+	const _handler = () => {
 		clearTimeout(timer);
-		timer = setTimeout(callback, timeout);
+		clearTimeout(max_wait);
+		max_wait = undefined;
+		callback();
+	};
+	return () => {
+		if (!timeout) return callback();
+		clearTimeout(timer);
+		timer = setTimeout(_handler, timeout);
+		if (!max_wait) max_wait = setTimeout(_handler, Math.floor(timeout * 1.5));
 	};
 };
 
@@ -91,17 +98,17 @@ const PROPS = Symbol(`__private_props_${Date.now()}__`);
 export class Tasks
 {
 	/**
-	 * Tasks global event debounce milliseconds (default: `200`)
+	 * Tasks global event debounce milliseconds
 	 */
 	static get event_debounce(): number {
 		return DEFAULT_EVENT_DEBOUNCE;
 	}
 	static set event_debounce(value: any){
-		DEFAULT_EVENT_DEBOUNCE = _pos_int(value, DEFAULT_EVENT_DEBOUNCE, 200);
+		DEFAULT_EVENT_DEBOUNCE = _pos_int(value, DEFAULT_EVENT_DEBOUNCE, 0);
 	}
 
 	/**
-	 * Task global precision ~ round decimal places  (default: `2`)
+	 * Task global precision ~ round decimal places
 	 */
 	static get decimal_precision(): number {
 		return DEFAULT_PRECISION;
@@ -116,7 +123,6 @@ export class Tasks
 	[PROPS]: {
 		precision: number;
 		event_debounce: number;
-		updated: boolean;
 		_tasks: Map<string, Task>;
 		_unsubscribe: Map<string, ()=>void>;
 		_emitter: EventEmitter;
@@ -131,31 +137,24 @@ export class Tasks
 	}
 	
 	/**
-	 * Task precision ~ positive `integer` [default `2`]
+	 * Task precision - `integer` decimal places
 	 */
 	get precision(): number {
 		return this[PROPS].precision;
 	}
 
 	/**
-	 * Task event debounce milliseconds (default: `Tasks.event_debounce` ~ `200`)
+	 * Task event debounce milliseconds (default: `Tasks.event_debounce`)
 	 */
 	get event_debounce(): number {
 		return this[PROPS].event_debounce;
 	}
 
 	/**
-	 * Task updated
-	 */
-	get updated(): boolean {
-		return this[PROPS].updated;
-	}
-
-	/**
 	 * Create new instance
 	 * 
-	 * @param precision - decimal places (default: `Tasks.decimal_precision` ~ `2`)
-	 * @param event_debounce - event debounce milliseconds (default: `Tasks.event_debounce` ~ `200`)
+	 * @param precision - decimal places (default: `Tasks.decimal_precision`)
+	 * @param event_debounce - event debounce milliseconds (default: `Tasks.event_debounce`)
 	 */
 	constructor(precision: number = Tasks.decimal_precision, event_debounce: number = Tasks.event_debounce){
 		precision = _pos_int(precision, Tasks.decimal_precision, Tasks.decimal_precision);
@@ -163,22 +162,20 @@ export class Tasks
 		this[PROPS] = {
 			precision: precision,
 			event_debounce: event_debounce,
-			updated: false,
 			_tasks: new Map(),
 			_unsubscribe: new Map(),
 			_emitter: new EventEmitter(),
 			_debounced_update: _debounce(() => {
 				const props = this[PROPS];
-				if (!props.updated) props.updated = true;
 				props._emitter.emit('update', this.data());
-			}, this.event_debounce),
+			}, event_debounce),
 		};
 	}
 
 	/**
 	 * Get tasks data
 	 * 
-	 * @returns `ITasksData` options ~ i.e. `{precision, event_debounce, updated, size, progress, running, started, complete, startTime, endTime, elapsedTime, tasks}`
+	 * @returns `ITasksData` options ~ i.e. `{precision, event_debounce, size, progress, running, started, complete, startTime, endTime, elapsedTime, tasks}`
 	 */
 	get data(): ()=>ITasksData {
 		return (): ITasksData => {
@@ -236,7 +233,6 @@ export class Tasks
 			return {
 				precision: this.precision,
 				event_debounce: this.event_debounce,
-				updated: this.updated,
 				size,
 				progress,
 				running,
@@ -281,69 +277,58 @@ export class Tasks
 	has(name: string): boolean {
 		return this[PROPS]._tasks.has(name);
 	}
-	
+
 	/**
-	 * Add task instance
+	 * Get task by name
 	 * 
-	 * @param task
+	 * @param name - task name
 	 * @returns `Task`
 	 */
-	task(task: Task): Task {
-		if (!(task instanceof Task)) throw new TypeError('Invalid \`Task\` object.'); //check type
-		if (this.has(task.name)) console.warn(`Existing task named "${task.name}" has been replaced.`); //warn replaced
-		const unsubscribe = task.subscribe((event: IEvent) => {
-			console.debug('-- task event', {event}); //TODO: remove task event debug
-			this.update(); //task update
-		});
-		const props = this[PROPS];
-		props._tasks.set(task.name, task);
-		props._unsubscribe.set(task.name, unsubscribe);
-		this.update(); //update
-		return task;
+	get(name: string): Task|undefined {
+		return this[PROPS]._tasks.get(name);
 	}
 
 	/**
 	 * Add new task
 	 * 
-	 * @param name - task name
+	 * @param task - `string` task name | `ITask` task data | `Task` instance
 	 * @param linked - task value/total/progress linked ~ recalculate on change
-	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce` ~ `200`)
+	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce`)
 	 * @returns `Task`
 	 */
-	add(name: string, linked: boolean = false, event_debounce?: number): Task {
+	add(task: string|ITask|Task, linked: boolean = false, event_debounce?: number): Task {
 		const props = this[PROPS];
 		event_debounce = (event_debounce = _pos_int(event_debounce, -1, -1)) >= 0 ? event_debounce : undefined;
-		return this.task(new Task(name, linked, props.precision, event_debounce));
-	}
+		
+		//task instance
+		let _task: Task = undefined as any;
+		if ('string' === typeof task) _task = new Task(task, linked, props.precision, event_debounce);
+		else if (task instanceof Task) _task = task;
+		else if ('object' === typeof task && 'string' === typeof task?.name) _task = Task.create(task, props.precision, event_debounce);
+		if (!(_task instanceof Task)) throw new TypeError('Add \`Task\` object is invalid.');
 
-	/**
-	 * Create task from existing task data
-	 * 
-	 * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, updated, item}`
-	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce` ~ `200`)
-	 * @returns `Task`
-	 */
-	create(options: ITask, event_debounce?: number): Task {
-		const props = this[PROPS];
-		event_debounce = (event_debounce = _pos_int(event_debounce, -1, -1)) >= 0 ? event_debounce : undefined;
-		return this.task(Task.create(options, props.precision, event_debounce));
-	}
+		//task exists - replace
+		if (this.has(_task.name)) console.warn(`Existing task named "${_task.name}" has been replaced.`);
 
-	/**
-	 * Get task by name
-	 * 
-	 * @param name
-	 * @returns `Task`
-	 */
-	get(name: string): Task|undefined {
-		const props = this[PROPS];
-		return props._tasks.get(name);
+		//task listener
+		const unsubscribe = _task.subscribe((event: IEvent) => {
+			console.debug(`-- task event ${event.data.name}`, event.data.progress); //TODO: remove task event debug
+			this.update(); //task update
+		});
+
+		//task add
+		props._tasks.set(_task.name, _task);
+		props._unsubscribe.set(_task.name, unsubscribe);
+		this.update(); //update
+		
+		//result
+		return _task;
 	}
 	
 	/**
 	 * Remove task by name
 	 * 
-	 * @param name
+	 * @param name - task name
 	 * @returns `Tasks` instance
 	 */
 	remove(name: string): Tasks {

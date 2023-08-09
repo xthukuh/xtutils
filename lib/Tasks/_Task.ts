@@ -28,7 +28,6 @@ export interface ITask {
 	endTime: number;
 	elapsedTime: number;
 	complete: boolean;
-	updated: boolean;
 	item: any;
 }
 
@@ -138,11 +137,19 @@ const _get_error = (val: any): string => {
  * @param timeout - timeout milliseconds
  * @returns `()=>void` debounced callback
  */
-const _debounce = (callback: ()=>void, timeout: number = 200): () => void => {
-	let timer: any;
-	return () => {
+const _debounce = (callback: ()=>void, timeout: number = 0): () => void => {
+	let timer: any, max_wait: any;
+	const _handler = () => {
 		clearTimeout(timer);
-		timer = setTimeout(callback, timeout);
+		clearTimeout(max_wait);
+		max_wait = undefined;
+		callback();
+	};
+	return () => {
+		if (!timeout) return callback();
+		clearTimeout(timer);
+		timer = setTimeout(_handler, timeout);
+		if (!max_wait) max_wait = setTimeout(_handler, Math.floor(timeout * 1.5));
 	};
 };
 
@@ -157,17 +164,17 @@ const PROPS = Symbol(`__private_props_${Date.now()}__`);
 export class Task implements ITask
 {
 	/**
-	 * Task global event debounce milliseconds (default: `200`)
+	 * Task global event debounce milliseconds
 	 */
 	static get event_debounce(): number {
 		return DEFAULT_EVENT_DEBOUNCE;
 	}
 	static set event_debounce(value: any){
-		DEFAULT_EVENT_DEBOUNCE = _pos_int(value, DEFAULT_EVENT_DEBOUNCE, 200);
+		DEFAULT_EVENT_DEBOUNCE = _pos_int(value, DEFAULT_EVENT_DEBOUNCE, 0);
 	}
 
 	/**
-	 * Task global precision ~ round decimal places  (default: `2`)
+	 * Task global precision ~ round decimal places
 	 */
 	static get decimal_precision(): number {
 		return DEFAULT_PRECISION;
@@ -193,8 +200,8 @@ export class Task implements ITask
 		startTime: number;
 		endTime: number;
 		complete: boolean;
-		updated: boolean;
 		item: any;
+		_done: boolean;
 		_round: (val: number) => number;
 		_emitter: EventEmitter;
 		_debounced_update: ()=>void;
@@ -222,14 +229,14 @@ export class Task implements ITask
 	}
 
 	/**
-	 * Task precision ~ positive `integer` [default `2`]
+	 * Task precision - `integer` decimal places
 	 */
 	get precision(): number {
 		return this[PROPS].precision;
 	}
 	
 	/**
-	 * Task event debounce milliseconds (default: `Tasks.event_debounce` ~ `200`)
+	 * Task event debounce milliseconds (default: `Tasks.event_debounce`)
 	 */
 	get event_debounce(): number {
 		return this[PROPS].event_debounce;
@@ -299,13 +306,6 @@ export class Task implements ITask
 	}
 	
 	/**
-	 * Task updated
-	 */
-	get updated(): boolean {
-		return this[PROPS].updated;
-	}
-	
-	/**
 	 * Task item
 	 */
 	get item(): any {
@@ -317,8 +317,8 @@ export class Task implements ITask
 	 * 
 	 * @param name - task name
 	 * @param linked - task value/total/progress linked ~ recalculate on change
-	 * @param precision - decimal places (default: `Task.decimal_precision` ~ `2`)
-	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce` ~ `200`)
+	 * @param precision - decimal places (default: `Task.decimal_precision`)
+	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce`)
 	 */
 	constructor(name: string, linked: boolean = false, precision: number = Task.decimal_precision, event_debounce: number = Task.event_debounce){
 		if (!(name = _get_str(name))) throw new TypeError('Invalid new task name.');
@@ -339,26 +339,26 @@ export class Task implements ITask
 			endTime: 0,
 			complete: false,
 			item: undefined,
-			updated: false,
+			_done: false,
 			_round: (val: number): number => _round(val, this[PROPS].precision),
 			_emitter: new EventEmitter(),
 			_debounced_update: _debounce(() => {
 				const props = this[PROPS];
-				if (!props.updated) props.updated = true;
+				if (props._done) return;
 				props._emitter.emit('update', this.data());
-			}, this.event_debounce),
+			}, event_debounce),
 		};
 	}
 
 	/**
 	 * Get task data
 	 * 
-	 * @returns `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, updated, item}`
+	 * @returns `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item}`
 	 */
 	get data(): ()=>ITask {
 		return (): ITask => {
-			const { name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, elapsedTime, complete, updated, item } = this;
-			return {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, elapsedTime, complete, updated, item};
+			const { name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, elapsedTime, complete, item } = this;
+			return {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, elapsedTime, complete, item};
 		};
 	}
 
@@ -395,7 +395,7 @@ export class Task implements ITask
 
 		//restart check
 		if (props.complete && !restart){
-			console.warn('Task start ignored because task is complete. Try using `task.start(restart=true)` to override.');
+			console.warn('Task \`start\` while complete ignored! Try using `task.start(restart=true)` to override.');
 			return this;
 		}
 		
@@ -498,10 +498,10 @@ export class Task implements ITask
 	/**
 	 * Task done
 	 * 
-	 * @param fullProgress - [default: `true`] set `progress` to `100`% (linked default) //TODO: test fullProgress = true/false
+	 * @param completeProgress - set full progress ~ enabled when `linked` (i.e. `progress=100` and `value=total`)
 	 * @returns `Task` instance
 	 */
-	done(fullProgress: boolean = true): Task {
+	done(completeProgress: boolean = false): Task {
 		const props = this[PROPS];
 		let changes = 0;
 
@@ -511,27 +511,27 @@ export class Task implements ITask
 			props.complete = true;
 		}
 
-		//-- status = done|failed
-		const status = props.error ? 'failed' : 'done';
-		if (props.status !== status){
-			changes ++;
-			props.status = status;
-		}
-
-		//-- progress = 100 (linked/fullProgress)
-		if (props.linked || fullProgress){
-			let progress = 100;
-			if (progress !== props.progress){
+		//not stopped
+		if (props.status !== 'stopped'){
+			
+			//-- status = done|failed
+			const status = props.error ? 'failed' : 'done';
+			if (props.status !== status){
 				changes ++;
-				props.progress = progress;
+				props.status = status;
 			}
-		}
-
-		//-- value = total (linked)
-		if (props.linked && props.total){
-			if (props.value !== props.total){
-				changes ++;
-				props.value = props.total;
+	
+			//-- completeProgress
+			if (props.linked || completeProgress){
+				let progress = 100;
+				if (progress !== props.progress){
+					changes ++;
+					props.progress = progress;
+				}
+				if (props.total && props.value !== props.total){
+					changes ++;
+					props.value = props.total;
+				}
 			}
 		}
 
@@ -542,8 +542,9 @@ export class Task implements ITask
 			if (!props.startTime) props.startTime = props.endTime;
 		}
 
-		//changes - update
-		if (changes) this.update();
+		//done - emit changes
+		props._done = true;
+		if (changes) props._emitter.emit('update', this.data());
 		return this;
 	}
 
@@ -558,19 +559,16 @@ export class Task implements ITask
 	setProgress(progress: number, _value?: number, _total?: number): Task {
 		const props = this[PROPS];
 
-		//ignore if not running
-		if (props.status !== 'running'){
-			console.warn(`Set task progress cancelled because current status is "${props.status}".`);
+		//done - ignore updates
+		if (props._done){
+			console.warn('Task \`setProgress\` while done ignored.');
 			return this;
 		}
 
 		//parse progress/adjust
 		let tmp: number = _pos_num(progress, -1, -1);
 		if (tmp < 0) throw new TypeError(`Invalid set task \`progress\` value (${progress}).`);
-		if ((progress = props._round(tmp)) > 100){
-			console.warn(`Set task \`progress\` value (${progress}) must be a percentage within range (0 - 100). Using 100 instead.`);
-			progress = 100;
-		}
+		if ((progress = props._round(tmp)) > 100) progress = 100;
 
 		//total/value - unlinked update/linked recalculate
 		let value = props.value;
@@ -611,9 +609,9 @@ export class Task implements ITask
 	setTotal(total: number): Task {
 		const props = this[PROPS];
 
-		//ignore if not running
-		if (props.status !== 'running'){
-			console.warn(`Set task total cancelled because current status is "${props.status}".`);
+		//done - ignore updates
+		if (props._done){
+			console.warn('Task \`setTotal\` while done ignored.');
 			return this;
 		}
 
@@ -667,9 +665,9 @@ export class Task implements ITask
 	setValue(value: number): Task {
 		const props = this[PROPS];
 		
-		//ignore if not running
-		if (props.status !== 'running'){
-			console.warn(`Set task value cancelled because current status is "${props.status}".`);
+		//done - ignore updates
+		if (props._done){
+			console.warn('Task \`setValue\` while done ignored.');
 			return this;
 		}
 
@@ -718,16 +716,25 @@ export class Task implements ITask
 	 * @returns `Task` instance
 	 */
 	setItem(item: any): Task {
-		this[PROPS].item = item;
+		const props = this[PROPS];
+		
+		//done - ignore updates
+		if (props._done){
+			console.warn('Task \`setItem\` while done ignored.');
+			return this;
+		}
+		
+		//set item
+		props.item = item;
 		return this;
 	}
 
 	/**
 	 * Create instance from existing task options
 	 * 
-	 * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, updated, item}`
-	 * @param precision - decimal places (default: `Task.decimal_precision` ~ `2`)
-	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce` ~ `200`)
+	 * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item}`
+	 * @param precision - decimal places (default: `Task.decimal_precision`)
+	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce`)
 	 * @returns `Task` instance
 	 * @throws validation `Error`
 	 */
@@ -746,7 +753,6 @@ export class Task implements ITask
 			startTime,
 			endTime,
 			complete,
-			updated,
 			item,
 		} = Object(options);
 		try {
@@ -760,18 +766,12 @@ export class Task implements ITask
 			
 			//-- precision
 			tmp = _pos_int(_precision, -1, Task.decimal_precision);
-			if ((tmp = _pos_int(precision, -1, tmp)) < 0){
-				console.warn(`Task math \`precision\` (${precision}) is invalid. Using default precision ${Task.decimal_precision}.`);
-				precision = Task.decimal_precision;
-			}
+			if ((tmp = _pos_int(precision, -1, tmp)) < 0) precision = Task.decimal_precision;
 			else precision = tmp;
 
 			//-- event_debounce
 			tmp = _pos_int(_event_debounce, -1, Task.event_debounce);
-			if ((tmp = _pos_int(event_debounce, -1, tmp)) < 0){
-				console.warn(`Task \`event_debounce\` (${event_debounce}) is invalid. Using default event_debounce ${Task.event_debounce}.`);
-				event_debounce = Task.event_debounce;
-			}
+			if ((tmp = _pos_int(event_debounce, -1, tmp)) < 0) event_debounce = Task.event_debounce;
 			else event_debounce = tmp;
 
 			//-- precision round
@@ -779,19 +779,13 @@ export class Task implements ITask
 
 			//-- parse/adjust: progress, total, value
 			if ((tmp = _pos_num(progress, -1)) < 0) throw new TypeError('Invalid task `progress` value.');
-			if ((progress = _round_p(tmp)) > 100){
-				console.warn(`Task \`progress\` value (${progress}) must be a percentage within range (0 - 100) - changed to max percent 100 instead.`);
-				progress = 100;
-			}
+			if ((progress = _round_p(tmp)) > 100) progress = 100;
 			if ((tmp = _pos_num(total, -1)) < 0) throw new TypeError('Invalid task `total` value.');
 			total = _round_p(tmp);
 			if ((tmp = _pos_num(value, -1)) < 0) throw new TypeError('Invalid task `value` value.');
 			value = _round_p(tmp);
 			if (linked){
-				if (!value){
-					if (progress) console.warn(`Task linked \`progress\` (${progress}) changed to 0 because current value is 0.`);
-					progress = 0;
-				}
+				if (!value) progress = 0;
 				else if (total){
 					if (value > total){
 						console.warn(`Task linked \`value\` (${value}) is greater than \`total\` (${total}). Using value as new total${progress !== 100 ? ' - updating progress' : ''}.`);
@@ -813,10 +807,7 @@ export class Task implements ITask
 			complete = !!complete;
 			error = _get_error(error);
 			if (!(status = _get_str(status).toLowerCase())) status = 'new';
-			else if (!TASK_STATUSES.includes(status)){
-				console.warn(`Task \`status\` (${status}) must be one of [${TASK_STATUSES.map(v => `'${v}'`).join(', ')}]. Using 'new' status.`);
-				status = 'new';
-			}
+			else if (!TASK_STATUSES.includes(status)) status = 'new';
 			if ((tmp = _pos_int(startTime, -1)) < 0) throw new TypeError('Invalid task \`startTime\` value.');
 			startTime = tmp;
 			if ((tmp = _pos_int(endTime, -1)) < 0) throw new TypeError('Invalid task `endTime` value.');
@@ -848,13 +839,16 @@ export class Task implements ITask
 			props.startTime = startTime;
 			props.endTime = endTime;
 			props.complete = complete;
-			props.updated = !!updated;
 			props.item = item; //-- item
+			props._debounced_update = _debounce(() => {
+				if (props._done) return;
+				props._emitter.emit('update', t.data());
+			}, t.event_debounce);
 			return t;
 		}
 		catch (e: any){
 			const error = `Create Task Failure! ${e instanceof Error ? e.message : e}`.trim();
-			const _options = {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, updated, item};
+			const _options = {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item};
 			console.warn(error, {_options});
 			if (e.name === 'TypeError') throw new TypeError(error);
 			else throw new Error(error);

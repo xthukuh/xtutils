@@ -106,7 +106,7 @@ export class EventEmitter
 	 */
 	listeners(type: string): ((event:IEvent)=>void)[] {
 		const props = this[PROPS], listeners: ((event:IEvent)=>void)[] = [];
-		if (!((type = EventEmitter.type(type)) && props._events.hasOwnProperty(type))){
+		if ((type = EventEmitter.type(type)) && props._events.hasOwnProperty(type)){
 			const listener: any = props._events[type];
 			if ('function' === typeof listener) listeners.push(listener);
 			else if (Array.isArray(listener) && listener.length) listeners.push(...listener.filter(v => 'function' === typeof v));
@@ -219,7 +219,7 @@ export class EventEmitter
 
 			// Optimize the case of one listener. don't need the extra array object.
 			props._events[type] = listeners.length ? [...listeners, handler] : handler;
-			
+
 			// Max listeners leak warning
 			if (Array.isArray(props._events[type])){
 				const len = props._events[type].length;
@@ -229,6 +229,7 @@ export class EventEmitter
 				}
 			}
 		}
+		else console.warn(`This "${type}" event listener is already added.`);
 		
 		//result
 		return this;
