@@ -25,7 +25,6 @@ export interface ITask {
     endTime: number;
     elapsedTime: number;
     complete: boolean;
-    updated: boolean;
     item: any;
 }
 /**
@@ -37,12 +36,12 @@ declare const PROPS: unique symbol;
  */
 export declare class Task implements ITask {
     /**
-     * Task global event debounce milliseconds (default: `200`)
+     * Task global event debounce milliseconds
      */
     static get event_debounce(): number;
     static set event_debounce(value: any);
     /**
-     * Task global precision ~ round decimal places  (default: `2`)
+     * Task global precision ~ round decimal places
      */
     static get decimal_precision(): number;
     static set decimal_precision(value: any);
@@ -63,8 +62,8 @@ export declare class Task implements ITask {
         startTime: number;
         endTime: number;
         complete: boolean;
-        updated: boolean;
         item: any;
+        _done: boolean;
         _round: (val: number) => number;
         _emitter: EventEmitter;
         _debounced_update: () => void;
@@ -82,11 +81,11 @@ export declare class Task implements ITask {
      */
     get linked(): boolean;
     /**
-     * Task precision ~ positive `integer` [default `2`]
+     * Task precision - `integer` decimal places
      */
     get precision(): number;
     /**
-     * Task event debounce milliseconds (default: `Tasks.event_debounce` ~ `200`)
+     * Task event debounce milliseconds (default: `Tasks.event_debounce`)
      */
     get event_debounce(): number;
     /**
@@ -126,10 +125,6 @@ export declare class Task implements ITask {
      */
     get complete(): boolean;
     /**
-     * Task updated
-     */
-    get updated(): boolean;
-    /**
      * Task item
      */
     get item(): any;
@@ -138,14 +133,14 @@ export declare class Task implements ITask {
      *
      * @param name - task name
      * @param linked - task value/total/progress linked ~ recalculate on change
-     * @param precision - decimal places (default: `Task.decimal_precision` ~ `2`)
-     * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce` ~ `200`)
+     * @param precision - decimal places (default: `Task.decimal_precision`)
+     * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce`)
      */
     constructor(name: string, linked?: boolean, precision?: number, event_debounce?: number);
     /**
      * Get task data
      *
-     * @returns `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, updated, item}`
+     * @returns `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item}`
      */
     get data(): () => ITask;
     /**
@@ -182,10 +177,10 @@ export declare class Task implements ITask {
     /**
      * Task done
      *
-     * @param fullProgress - [default: `true`] set `progress` to `100`% (linked default) //TODO: test fullProgress = true/false
+     * @param completeProgress - set full progress ~ enabled when `linked` (i.e. `progress=100` and `value=total`)
      * @returns `Task` instance
      */
-    done(fullProgress?: boolean): Task;
+    done(completeProgress?: boolean): Task;
     /**
      * Set progress
      *
@@ -219,9 +214,9 @@ export declare class Task implements ITask {
     /**
      * Create instance from existing task options
      *
-     * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, updated, item}`
-     * @param precision - decimal places (default: `Task.decimal_precision` ~ `2`)
-     * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce` ~ `200`)
+     * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item}`
+     * @param precision - decimal places (default: `Task.decimal_precision`)
+     * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce`)
      * @returns `Task` instance
      * @throws validation `Error`
      */
