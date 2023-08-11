@@ -208,3 +208,21 @@ export declare const _isEmail: (value: any) => boolean;
  * @returns Escaped `string`
  */
 export declare const _escapeSql: (value: any) => string;
+/**
+ * Parse csv data into 2d string array
+ *
+ * @param text - parse text
+ * @param delimiter - delimiter character (default: `','`)
+ * @param br - new line (default: `'\n'`)
+ * @returns `string[][]` ~ `[[...cols], ...rows]`
+ */
+export declare const _parseCsv: (text: string, delimiter?: string, br?: string) => string[][];
+/**
+ * Convert data to csv text
+ *
+ * @param data - parse data
+ * @param delimiter - delimiter character (default: `','`)
+ * @param br - new line replace (default: `'\n'`)
+ * @returns `string` csv text
+ */
+export declare const _toCsv: (data: string | string[] | string[][], delimiter?: string, br?: string) => string;

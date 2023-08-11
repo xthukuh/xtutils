@@ -1,10 +1,10 @@
 /**
  * Emitted event interface
  */
-export interface IEvent {
+export interface IEvent<T = any> {
     type: string;
-    data: any;
     time: number;
+    data: T;
 }
 /**
  * Private props `Symbol` key name

@@ -63,3 +63,61 @@ export declare const _minMax: (a: any, b: any) => [min: any, max: any];
 export declare const _dotFlat: (value: any, omit?: string[]) => {
     [key: string]: any;
 };
+/**
+ * Get validated object dot path (i.e. `'a.b.c'` to refer to `{a:{b:{c:1}}}`)
+ *
+ * @param dot_path - dot separated keys
+ * @param operations - supports operations (i.e. '!reverse'/'!slice=0') ~ tests dot keys using `/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/` instead of default `/^[-_0-9a-zA-Z]+$/`
+ * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @returns `string` valid dot path
+ */
+export declare const _validDotPath: (dot_path: string, operations?: boolean, _failure?: 0 | 1 | 2) => string;
+/**
+ * Resolve dot path object value ~ supports array operations chaining
+ *
+ * @example
+ *
+ * //simple usage
+ * _dotGet('x', {x:1}) => 1
+ * _dotGet('a.b.c', {a:{b:{c:1}}}) => 1
+ * _dotGet('a.b.d', {a:{b:{c:1}}}, 'a.b.d', null) => null
+ * _dotGet('a.0', {a:['x','y']}) => 'x'
+ *
+ * //array reverse operation
+ * _dotGet('0.!reverse', [[1,2,3]]) => [3,2,1]
+ *
+ * //array slice operation
+ * _dotGet('0.!slice', [[1,2,3]]) => [1,2,3]
+ *
+ * //array slice negative `-number`
+ * _dotGet([[1,2,3]], '0.-2') => [2,3]
+ *
+ * //array `key=value` searching
+ * _dotGet('0.a=2', [[{a:1,b:2},{a:2,b:3}]]) => {a:2,b:3}
+ * _dotGet('0.a=1,b=2', [[{a:1,b:2,c:3}, {a:2,b:3,c:4}]]) => {a:1,b:2,c:3}
+ *
+ *
+ * @param dot_path - dot separated keys ~ optional array operations
+ * @param target - traverse object
+ * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @param _default - default result on failure
+ * @returns `any` dot path match result
+ */
+export declare const _dotGet: (dot_path: string, target: any, _failure?: 0 | 1 | 2, _default?: any) => any;
+/**
+ * Get dot path value
+ *
+ * @param dot_path - dot separated keys ~ optional array operations
+ * @param target - traverse object
+ * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @returns ``
+ */
+export declare const _dotValue: <TResult = any>(dot_path: string, target: any, _failure?: 0 | 1 | 2) => TResult | undefined;
+/**
+ * Get dump value with limit max string length
+ *
+ * @param value - parse value (`value = _jsonParse(_jsonStringify(value))`)
+ * @param maxStrLength - max string length [default: `100`]
+ * @returns `any` - parsed value
+ */
+export declare const _dumpVal: (value: any, maxStrLength?: number) => any;
