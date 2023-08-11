@@ -377,3 +377,54 @@ export const _escapeSql = (value: any): string => {
 	chars.forEach(char => value = value.replace(new RegExp(char, 'g'), '\\' + char));
 	return value;
 };
+
+/**
+ * Parse csv data into 2d string array
+ * 
+ * @param text - parse text
+ * @param delimiter - delimiter character (default: `','`)
+ * @param br - new line (default: `'\n'`)
+ * @returns `string[][]` ~ `[[...cols], ...rows]`
+ */
+export const _parseCsv = (text: string, delimiter?: string, br?: string): string[][] => {
+	const n_sep = '\x1D'; const n_sep_re = new RegExp(n_sep, 'g');
+	const q_sep = '\x1E'; const q_sep_re = new RegExp(q_sep, 'g');
+	const c_sep = '\x1F'; const c_sep_re = new RegExp(c_sep, 'g');
+	const delim: string = (delimiter = _str(delimiter, true)).length === 1 ? delimiter : ',';
+	const field_re = new RegExp('(^|[' + delim + '\\n])"([^"]*(?:""[^"]*)*)"(?=($|[' + delim + '\\n]))', 'g');
+	return _str(text, true)
+	.replace(/\r/g, '')
+	.replace(/\n+$/, '')
+	.replace(field_re, (_: string, p1: string, p2: string) => p1 + p2.replace(/\n/g, n_sep).replace(/""/g, q_sep).replace(/,/g, c_sep))
+	.split(/\n/)
+	.filter(line => line.length) 
+	.map(line => line.split(delim).map(cell => cell.replace(n_sep_re, br ?? '\n').replace(q_sep_re, '"').replace(c_sep_re, ',')));
+};
+
+/**
+ * Convert data to csv text
+ * 
+ * @param data - parse data
+ * @param delimiter - delimiter character (default: `','`)
+ * @param br - new line replace (default: `'\n'`)
+ * @returns `string` csv text
+ */
+export const _toCsv = (data: string|string[]|string[][], delimiter?: string, br?: string): string => {
+	const delim: string = (delimiter = _str(delimiter, true)).length === 1 ? delimiter : ',';
+	const rows: string[][] = [];
+	const _cell = (value: any): string => {
+		let val: string = _str(value);
+		if (!val.length) return val;
+		if ('string' === typeof br && val.indexOf(br) > -1 && br !== '\n') val = val.replace(new RegExp(br, 'g'), '\n');
+		val = val.replace(/\r/g, '').replace(/\n+$/, '').replace(/"/g, '""');
+		if (val.indexOf(delim) > -1 || val.indexOf('"') > -1 || val.indexOf('\n') > -1 || /^\s+|\s+$/.test(val)) val = `"${val}"`;
+		return val;
+	};
+	if (data && 'object' === typeof data && data[Symbol.iterator]){
+		const values = Object.values([...data]);
+		if (values.filter(v => 'object' === typeof v && v[Symbol.iterator]).length) rows.push(...values.map((r: any) => r.map((c: any) => _cell(c))));
+		else rows.push(values.map((c: any) => _cell(c)));
+	}
+	else if (data = _str(data, true)) rows.push(..._parseCsv(data, delim, br).map(r => r.map(c => _cell(c))));
+	return rows.map(cols => cols.join(delim)).filter(v => v.length).join('\n');
+};

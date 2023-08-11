@@ -26,6 +26,7 @@ export {
 	_isFunc,
 	_minMax,
 	_dotFlat,
+	_dumpVal,
 } from './_objects';
 export { IPromiseResult, _asyncAll, _asyncValues, _sleep } from './_promise';
 export { IQueue, _queue } from './_queue';
@@ -56,5 +57,7 @@ export {
 	_isURL,
 	_isEmail,
 	_escapeSql,
+	_parseCsv,
+	_toCsv,
 } from './_string';
 export { SortDirection, SortOrder, _sortValues } from './_sort';

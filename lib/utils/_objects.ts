@@ -1,4 +1,7 @@
 import { bool } from '../types';
+import { _jsonParse, _jsonStringify } from './_json';
+import { _int, _num } from './_number';
+import { _str } from './_string';
 
 /**
  * Flatten array recursively
@@ -101,93 +104,186 @@ export const _dotFlat = (value: any, omit: string[] = []):{[key: string]: any} =
 	return Object.fromEntries(_entries);
 };
 
-//TODO: dot path objects
-// export const dotPath = (path, operations=false, throwable=false) => {
-// 	try {
-// 		let parts = splitStr(path, '.');
-// 		if (!parts.length) throw 'Invalid dot path.';
-// 		let buffer = [];
-// 		for (let i = 0; i < parts.length; i ++){
-// 			let tmp, part = parts[i], valid = 0;
-// 			if (!part.match(/^[-_0-9a-zA-Z]+$/)){
-// 				if (operations){
-// 					if (['!reverse', '!slice'].includes(tmp = part.toLowerCase())){
-// 						part = tmp;
-// 						valid = 1;
-// 					}
-// 					else if (part.match(/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/)) valid = 1;
-// 				}
-// 			}
-// 			else valid = 1;
-// 			if (!valid) throw `Invalid dot path key [${i}] -> (${part}).`;
-// 			buffer.push(part);
-// 		}
-// 		return buffer.join('.');
-// 	}
-// 	catch (e){
-// 		if (throwable !== false) console.warn(e, {path, operations});
-// 		if (throwable) throw new Error(e);
-// 		return '';
-// 	}
-// };
+/**
+ * Get validated object dot path (i.e. `'a.b.c'` to refer to `{a:{b:{c:1}}}`)
+ * 
+ * @param dot_path - dot separated keys
+ * @param operations - supports operations (i.e. '!reverse'/'!slice=0') ~ tests dot keys using `/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/` instead of default `/^[-_0-9a-zA-Z]+$/`
+ * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @returns `string` valid dot path
+ */
+export const _validDotPath = (dot_path: string, operations: boolean = false, _failure: 0|1|2 = 0): string => {
+	try {
+		if (!(dot_path = _str(dot_path, true))) throw new TypeError('Invalid dot path value.');
+		const parts: string[] = dot_path.split('.').map(v => v.trim()).filter(v => v.length);
+		if (!parts.length) throw new TypeError(`Invalid dot path format "${dot_path}".`);
+		const buffer = [];
+		for (let i = 0; i < parts.length; i ++){
+			let tmp, part = parts[i];
+			let valid: boolean = /^[-_0-9a-zA-Z]+$/.test(part);
+			if (!valid && operations){
+				if (['!reverse', '!slice'].includes(part)) valid = true;
+				else if (part.indexOf('=') > -1){
+					const _invalid = part.split(',')
+					.filter(v => v.trim())
+					.filter(v => !/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/.test(v));
+					if (!_invalid.length) valid = true;
+				}
+			}
+			if (!valid) throw new TypeError(`Invalid dot path key "${part}".`);
+			buffer.push(part);
+		}
+		return buffer.join('.');
+	}
+	catch (e){
+		if (_failure){
+			console.warn(e, {dot_path, operations});
+			if (_failure === 2) throw e;
+		}
+		return '';
+	}
+};
 
-// export const objDotPath = (obj, path, _default, throwable=false) => {
-// 	let keys = splitStr(dotPath(path, 1, throwable), '.');
-// 	if (!keys.length) return _default === obj ? obj : undefined;
-// 	let exists = 1, value = keys.reduce((val, key) => {
-		
-// 		//val not found
-// 		if (!exists) return val;
+/**
+ * Resolve dot path object value ~ supports array operations chaining
+ * 
+ * @example
+ * 
+ * //simple usage
+ * _dotGet('x', {x:1}) => 1
+ * _dotGet('a.b.c', {a:{b:{c:1}}}) => 1
+ * _dotGet('a.b.d', {a:{b:{c:1}}}, 'a.b.d', null) => null
+ * _dotGet('a.0', {a:['x','y']}) => 'x'
+ * 
+ * //array reverse operation
+ * _dotGet('0.!reverse', [[1,2,3]]) => [3,2,1]
+ * 
+ * //array slice operation
+ * _dotGet('0.!slice', [[1,2,3]]) => [1,2,3]
+ * 
+ * //array slice negative `-number`
+ * _dotGet([[1,2,3]], '0.-2') => [2,3]
+ * 
+ * //array `key=value` searching
+ * _dotGet('0.a=2', [[{a:1,b:2},{a:2,b:3}]]) => {a:2,b:3}
+ * _dotGet('0.a=1,b=2', [[{a:1,b:2,c:3}, {a:2,b:3,c:4}]]) => {a:1,b:2,c:3}
+ * 
+ * 
+ * @param dot_path - dot separated keys ~ optional array operations
+ * @param target - traverse object
+ * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @param _default - default result on failure
+ * @returns `any` dot path match result
+ */
+export const _dotGet = (dot_path: string, target: any, _failure: 0|1|2 = 0, _default?: any): any => {
+	try {
+		const keys = (dot_path = _validDotPath(dot_path, true, _failure)).split('.');
+		if (!keys.length) throw new TypeError('Invalid resolve dot path format.');
+		let abort: boolean = false, value: any = keys.reduce((prev: any, key: string) => {
+			if (abort) return prev; //not found
+			if (prev && 'object' === typeof prev){
+				if (_hasProp(prev, key)) return prev[key]; //key value
+				if (Array.isArray(prev)){
+					if (key === '!reverse') return prev.reverse(); //array reverse
+					if (key === '!slice') return prev.slice(); //array slice
+					
+					//array slice `-number`
+					let tmp: any;
+					if ((tmp = _num(key, 0)) < 0 && Number.isInteger(tmp)) return prev.slice(tmp);
 
-// 		//val object get
-// 		if (is(val, 'object')){
+					//array search
+					if (prev.length && key.indexOf('=') > -1){
+						const search_entries = key.split(',')
+						.filter(v => v.trim())
+						.map(val => {
+							let arr = val.split('=');
+							if (arr.length !== 2) return [];
+							let k = arr[0].trim();
+							let v = decodeURIComponent(arr[1]);
+							return k ? [k, _jsonParse(v, v)] : [];
+						})
+						.filter(v => v.length);
+						let index = -1;
+						if (search_entries.length) index = prev.findIndex(o => {
+							const matches = search_entries.filter(v => _hasProp(o, v[0]) && o[v[0]] === v[1]);
+							return matches.length && matches.length === search_entries.length;
+						});
+						if (index > -1) return prev[index];
+						abort = true;
+						return undefined;
+					}
+				}
+			}
+			
+			//not found
+			abort = true;
+			return undefined;
+		}, target);
+		return !abort ? value : _default;
+	}
+	catch (e) {
+		if (_failure){
+			console.warn(e, {dot_path, target});
+			if (_failure === 2) throw e;
+		}
+		return _default;
+	}
+};
 
-// 			//key value
-// 			if (hasProp(val, key)) return val[key];
+/**
+ * Get dot path value
+ * 
+ * @param dot_path - dot separated keys ~ optional array operations
+ * @param target - traverse object
+ * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @returns ``
+ */
+export const _dotValue = <TResult = any>(dot_path: string, target: any, _failure: 0|1|2 = 0): TResult|undefined => {
+	try {
+		const keys = (dot_path = _validDotPath(dot_path, true, _failure)).split('.');
+		if (!keys.length) throw new TypeError('Invalid resolve dot path format.');
+		return keys.reverse().reduce((prev, key) => ({[key]: prev}), target) as (TResult|undefined);
+	}
+	catch (e) {
+		if (_failure){
+			console.warn(e, {dot_path, target});
+			if (_failure === 2) throw e;
+		}
+		return undefined;
+	}
+};
 
-// 			//val array get
-// 			if (is(val, 'array')){
-// 				let tmp, sk, sv;
-
-// 				//reverse operation
-// 				if (key === '!reverse') return val.reverse();
-				
-// 				//slice operation
-// 				if (key === '!slice') return val.slice();
-// 				if (Number.isInteger(tmp = toNum(key)) && tmp < 0) return val.slice(tmp);
-
-// 				//search operation
-// 				if (val.length && key.indexOf('=') > -1 && (tmp = key.split('=')).length === 2 && (sk = tmp[0].trim())){
-// 					sv = jsonParse(tmp[1], tmp[1]);
-// 					let i = val.findIndex(o => {
-// 						if (!hasProp(o, sk)) return false;
-// 						return isMatch(o[sk], sv);
-// 					});
-// 					if (i < 0){
-// 						exists = 0;
-// 						return undefined;
-// 					}
-// 					return val[i];
-// 				}
-// 			}
-// 		}
-
-// 		//not found
-// 		exists = 0;
-// 		return undefined;
-// 	}, obj);
-// 	return exists ? value : _default;
-// };
-
-// //dot path value
-// export const dotPathValue = (path, value, throwable=false) => {
-// 	let keys = splitStr(dotPath(path, 0, throwable), '.');
-// 	if (!keys.length) return;
-// 	return keys.reverse().reduce((prev, key) => ({[key]: prev}), value);
-// };
-
-// //dot path assign
-// export const objDotPathAssign = (obj, path, value, array_object=false, throwable=false) => {
+// //TODO: dot path deep assign
+// export const _dotAssign = (dot_path: string, target: any, value: any, array_object=false, throwable=false) => {
 // 	let item = dotPathValue(path, value, throwable);
 // 	return deepAssignGet(obj, [item], [], [], !!array_object);
 // };
+
+/**
+ * Get dump value with limit max string length
+ * 
+ * @param value - parse value (`value = _jsonParse(_jsonStringify(value))`)
+ * @param maxStrLength - max string length [default: `100`]
+ * @returns `any` - parsed value
+ */
+export const _dumpVal = (value: any, maxStrLength: number = 100): any => {
+	const minStrLength = 20;
+	value = _jsonParse(_jsonStringify(value));
+	maxStrLength = !(maxStrLength = _int(maxStrLength, 100)) ? 0 : (maxStrLength >= minStrLength ? maxStrLength : 100);
+	const _maxStr = (v: any): any => {
+		if (!('string' === typeof v && v.length > maxStrLength)) return v;
+		const append = `...(${v.length})`;
+		return v.substring(0, maxStrLength - append.length) + append;
+	};
+	const _parse = (val: any): any => {
+		if (!!val && 'object' === typeof val){
+			for (let k in val){
+				if (!val.hasOwnProperty(k)) continue;
+				val[k] = _parse(val[k]);
+			}
+		}
+		else val = _maxStr(val);
+		return val;
+	};
+	return _parse(value);
+};
