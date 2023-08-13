@@ -5,18 +5,36 @@ import { _jsonStringify } from './_json';
 /**
  * Get unique string of random characters (in lowercase)
  * 
- * @param length  Result length [min = 7, max = 64]
+ * @example
+ * _uuid() => 'g9eem5try3pll9ue' 16
+ * _uuid(20) => 'k6yo2zgzodjll9uers4u' 20
+ * _uuid(7, 'test_') => 'test_3bmxj2t' 12
+ * _uuid(7, 'test_{uuid}_example') => 'test_lk9r5tv_example' 20
+ * _uuid(7, 'test_{uuid}_{uuid}_example') => 'test_g948vqf_0s6ms8y_example' 28
+ * 
+ * @param length - uuid length - integer `number` min=`7`, max=`64` (default `16`)
+ * @param template - uuid template - trimmed `string` ~ appends when `'{uuid}'` not in template
  * @returns unique `string` min-length = 7, max-length = 64
  */
-export function _uuid(length?: number): string{
-	const _uid = () => Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
-	if (!(length !== undefined && Number.isInteger(length) && length > 0 && length <= 64)) return _uid();
-	length = length < 7 ? 7 : (length > 64 ? 64 : length);
-	let buffer = '';
-	while (buffer.length < length) buffer += _uid();
-	return buffer.substring(0, length);
-	//TODO: _uuid - template
-	//return !(template = getAlphan(template)).length ? uid : template.match(p = /:uid/ig) ? template.replace(p, uid) : `${template}-${uid}`;
+export function _uuid(length?: number, template?: string): string {
+	const len: number = length !== undefined && !isNaN(parseInt(length + '')) && Number.isInteger(length) && length >= 7 && length <= 64 ? length : 16;
+	const __uid = () => Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+	const __uuid = () => {
+		let buffer = '';
+		while (buffer.length < len) buffer += __uid();
+		return buffer.substring(0, len);
+	};
+	let uuid: string = '';
+	if ('string' === typeof template && (template = template.trim())){
+		let append: boolean = true;
+		const tmp = template.replace(/\{uuid\}/g, () => {
+			if (append) append = false;
+			return __uuid();
+		});
+		uuid = append ? tmp + __uuid() : tmp;
+	}
+	else uuid = __uuid();
+	return uuid;
 }
 
 /**
@@ -336,7 +354,7 @@ export const _isDataURI = (value: any): boolean => {
  * @param matchDataURI
  * @returns `boolean`
  */
-export const _isURL = (value: any, matchDataURI: boolean = false): boolean => {
+export const _isUrl = (value: any, matchDataURI: boolean = false): boolean => {
 	if (!(value && 'string' === typeof value && value.trim())) return false;
 	if (matchDataURI && _isDataURI(value)) return true;
 	const pattern = '^(https?:\\/\\/)?'  // protocol

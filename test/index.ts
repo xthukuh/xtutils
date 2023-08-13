@@ -25,7 +25,16 @@ import {
 } from '../lib';
 
 (async()=>{
-	_sayHello(); //dev tests
+	// _sayHello(); //dev tests
+
+	Term.debug(' * @example');
+	let tmp: string;
+	console.log(` * _uuid() => '%s' %d`, (tmp = _uuid()), tmp.length);
+	console.log(` * _uuid() => '%s' %d`, (tmp = _uuid()), tmp.length);
+	console.log(` * _uuid(20) => '%s' %d`, (tmp = _uuid(20)), tmp.length);
+	console.log(` * _uuid(7, 'test_') => '%s' %d`, (tmp = _uuid(7, 'test_')), tmp.length);
+	console.log(` * _uuid(7, 'test_{uuid}_example') => '%s' %d`, (tmp = _uuid(7, 'test_{uuid}_example')), tmp.length);
+	console.log(` * _uuid(7, 'test_{uuid}_{uuid}_example') => '%s' %d`, (tmp = _uuid(7, 'test_{uuid}_{uuid}_example')), tmp.length);
 })()
 .catch(error => {
 	Term.error(`[E] ${error?.stack || error}`);

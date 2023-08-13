@@ -54,7 +54,7 @@ export {
 	_base64Encode,
 	_base64Decode,
 	_isDataURI,
-	_isURL,
+	_isUrl,
 	_isEmail,
 	_escapeSql,
 	_parseCsv,

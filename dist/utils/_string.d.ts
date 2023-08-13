@@ -3,10 +3,18 @@ import { bool, BufferString, BufferEncoding } from '../types';
 /**
  * Get unique string of random characters (in lowercase)
  *
- * @param length  Result length [min = 7, max = 64]
+ * @example
+ * _uuid() => 'g9eem5try3pll9ue' 16
+ * _uuid(20) => 'k6yo2zgzodjll9uers4u' 20
+ * _uuid(7, 'test_') => 'test_3bmxj2t' 12
+ * _uuid(7, 'test_{uuid}_example') => 'test_lk9r5tv_example' 20
+ * _uuid(7, 'test_{uuid}_{uuid}_example') => 'test_g948vqf_0s6ms8y_example' 28
+ *
+ * @param length - uuid length - integer `number` min=`7`, max=`64` (default `16`)
+ * @param template - uuid template - trimmed `string` ~ appends when `'{uuid}'` not in template
  * @returns unique `string` min-length = 7, max-length = 64
  */
-export declare function _uuid(length?: number): string;
+export declare function _uuid(length?: number, template?: string): string;
 /**
  * Safely `string` cast value
  * - Returns ISO format timestamp for valid Date value
@@ -193,7 +201,7 @@ export declare const _isDataURI: (value: any) => boolean;
  * @param matchDataURI
  * @returns `boolean`
  */
-export declare const _isURL: (value: any, matchDataURI?: boolean) => boolean;
+export declare const _isUrl: (value: any, matchDataURI?: boolean) => boolean;
 /**
  * Validate email address `string`
  *
