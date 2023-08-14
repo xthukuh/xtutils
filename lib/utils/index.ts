@@ -27,6 +27,7 @@ export {
 	_minMax,
 	_dotFlat,
 	_dumpVal,
+	_bool,
 } from './_objects';
 export { IPromiseResult, _asyncAll, _asyncValues, _sleep } from './_promise';
 export { IQueue, _queue } from './_queue';

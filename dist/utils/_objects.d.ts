@@ -68,10 +68,22 @@ export declare const _dotFlat: (value: any, omit?: string[]) => {
  *
  * @param dot_path - dot separated keys
  * @param operations - supports operations (i.e. '!reverse'/'!slice=0') ~ tests dot keys using `/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/` instead of default `/^[-_0-9a-zA-Z]+$/`
- * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
  * @returns `string` valid dot path
  */
 export declare const _validDotPath: (dot_path: string, operations?: boolean, _failure?: 0 | 1 | 2) => string;
+/**
+ * Get parsed `boolean` value
+ *
+ * @param value - parse value
+ * @param strict - strict mode ~ support only `boolean-like` value (i.e. `'true'|'false'|true|false|1|0`) returns `undefined` if unsupported when enabled.
+ * @param trim - trim `string` value (default `true`)
+ * @returns
+ * - `boolean`
+ * - `undefined` when invalid if `strict` is enabled
+ * - `'false' => false` | `!!value` when strict is disabled
+ */
+export declare const _bool: (value: any, strict?: boolean, trim?: boolean) => boolean | undefined;
 /**
  * Resolve dot path object value ~ supports array operations chaining
  *
@@ -99,7 +111,7 @@ export declare const _validDotPath: (dot_path: string, operations?: boolean, _fa
  *
  * @param dot_path - dot separated keys ~ optional array operations
  * @param target - traverse object
- * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
  * @param _default - default result on failure
  * @returns `any` dot path match result
  */
@@ -109,7 +121,7 @@ export declare const _dotGet: (dot_path: string, target: any, _failure?: 0 | 1 |
  *
  * @param dot_path - dot separated keys ~ optional array operations
  * @param target - traverse object
- * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
  * @returns ``
  */
 export declare const _dotValue: <TResult = any>(dot_path: string, target: any, _failure?: 0 | 1 | 2) => TResult | undefined;

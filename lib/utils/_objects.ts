@@ -109,7 +109,7 @@ export const _dotFlat = (value: any, omit: string[] = []):{[key: string]: any} =
  * 
  * @param dot_path - dot separated keys
  * @param operations - supports operations (i.e. '!reverse'/'!slice=0') ~ tests dot keys using `/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/` instead of default `/^[-_0-9a-zA-Z]+$/`
- * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
  * @returns `string` valid dot path
  */
 export const _validDotPath = (dot_path: string, operations: boolean = false, _failure: 0|1|2 = 0): string => {
@@ -145,6 +145,23 @@ export const _validDotPath = (dot_path: string, operations: boolean = false, _fa
 };
 
 /**
+ * Get parsed `boolean` value
+ * 
+ * @param value - parse value
+ * @param strict - strict mode ~ support only `boolean-like` value (i.e. `'true'|'false'|true|false|1|0`) returns `undefined` if unsupported when enabled.
+ * @param trim - trim `string` value (default `true`)
+ * @returns
+ * - `boolean`
+ * - `undefined` when invalid if `strict` is enabled
+ * - `'false' => false` | `!!value` when strict is disabled
+ */
+export const _bool = (value: any, strict: boolean = false, trim: boolean = true): boolean|undefined => {
+	if (trim && 'string' === typeof value) value = value.trim();
+	if (strict && !['true', 'false', true, false, 1, 0].includes(value)) return undefined;
+	return value === 'false' ? false : !!value;
+};
+
+/**
  * Resolve dot path object value ~ supports array operations chaining
  * 
  * @example
@@ -171,7 +188,7 @@ export const _validDotPath = (dot_path: string, operations: boolean = false, _fa
  * 
  * @param dot_path - dot separated keys ~ optional array operations
  * @param target - traverse object
- * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
  * @param _default - default result on failure
  * @returns `any` dot path match result
  */
@@ -235,7 +252,7 @@ export const _dotGet = (dot_path: string, target: any, _failure: 0|1|2 = 0, _def
  * 
  * @param dot_path - dot separated keys ~ optional array operations
  * @param target - traverse object
- * @param _failure - error handling ~ `0` = disabled, '1' = warn error, `2` = warn and throw error
+ * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
  * @returns ``
  */
 export const _dotValue = <TResult = any>(dot_path: string, target: any, _failure: 0|1|2 = 0): TResult|undefined => {
