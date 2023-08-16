@@ -234,3 +234,16 @@ export declare const _parseCsv: (text: string, delimiter?: string, br?: string) 
  * @returns `string` csv text
  */
 export declare const _toCsv: (data: string | string[] | string[][], delimiter?: string, br?: string) => string;
+/**
+ * Get valid file path string ~ parsed and validated with illegal characters (:?"<>|*) check
+ * - removes trailing/leading path separator (i.e. '//')
+ * - removes unnecessary '.' (i.e. 'a/b/./c' => 'a/b/c')
+ * @param value - parse value
+ * @param named - path must have a basename (default `false`) ~ fails when result is `['', '.', '..']`
+ * @param separator - replace path separator ~ `string` character `'/'` or `'\\'` (default: `''` => disabled)
+ * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
+ * @param _type - field type (default `'path'`) ~ used in error message (i.e. `'The ${_type} is invalid.'`)
+ * @param _default - result on error (default `''`) ~ validated when available
+ * @returns `string` valid path value
+ */
+export declare const _validFilePath: (value: any, named?: boolean, separator?: string, _failure?: 0 | 1 | 2, _type?: string, _default?: string) => string;

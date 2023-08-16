@@ -446,3 +446,58 @@ export const _toCsv = (data: string|string[]|string[][], delimiter?: string, br?
 	else if (data = _str(data, true)) rows.push(..._parseCsv(data, delim, br).map(r => r.map(c => _cell(c))));
 	return rows.map(cols => cols.join(delim)).filter(v => v.length).join('\n');
 };
+
+/**
+ * Get valid file path string ~ parsed and validated with illegal characters (:?"<>|*) check
+ * - removes trailing/leading path separator (i.e. '//')
+ * - removes unnecessary '.' (i.e. 'a/b/./c' => 'a/b/c')
+ * @param value - parse value
+ * @param named - path must have a basename (default `false`) ~ fails when result is `['', '.', '..']`
+ * @param separator - replace path separator ~ `string` character `'/'` or `'\\'` (default: `''` => disabled)
+ * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
+ * @param _type - field type (default `'path'`) ~ used in error message (i.e. `'The ${_type} is invalid.'`)
+ * @param _default - result on error (default `''`) ~ validated when available
+ * @returns `string` valid path value
+ */
+export const _validFilePath = (value: any, named: boolean = false, separator: string = '', _failure: 0|1|2 = 0, _type: string = 'path', _default: string = ''): string => {
+	try {
+		_type = _str(_type, true) || 'path';
+		let path: string = _str(value, true);
+		const re = /[\\/]/g;
+		const illegal: string[] = []; //illegal characters cache
+		const sep: string[] = [...(path.match(re) ?? [])]; //path separators cache
+		const _filter = (v: string, i: number): boolean => { //fn => path parts filter - omits empty (removes cached separator)
+			if (!v) sep.splice(i, 1);
+			return !!v;
+		};
+		let drive: string = '', m: any;
+		if (!!(m = path.match(/^([a-z]\:)(.*)$/i))){ //get drive
+			drive = m[1];
+			path = m[2];
+		}
+		const parts = path.split(re);
+		path = parts.map(v => v.trim()).filter(_filter)
+		.map((v, i) => i && v === '.' ? '' : v).filter(_filter)
+		.map(v => {
+			if (!!(m = v.match(/[\:\?\"\<\>\|\*]/g))) illegal.push(...m); //match illegal characters
+			return v;
+		}).join('/');
+		if (illegal.length) throw new Error(`The ${_type} contains illegal characters (:?"<>|*) => "${[...new Set(illegal)].join(',')}".`); //invalid
+		if (['', '.', '..'].includes(path) && named) throw new Error(`The ${_type} string value "${path}" is not named - invalid basename.`); //unnamed
+		if (drive) path = drive + '/' + (['..', '.'].includes(path) ? '' : path); //restore path drive (normalize 'D:/..?' => 'D:/')
+		else if (parts.length && !parts[0].trim()) path = '/' + (path === '.' ? '' : path); //restore leading slash (normalize '/.' => '/')
+		if (!(separator = (separator = _str(separator, true)) && ['/', '\\'].includes(separator) ? separator : '')){ //check separator
+			path = path.split('/').map((v, i) => v + (sep[i] ?? '')).join(''); //separator - restore cached
+		}
+		else if (separator === '\\') path = path.replace('/\//g', '\\'); //separator - replace
+		return path;
+	}
+	catch (e: any){
+		if (_failure){
+			const error = `${e.message || e}`;
+			console.warn(error, {value});
+			if (_failure === 2) throw new TypeError(error);
+		}
+		return (_default = _str(_default, true)) ? _validFilePath(_default) : '';
+	}
+};
