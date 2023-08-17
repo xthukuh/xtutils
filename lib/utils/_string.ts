@@ -464,8 +464,8 @@ export const _validFilePath = (value: any, named: boolean = false, separator: st
 		_type = _str(_type, true) || 'path';
 		let path: string = _str(value, true);
 		const re = /[\\/]/g;
+		const sep: string[] = []; //path separators cache
 		const illegal: string[] = []; //illegal characters cache
-		const sep: string[] = [...(path.match(re) ?? [])]; //path separators cache
 		const _filter = (v: string, i: number): boolean => { //fn => path parts filter - omits empty (removes cached separator)
 			if (!v) sep.splice(i, 1);
 			return !!v;
@@ -475,6 +475,7 @@ export const _validFilePath = (value: any, named: boolean = false, separator: st
 			drive = m[1];
 			path = m[2];
 		}
+		sep.push(...(path.match(re) ?? []));
 		const parts = path.split(re);
 		path = parts.map(v => v.trim()).filter(_filter)
 		.map((v, i) => i && v === '.' ? '' : v).filter(_filter)
