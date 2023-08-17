@@ -22,20 +22,50 @@ import {
 	_str,
 	_parseCsv,
 	_toCsv,
+	_normPath,
+	_split,
 } from '../lib';
 
 (async()=>{
 	// _sayHello(); //dev tests
 
-	Term.debug(' * @example');
-	let tmp: string;
-	console.log(` * _uuid() => '%s' %d`, (tmp = _uuid()), tmp.length);
-	console.log(` * _uuid() => '%s' %d`, (tmp = _uuid()), tmp.length);
-	console.log(` * _uuid(20) => '%s' %d`, (tmp = _uuid(20)), tmp.length);
-	console.log(` * _uuid(7, 'test_') => '%s' %d`, (tmp = _uuid(7, 'test_')), tmp.length);
-	console.log(` * _uuid(7, 'test_{uuid}_example') => '%s' %d`, (tmp = _uuid(7, 'test_{uuid}_example')), tmp.length);
-	console.log(` * _uuid(7, 'test_{uuid}_{uuid}_example') => '%s' %d`, (tmp = _uuid(7, 'test_{uuid}_{uuid}_example')), tmp.length);
+	Term.info('>> Test path');
+	const input = process.argv[2] || 'example.png';
+	return splitPath(input);
+	const paths = [
+		'C:\\a\\b',
+		'C:\\a/.././b\\c/test.txt',
+		'/a/.././b\\c/',
+		'./a/.././b/c/test.txt',
+		'../a/.././b/c/test.txt',
+		'../../.././a/./b/c/.env',
+		'C:\\a\\b',
+		'C:\\..',
+		'C:\\',
+		'c:\\../b',
+		'c:\\../b/.././c/../../d/e\\./../f',
+		'//../b/.././c/../../d/e\\./../f',
+		'/../b',
+		'/..',
+		'/../.',
+		'/.',
+		input,
+	];
+	console.log(Object.fromEntries(paths.map(path => {
+		return [path, _normPath(path, '/')];
+	})));
 })()
 .catch(error => {
 	Term.error(`[E] ${error?.stack || error}`);
 });
+
+function splitPath(value: any): any {
+	console.log('-- _split', _split(value, /[\\\/]/));
+	const path = _normPath(value, '/', 'path', 1);
+	const parts = path.split(/[\\\/]/g);
+	console.log({path, parts});
+	console.log(path.match(/(.*?(?=[^\\\/\:\?\"\<\>\|\*]+))/));
+	Term.debug(Object.fromEntries(Object.entries(path.match(/([^\\\/\:\?\"\<\>\|\*]+)?(\.([-_0-9a-z]+))$/i) || []).map(v => [v[0] + '', v[1]])));
+	Term.debug(Object.fromEntries(Object.entries(path.match(/[\\\/]([^\\\/\:\?\"\<\>\|\*]+)$/i) || []).map(v => [v[0] + '', v[1]])));
+	Term.debug(Object.fromEntries(Object.entries(path.match(/^([^\\\/\:\?\"\<\>\|\*]+)$/i) || []).map(v => [v[0] + '', v[1]])));
+}

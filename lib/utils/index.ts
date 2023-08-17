@@ -60,6 +60,7 @@ export {
 	_escapeSql,
 	_parseCsv,
 	_toCsv,
-	_validFilePath,
+	_split,
+	_normPath,
 } from './_string';
 export { SortDirection, SortOrder, _sortValues } from './_sort';

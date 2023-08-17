@@ -448,57 +448,83 @@ export const _toCsv = (data: string|string[]|string[][], delimiter?: string, br?
 };
 
 /**
- * Get valid file path string ~ parsed and validated with illegal characters (:?"<>|*) check
- * - removes trailing/leading path separator (i.e. '//')
- * - removes unnecessary '.' (i.e. 'a/b/./c' => 'a/b/c')
- * @param value - parse value
- * @param named - path must have a basename (default `false`) ~ fails when result is `['', '.', '..']`
- * @param separator - replace path separator ~ `string` character `'/'` or `'\\'` (default: `''` => disabled)
- * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
- * @param _type - field type (default `'path'`) ~ used in error message (i.e. `'The ${_type} is invalid.'`)
- * @param _default - result on error (default `''`) ~ validated when available
- * @returns `string` valid path value
+ * Split string value into parts
+ * 
+ * @param value - split string
+ * @param separator - split
+ * @returns 
  */
-export const _validFilePath = (value: any, named: boolean = false, separator: string = '', _failure: 0|1|2 = 0, _type: string = 'path', _default: string = ''): string => {
+export const  _split = (value: any, separator?: string|RegExp, limit?: number): [part: string, separator: string | ''][] => {
+	let val = _str(value);
+	let re: RegExp|undefined = undefined;
+	if ('string' === typeof separator) re = new RegExp(_regEscape(_str(separator)));
+	else if (separator instanceof RegExp) re = separator;
+	if (re) re = new RegExp(re, [...new Set(('g' + re.flags).split(''))].join(''));
+	const parts: string[] = re ? val.split(re, limit) : val.split(undefined as any);
+	const matches: string[] = re ? val.match(re) || [] : val.match(undefined as any) || [];
+	return parts.map((v, i) => [v, matches[i] ?? '']);
+};
+
+/**
+ * Get normalized file/directory path ~ validates illegal characters in path name (:?"<>|*) check
+ * 
+ * - parses dot path (i.e. `'a/b/./c' => 'a/b/c'`, `'./a/../b/c' => './b/c'`) ignores out of bound (i.e. `'C:/a/../../b/c' => 'C:/b/c'`)
+ * - capitalizes drive letter (i.e. `'c:\\a.txt' => 'C:\\a.txt'`)
+ * 
+ * @param value - parse path value
+ * @param separator - path separator replacement ~ `/[\\/]/`
+ * @param _type - path type name (default `'path'`) ~ used in error message (i.e. `'The ${_type} is invalid.'`)
+ * @param _failure - error handling ~ `-1` = ignore, `0` = (default) disabled, '1' = warn, `2` = throw error
+ * @returns `string` normalized path (may contain illegal characters when `_failure` is `-1`)
+ */
+export const _normPath = (value: any, separator: string = '', _type: string = 'path', _failure: -1|0|1|2 = 0): string => {
+	separator = (separator = _str(separator, true)) && ['/', '\\'].includes(separator) ? separator : '';
+	_failure = [-1, 0, 1, 2].includes(_failure) ? _failure : 0;
+	_type = _str(_type, true) || 'path';
+	let path: string = _str(value, true);
 	try {
-		_type = _str(_type, true) || 'path';
-		let path: string = _str(value, true);
-		const re = /[\\/]/g;
-		const sep: string[] = []; //path separators cache
-		const illegal: string[] = []; //illegal characters cache
-		const _filter = (v: string, i: number): boolean => { //fn => path parts filter - omits empty (removes cached separator)
-			if (!v) sep.splice(i, 1);
-			return !!v;
-		};
-		let drive: string = '', m: any;
-		if (!!(m = path.match(/^([a-z]\:)(.*)$/i))){ //get drive
-			drive = m[1];
-			path = m[2];
-		}
-		sep.push(...(path.match(re) ?? []));
-		const parts = path.split(re);
-		path = parts.map(v => v.trim()).filter(_filter)
-		.map((v, i) => i && v === '.' ? '' : v).filter(_filter)
-		.map(v => {
-			if (!!(m = v.match(/[\:\?\"\<\>\|\*]/g))) illegal.push(...m); //match illegal characters
-			return v;
-		}).join('/');
-		if (illegal.length) throw new Error(`The ${_type} contains illegal characters (:?"<>|*) => "${[...new Set(illegal)].join(',')}".`); //invalid
-		if (['', '.', '..'].includes(path) && named) throw new Error(`The ${_type} string value "${path}" is not named - invalid basename.`); //unnamed
-		if (drive) path = drive + '/' + (['..', '.'].includes(path) ? '' : path); //restore path drive (normalize 'D:/..?' => 'D:/')
-		else if (parts.length && !parts[0].trim()) path = '/' + (path === '.' ? '' : path); //restore leading slash (normalize '/.' => '/')
-		if (!(separator = (separator = _str(separator, true)) && ['/', '\\'].includes(separator) ? separator : '')){ //check separator
-			path = path.split('/').map((v, i) => v + (sep[i] ?? '')).join(''); //separator - restore cached
-		}
-		else if (separator === '\\') path = path.replace('/\//g', '\\'); //separator - replace
+		const re = /[\\\/]/g;
+		const items: [part: string, div: string][] = [];
+		let s = 0, drive = '';
+		void path.replace(re, (...args): any => {
+			const div: string = separator ? separator : args[0];
+			const part: string = path.substring(s, args[1]);
+			if (!s && /[a-z]\:/i.test(part)) drive = part.toUpperCase() + div;
+			else items.push([part, div]);
+			s = args[1] + 1;
+		});
+		if (s < path.length) items.push([path.substring(s), '']);
+		let m: RegExpMatchArray|null = null;
+		const illegal: Set<string> = new Set();
+		const parts: [part: string, div: string][] = [];
+		items.map(v => [_str(v[0], true), v[1]]).filter((v, i) => !(i && !v[0]))
+		.map((v, i) => i && v[0] === '.' ? [] : v).filter(v => v.length)
+		.forEach(v => {
+			const [part, div] = v;
+			console.log(part, part.match(/[\:\?\"\<\>\|\*]/g));
+			if (m = part.match(/[\:\?\"\<\>\|\*]/g)) m.forEach(char => illegal.add(char));
+			if (part === '..'){
+				if (parts.length){
+					const p = parts.length - 1;
+					if (p > -1 && !!parts[p][0] && !['.', '..'].includes(parts[p][0])){
+						parts.pop();
+						return;
+					}
+				}
+				else if (drive) return;
+			}
+			parts.push([part, div]);
+		});
+		path = drive + parts.map(v => v.join('')).join('');
+		if (illegal.size) throw new Error(`The ${_type} contains illegal characters (:?"<>|*) => "${[...illegal].join(',')}".`); //invalid
 		return path;
 	}
 	catch (e: any){
-		if (_failure){
+		if (_failure > 0){
 			const error = `${e.message || e}`;
-			console.warn(error, {value});
+			console.warn(error, {value, path});
 			if (_failure === 2) throw new TypeError(error);
 		}
-		return (_default = _str(_default, true)) ? _validFilePath(_default) : '';
+		return path;
 	}
 };

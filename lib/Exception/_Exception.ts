@@ -13,7 +13,7 @@ export interface IExceptionError {
 /**
  * `Symbol` private props key name
  */
-const PRIVATE = Symbol(`__private_props_${Date.now()}__`);
+const PROPS = Symbol(`__private_props_${Date.now()}__`);
 
 /**
  * `Exception` extends `Error` ~ like `DOMException`
@@ -28,7 +28,7 @@ export class Exception extends Error implements IExceptionError
 	/**
 	 * Private props
 	 */
-	[PRIVATE]: {
+	[PROPS]: {
 		message: string;
 		name: string;
 		code: string|number;
@@ -40,35 +40,35 @@ export class Exception extends Error implements IExceptionError
 	 * Error message (default: `'Unspecified exception message.'`)
 	 */
 	get message(): string {
-		return this[PRIVATE].message;
+		return this[PROPS].message;
 	}
 
 	/**
 	 * Error name (default: `'Exception'`)
 	 */
 	get name(): string {
-		return this[PRIVATE].name;
+		return this[PROPS].name;
 	}
 
 	/**
 	 * Error code - `string` | finite/parsed `integer` (default: `0`)
 	 */
 	get code(): string|number {
-		return this[PRIVATE].code;
+		return this[PROPS].code;
 	}
 	
 	/**
 	 * Error data
 	 */
 	get data(): any {
-		return this[PRIVATE].data;
+		return this[PROPS].data;
 	}
 	
 	/**
 	 * Error data
 	 */
 	get time(): any {
-		return this[PRIVATE].time;
+		return this[PROPS].time;
 	}
 
 	/**
@@ -86,7 +86,7 @@ export class Exception extends Error implements IExceptionError
 		super(message = message && 'string' === typeof message && (message = message.trim()) ? message : 'Unspecified exception message.');
 		if ('string' === typeof code) code = (code = code.trim()) ? code : 0;
 		else if (!('number' === typeof code && !isNaN(code = parseInt(`${code}`)) && Number.isInteger(code) && Number.isFinite(code))) code = 0;
-		this[PRIVATE] = {
+		this[PROPS] = {
 			message,
 			name: name && 'string' === typeof name && (name = name.trim()) ? name : 'Exception',
 			code,
