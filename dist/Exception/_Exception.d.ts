@@ -12,7 +12,7 @@ export interface IExceptionError {
 /**
  * `Symbol` private props key name
  */
-declare const PRIVATE: unique symbol;
+declare const PROPS: unique symbol;
 /**
  * `Exception` extends `Error` ~ like `DOMException`
  *
@@ -25,7 +25,7 @@ export declare class Exception extends Error implements IExceptionError {
     /**
      * Private props
      */
-    [PRIVATE]: {
+    [PROPS]: {
         message: string;
         name: string;
         code: string | number;

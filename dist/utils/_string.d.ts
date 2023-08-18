@@ -235,15 +235,85 @@ export declare const _parseCsv: (text: string, delimiter?: string, br?: string) 
  */
 export declare const _toCsv: (data: string | string[] | string[][], delimiter?: string, br?: string) => string;
 /**
- * Get valid file path string ~ parsed and validated with illegal characters (:?"<>|*) check
- * - removes trailing/leading path separator (i.e. '//')
- * - removes unnecessary '.' (i.e. 'a/b/./c' => 'a/b/c')
- * @param value - parse value
- * @param named - path must have a basename (default `false`) ~ fails when result is `['', '.', '..']`
- * @param separator - replace path separator ~ `string` character `'/'` or `'\\'` (default: `''` => disabled)
- * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
- * @param _type - field type (default `'path'`) ~ used in error message (i.e. `'The ${_type} is invalid.'`)
- * @param _default - result on error (default `''`) ~ validated when available
- * @returns `string` valid path value
+ * Split `string` value into parts ~ part and separator array (last entry's separator is `''`)
+ *
+ * @param value - split string
+ * @param separator - split separator (default: `undefined`)
+ * @param limit - split items limit/count (default: `undefined`)
+ * @returns `[part: string, separator: string | ''][]` parts
  */
-export declare const _validFilePath: (value: any, named?: boolean, separator?: string, _failure?: 0 | 1 | 2, _type?: string, _default?: string) => string;
+export declare const _split: (value: any, separator?: string | RegExp, limit?: number) => [part: string, separator: string][];
+/**
+ * Basename (stringable) object interface
+ */
+export interface IBasename {
+    value: any;
+    basename: string;
+    name: string;
+    ext: string;
+    toString: () => string;
+    error: string;
+    illegal: string[];
+    invalid: string[];
+}
+/**
+ * Basename error interface
+ */
+export interface IBasenameError extends Error {
+    name: string;
+    item: IBasename;
+}
+/**
+ * Get validated basename from file path value
+ * - splits path separators `[\\/]` uses last entry
+ * - trims spaces, invalidates empty
+ * - invalidates illegal characters (i.e. `:?"<>|*`)
+ * - invalidates invalid names (i.e. `'...', 'name.', 'name...'`)
+ *
+ * @param value - parse path value
+ * @param dots - allow dot nav ~ `'.' | '..'` (default: `false`)
+ * @param _failure - error handling ~ `0` = ignore, '1' = warn, `2` = throw error (default `0`)
+ * @returns `IBasename` basename (stringable)
+ * @throws `IBasenameError`
+ */
+export declare const _basename: (value: any, dots?: boolean, _failure?: 0 | 1 | 2) => IBasename;
+/**
+ * Normalized path (stringable) interface
+ */
+export interface INormPath {
+    value: any;
+    root: string;
+    drive: string;
+    path: string;
+    dir: string;
+    basename: string;
+    name: string;
+    ext: string;
+    toString: () => string;
+    error: string;
+    illegal: string[];
+    invalid: string[];
+}
+/**
+ * Normalized path error interface
+ */
+export interface INormPathError extends Error {
+    name: string;
+    item: INormPath;
+}
+/**
+ * Get normalized file/directory path (validates basename)
+ * - trims spaces, silently omits empty
+ * - invalidates illegal path name characters (i.e. `:?"<>|*`)
+ * - invalidates invalid path name dots (i.e. `'...', 'name.', 'name...'`)
+ * - invalidates outbound root dot nav
+ * - normalizes dot path			(i.e. `'/.'` => `'/'`, `'a/b/./c' => 'a/b/c'`, `'./a/../b/c' => './b/c'`) ignores out of bound (i.e. `'C:/a/../../b/c' => 'C:/b/c'`)
+ * - normalizes drive letter	(i.e. `'c:\\a.txt' => 'C:\\a.txt'`, `'c:'` => `'C:\\'`)
+ *
+ * @param value - parse path value
+ * @param separator - result path separator ~ `'' | '/' | '\\'` (default `''` = unchanged)
+ * @param _type - path type (default `''`) ~ name used in error message (i.e. `'The ${_type} path...'`)
+ * @param _failure - error handling ~ `0` = ignore, '1' = warn, `2` = throw error (default `0`)
+ * @returns `INormPath` normalized path (stringable)
+ */
+export declare const _normPath: (value: any, separator?: '' | '/' | '\\', _type?: string, _failure?: 0 | 1 | 2) => INormPath;

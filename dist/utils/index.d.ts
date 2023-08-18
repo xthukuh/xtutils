@@ -11,5 +11,5 @@ export { _isNum, _toNum, _num, _int, _round, _commas, _rand, _px2rem, } from './
 export { _flatten, _hasProp, _hasProps, _hasAnyProps, _isClass, _isFunc, _minMax, _dotFlat, _dumpVal, _bool, } from './_objects';
 export { IPromiseResult, _asyncAll, _asyncValues, _sleep } from './_promise';
 export { IQueue, _queue } from './_queue';
-export { _uuid, _string, _stringable, _str, _strNorm, _regEscape, _strEscape, _trim, _ltrim, _rtrim, _toTitleCase, _toSentenceCase, _toSnakeCase, _toSlugCase, _toStudlyCase, _toCamelCase, _toLowerCase, _toUpperCase, _hashCode, _hash53, _base64Encode, _base64Decode, _isDataURI, _isUrl, _isEmail, _escapeSql, _parseCsv, _toCsv, _validFilePath, } from './_string';
+export { _uuid, _string, _stringable, _str, _strNorm, _regEscape, _strEscape, _trim, _ltrim, _rtrim, _toTitleCase, _toSentenceCase, _toSnakeCase, _toSlugCase, _toStudlyCase, _toCamelCase, _toLowerCase, _toUpperCase, _hashCode, _hash53, _base64Encode, _base64Decode, _isDataURI, _isUrl, _isEmail, _escapeSql, _parseCsv, _toCsv, _split, IBasename, IBasenameError, _basename, INormPath, INormPathError, _normPath, } from './_string';
 export { SortDirection, SortOrder, _sortValues } from './_sort';
