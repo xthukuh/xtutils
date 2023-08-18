@@ -363,11 +363,10 @@ export const _isUrl = (value: any, matchDataURI: boolean = false): boolean => {
 	+ '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'  // port and path
 	+ '(\\?[;&a-z\\d%_.~+=-]*)?' // query string
 	+ '(\\#[-a-z\\d_]*)?$'; // fragment locator
-	//TODO: (from yup) let rUrl =
-	//   eslint-disable-next-line
-	//   /^((https?|ftp):)?\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i;
 	return new RegExp(pattern, 'i').test(value);
 }
+//REF: (yup url validation regex)
+//let rUrl = /^((https?|ftp):)?\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i;
 
 /**
  * Validate email address `string`
@@ -377,11 +376,10 @@ export const _isUrl = (value: any, matchDataURI: boolean = false): boolean => {
  */
 export const _isEmail = (value: any): boolean => {
 	if (!(value && 'string' === typeof value && value.trim())) return false;
-	//TODO: (from yup) let rEmail =
-	//  eslint-disable-next-line
-	//  /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 	return /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(value.toLowerCase());
 };
+//REF: (yup email validation regex)
+// let rEmail = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 /**
  * Escape `SQL` special characters from query `string` value
@@ -448,11 +446,12 @@ export const _toCsv = (data: string|string[]|string[][], delimiter?: string, br?
 };
 
 /**
- * Split string value into parts
+ * Split `string` value into parts ~ part and separator array (last entry's separator is `''`)
  * 
  * @param value - split string
- * @param separator - split
- * @returns 
+ * @param separator - split separator (default: `undefined`)
+ * @param limit - split items limit/count (default: `undefined`)
+ * @returns `[part: string, separator: string | ''][]` parts
  */
 export const  _split = (value: any, separator?: string|RegExp, limit?: number): [part: string, separator: string | ''][] => {
 	let val = _str(value);
@@ -460,49 +459,217 @@ export const  _split = (value: any, separator?: string|RegExp, limit?: number): 
 	if ('string' === typeof separator) re = new RegExp(_regEscape(_str(separator)));
 	else if (separator instanceof RegExp) re = separator;
 	if (re) re = new RegExp(re, [...new Set(('g' + re.flags).split(''))].join(''));
-	const parts: string[] = re ? val.split(re, limit) : val.split(undefined as any);
+	limit = limit && !isNaN(limit = parseInt(limit + '')) && limit >= 0 ? limit : undefined;
+	const parts: string[] = re ? val.split(re, limit) : val.split(undefined as any, limit);
 	const matches: string[] = re ? val.match(re) || [] : val.match(undefined as any) || [];
 	return parts.map((v, i) => [v, matches[i] ?? '']);
 };
 
 /**
- * Get normalized file/directory path ~ validates illegal characters in path name (:?"<>|*) check
- * 
- * - parses dot path (i.e. `'a/b/./c' => 'a/b/c'`, `'./a/../b/c' => './b/c'`) ignores out of bound (i.e. `'C:/a/../../b/c' => 'C:/b/c'`)
- * - capitalizes drive letter (i.e. `'c:\\a.txt' => 'C:\\a.txt'`)
+ * Basename (stringable) object interface
+ */
+export interface IBasename {
+	value: any;
+	basename: string;
+	name: string;
+	ext: string;
+	toString: ()=>string;
+	error: string;
+	illegal: string[];
+	invalid: string[];
+}
+
+/**
+ * Basename error interface
+ */
+export interface IBasenameError extends Error {
+	name: string;
+	item: IBasename;
+}
+
+/**
+ * Get validated basename from file path value
+ * - splits path separators `[\\/]` uses last entry
+ * - trims spaces, invalidates empty
+ * - invalidates illegal characters (i.e. `:?"<>|*`)
+ * - invalidates invalid names (i.e. `'...', 'name.', 'name...'`)
  * 
  * @param value - parse path value
- * @param separator - path separator replacement ~ `/[\\/]/`
- * @param _type - path type name (default `'path'`) ~ used in error message (i.e. `'The ${_type} is invalid.'`)
- * @param _failure - error handling ~ `-1` = ignore, `0` = (default) disabled, '1' = warn, `2` = throw error
- * @returns `string` normalized path (may contain illegal characters when `_failure` is `-1`)
+ * @param dots - allow dot nav ~ `'.' | '..'` (default: `false`)
+ * @param _failure - error handling ~ `0` = ignore, '1' = warn, `2` = throw error (default `0`)
+ * @returns `IBasename` basename (stringable)
+ * @throws `IBasenameError`
  */
-export const _normPath = (value: any, separator: string = '', _type: string = 'path', _failure: -1|0|1|2 = 0): string => {
-	separator = (separator = _str(separator, true)) && ['/', '\\'].includes(separator) ? separator : '';
-	_failure = [-1, 0, 1, 2].includes(_failure) ? _failure : 0;
-	_type = _str(_type, true) || 'path';
+export const _basename = (value: any, dots: boolean = false, _failure?: 0|1|2): IBasename => {
+	const failure: 0|1|2 = [0, 1, 2].includes(_failure = parseInt(_failure + '') as any) ? _failure as (0|1|2) : 0;
+
+	//basename item
+	const item: IBasename = {
+		value,
+		basename: '',
+		name: '',
+		ext: '',
+		toString(): string {
+			return this.basename;
+		},
+		error: '',
+		illegal: [],
+		invalid: [],
+	};
+
+	//parse value
+	let m: RegExpMatchArray|null = null;
+	const val = item.name = item.basename = _str(_str(value, true).split(/[\\\/]/g).pop(), true);
+	if (m = val.match(/([^\\/]*)$/i)){
+		item.name = m[1];
+		if (m = item.name.match(/(.*)(\.([-_0-9a-zA-Z]+))$/i)){
+			item.name = m[1];
+			item.ext = m[3];
+		}
+	}
+	try {
+		const errors: string[] = [];
+		if (!val) errors.push('The basename string value is empty');
+		else {
+
+			//dots
+			if (!dots && ['..', '..'].includes(val)){
+				item.invalid.push(val);
+				errors.push(`The basename "${val}" dots not allowed`);
+			}
+
+			//invalid
+			if (/^\.\.[\.]+$/.test(val) || /[^\.][\.]+$/.test(val)){
+				if (!item.invalid.length) item.invalid.push(val);
+				errors.push(`The basename "${val}" format is invalid`);
+			}
+			
+			//illegal
+			if (m = val.match(/[\:\?\"\<\>\|\*]/g)){
+				item.illegal.push(...m);
+				errors.push(`The basename "${val}" contains illegal characters (:?"<>|*) => "${m.join('')}"`);
+			}
+		}
+		if (errors.length) throw new Error(item.error = errors.join('; ') + '.');
+		
+		//result
+		return item;
+	}
+	catch (e: any){
+		if (failure){
+			const error = `${e.message || e}`;
+			if (failure === 1) console.warn(error, {item}); //warn
+			else if (failure === 2){ //throw
+				class BasenameError extends Error implements IBasenameError {
+					name: string = 'BasenameError';
+					item: IBasename = item;
+				}
+				throw new BasenameError(error);
+			}
+		}
+		return item;
+	}
+};
+
+/**
+ * Normalized path (stringable) interface
+ */
+export interface INormPath {
+	value: any;
+	root: string;
+	drive: string;
+	path: string;
+	dir: string;
+	basename: string;
+	name: string;
+	ext: string;
+	toString: ()=>string;
+	error: string;
+	illegal: string[];
+	invalid: string[];
+}
+
+/**
+ * Normalized path error interface
+ */
+export interface INormPathError extends Error {
+	name: string;
+	item: INormPath;
+}
+
+/**
+ * Get normalized file/directory path (validates basename)
+ * - trims spaces, silently omits empty
+ * - invalidates illegal path name characters (i.e. `:?"<>|*`)
+ * - invalidates invalid path name dots (i.e. `'...', 'name.', 'name...'`)
+ * - invalidates outbound root dot nav
+ * - normalizes dot path			(i.e. `'/.'` => `'/'`, `'a/b/./c' => 'a/b/c'`, `'./a/../b/c' => './b/c'`) ignores out of bound (i.e. `'C:/a/../../b/c' => 'C:/b/c'`)
+ * - normalizes drive letter	(i.e. `'c:\\a.txt' => 'C:\\a.txt'`, `'c:'` => `'C:\\'`)
+ * 
+ * @param value - parse path value
+ * @param separator - result path separator ~ `'' | '/' | '\\'` (default `''` = unchanged)
+ * @param _type - path type (default `''`) ~ name used in error message (i.e. `'The ${_type} path...'`)
+ * @param _failure - error handling ~ `0` = ignore, '1' = warn, `2` = throw error (default `0`)
+ * @returns `INormPath` normalized path (stringable)
+ */
+export const _normPath = (value: any, separator?: ''|'/'|'\\', _type?: string, _failure?: 0|1|2): INormPath => {
+	const sep: ''|'/'|'\\' = ['', '/', '\\'].includes(separator = _str(separator, true) as any) ? separator as (''|'/'|'\\') : '';
+	const type: string = (_type = _str(_type, true).replace(/path\s*$/i, '').trim()) ? _type + ' ' : '';
+	const failure: 0|1|2 = [0, 1, 2].includes(_failure = parseInt(_failure + '') as any) ? _failure as (0|1|2) : 0;
+	
+	//normalized path item
+	const item: INormPath = {
+		value,
+		root: '',
+		drive: '',
+		path: '',
+		dir: '',
+		basename: '',
+		name: '',
+		ext: '',
+		toString(): string {
+			return this.path;
+		},
+		error: '',
+		illegal: [],
+		invalid: [],
+	};
+
 	let path: string = _str(value, true);
 	try {
-		const re = /[\\\/]/g;
-		const items: [part: string, div: string][] = [];
-		let s = 0, drive = '';
-		void path.replace(re, (...args): any => {
-			const div: string = separator ? separator : args[0];
-			const part: string = path.substring(s, args[1]);
-			if (!s && /[a-z]\:/i.test(part)) drive = part.toUpperCase() + div;
-			else items.push([part, div]);
-			s = args[1] + 1;
-		});
-		if (s < path.length) items.push([path.substring(s), '']);
-		let m: RegExpMatchArray|null = null;
+		let root = '', drive = '', m: RegExpMatchArray|null = null;
+		const items = _split(path, /[\\\/]/).map((item, i) => {
+			let [part, div] = item;
+			div = div ? (sep ? sep : div) : '';
+			if (!i){
+				if (/[a-z]\:/i.test(part)) root = drive = part.toUpperCase() + (div || '\\');
+				else if (!part && div) root = div;
+				if (root) return [];
+			}
+			return [part, div];
+		})
+		.filter(v => v.length);
+		const invalid: Set<string> = new Set();
 		const illegal: Set<string> = new Set();
 		const parts: [part: string, div: string][] = [];
+		const outbound: [part: string, div: string][] = [];
 		items.map(v => [_str(v[0], true), v[1]]).filter((v, i) => !(i && !v[0]))
-		.map((v, i) => i && v[0] === '.' ? [] : v).filter(v => v.length)
+		.map((v, i, arr) => {
+			if (v[0] === '.' && (!i && !v[1] && root || i)){
+				if (i && i === arr.length - 1) arr[i - 1][1] = '';
+				return [];
+			}
+			return v;
+		}).filter(v => v.length)
 		.forEach(v => {
 			const [part, div] = v;
-			console.log(part, part.match(/[\:\?\"\<\>\|\*]/g));
-			if (m = part.match(/[\:\?\"\<\>\|\*]/g)) m.forEach(char => illegal.add(char));
+			try {
+				_basename(part, true, 2);
+			}
+			catch (e: any) {
+				if (e?.item?.invalid?.length) e.item.invalid.forEach((v: any) => invalid.add(v));
+				if (e?.item?.illegal?.length) e.item.illegal.forEach((v: any) => illegal.add(v));
+			}
 			if (part === '..'){
 				if (parts.length){
 					const p = parts.length - 1;
@@ -511,20 +678,55 @@ export const _normPath = (value: any, separator: string = '', _type: string = 'p
 						return;
 					}
 				}
-				else if (drive) return;
+				else if (root){
+					outbound.push([part, div]);
+					if (drive) return;
+				}
 			}
 			parts.push([part, div]);
 		});
-		path = drive + parts.map(v => v.join('')).join('');
-		if (illegal.size) throw new Error(`The ${_type} contains illegal characters (:?"<>|*) => "${[...illegal].join(',')}".`); //invalid
-		return path;
+		if (outbound.length) outbound.push(...parts);
+
+		//update item
+		item.root = root;
+		item.drive = drive;
+		item.dir = item.path = path = root + parts.map(v => v.join('')).join('').replace(/[\\/]$/, '');
+		const end = parts.pop();
+		if (end && !['', '.', '..'].includes(end[0])){
+			const basename: IBasename = _basename(end[0]);
+			item.basename = basename.basename;
+			item.name = basename.name;
+			item.ext = basename.ext;
+			item.dir = root + parts.map(v => v.join('')).join('').replace(/[\\/]$/, '');
+		}
+		
+		//set errors
+		const errors: string[] = [];
+		const outbound_path = outbound.length ? root + outbound.map(v => v.join('')).join('') : '';
+		if (outbound_path) errors.push(`The ${type}root (${root}) dot nav path is outbound "${outbound_path}" => "${path}"`); //outbound
+		if (invalid.size) errors.push(`The ${type}path contains invalid name${invalid.size > 1 ? 's' : ''} "${[...invalid].map(v => `"${v}"`).join(', ')}"`); //invalid
+		if (illegal.size) errors.push(`The ${type}path contains illegal characters (:?"<>|*) => "${[...illegal].join('')}"`); //illegal
+		if (errors.length){
+			item.invalid = [...invalid];
+			item.illegal = [...illegal];
+			throw new Error(item.error = errors.join('; ') + '.');
+		}
+		
+		//result
+		return item;
 	}
 	catch (e: any){
-		if (_failure > 0){
+		if (failure){
 			const error = `${e.message || e}`;
-			console.warn(error, {value, path});
-			if (_failure === 2) throw new TypeError(error);
+			if (failure === 1) console.warn(error, {item}); //warn
+			else if (failure === 2){ //throw
+				class NormPathError extends Error implements INormPathError {
+					name: string = 'BasenameError';
+					item: INormPath = item;
+				}
+				throw new NormPathError(error);
+			}
 		}
-		return path;
+		return item;
 	}
 };

@@ -61,6 +61,11 @@ export {
 	_parseCsv,
 	_toCsv,
 	_split,
+	IBasename,
+	IBasenameError,
+	_basename,
+	INormPath,
+	INormPathError,
 	_normPath,
 } from './_string';
 export { SortDirection, SortOrder, _sortValues } from './_sort';

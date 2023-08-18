@@ -346,11 +346,11 @@ export class Term
 		};
 
 		//value log - cannot be tabled
-		if (data_type === 'values' && data_items.length < 2){
-			const [_value, _format] = strVal(data);
-			console.log(that.text(_value, _format));
-			return;
-		}
+		// if (data_type === 'values' && data_items.length < 2){
+		// 	const [_value, _format] = strVal(data);
+		// 	console.log(that.text(_value, _format));
+		// 	return;
+		// }
 
 		//table items
 		let mode: 'values'|'entries';
