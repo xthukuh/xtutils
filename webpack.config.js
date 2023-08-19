@@ -21,7 +21,7 @@ module.exports = env => {
 			globalObject: 'this',
 		},
 		resolve: {
-			extensions: ['.ts', '.js'],
+			extensions: ['.ts', '.js', '.json'],
 		},
 		module: {
 			rules: [

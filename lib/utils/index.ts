@@ -1,12 +1,27 @@
+//batch
 export { _batchValues } from './_batch';
+
+//clone
 export { _clone } from './_clone';
 export { _cloneDeep } from './_cloneDeep';
+
+//compare
 export { _compare } from './_compare';
 export { _compareShallow } from './_compareShallow';
+
+//datetime
 export { _isDate, _getDate, _datetime, _timestamp } from './_datetime';
+
+//debounced
 export { _debouced } from './_debouced';
+
+//hello demo
 export { _sayHello } from './_hello';
+
+//json
 export { _jsonStringify, _jsonParse, _jsonClone } from './_json';
+
+//number
 export {
 	_isNum,
 	_toNum,
@@ -17,6 +32,8 @@ export {
 	_rand,
 	_px2rem,
 } from './_number';
+
+//objects
 export {
 	_flatten,
 	_hasProp,
@@ -29,8 +46,14 @@ export {
 	_dumpVal,
 	_bool,
 } from './_objects';
+
+//promise
 export { IPromiseResult, _asyncAll, _asyncValues, _sleep } from './_promise';
+
+//queue
 export { IQueue, _queue } from './_queue';
+
+//string
 export {
 	_uuid,
 	_string,
@@ -61,11 +84,7 @@ export {
 	_parseCsv,
 	_toCsv,
 	_split,
-	IBasename,
-	IBasenameError,
-	_basename,
-	INormPath,
-	INormPathError,
-	_normPath,
 } from './_string';
+
+//sort
 export { SortDirection, SortOrder, _sortValues } from './_sort';
