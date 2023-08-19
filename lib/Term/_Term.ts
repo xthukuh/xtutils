@@ -342,6 +342,7 @@ export class Term
 				val = _jsonStringify(val);
 				color = 'magenta';
 			}
+			val = val.replace(/\t/g, '  ');
 			return [val, color];
 		};
 
