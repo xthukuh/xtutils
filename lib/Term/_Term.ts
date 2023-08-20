@@ -1,6 +1,4 @@
-import { _isDate, _timestamp } from '../utils/_datetime';
-import { _str, _string, _stringable } from '../utils/_string';
-import { _jsonStringify, _jsonClone } from '../utils/_json';
+import { _clone, _jsonStringify, _isDate, _timestamp, _str, _string, _stringable } from '../utils';
 
 /**
  * Term format result interface
@@ -286,13 +284,14 @@ export class Term
 	 * @param _entries
 	 */
 	static list(value: any, _entries: boolean = false): [list: any[], type:'values'|'entries'] {
-		let items: any[] = [value], type: 'values'|'entries' = 'values';
+		let items: any[] = [value = _clone(value)], type: 'values'|'entries' = 'values';
 		if ('object' === typeof value && value){
 			if (!(type = value[Symbol.iterator]?.name)){
 				type = 'values';
 				items = [value];
 				if (_entries && _stringable(value) === false){
-					let tmp: any = _jsonClone<any>(value), tmp_entries: [k: any, v: any][] = [];
+					let tmp: any = Object.fromEntries(Object.entries(value));
+					let tmp_entries: [k: any, v: any][] = [];
 					if (!('object' === typeof tmp && tmp && (tmp_entries = Object.entries(tmp)).length)) tmp_entries = Object.entries(value);
 					if (tmp_entries.length){
 						type = 'entries';
@@ -337,7 +336,7 @@ export class Term
 						val = [...val];
 						if (_type === 'entries') val = Object.fromEntries(val);
 					}
-					else val = _jsonClone<any>(val);
+					else val = Object.fromEntries(Object.entries(val));
 				}
 				val = _jsonStringify(val);
 				color = 'magenta';

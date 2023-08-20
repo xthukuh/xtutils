@@ -53,6 +53,7 @@ export const _jsonStringify = (value: any, space?: string|number|null|undefined,
 		}
 		if (value instanceof Set) value = [...value];
 		if (value instanceof Map) value = [...value];
+		if (value instanceof RegExp) value = value + '';
 		if ('object' === typeof value){
 			if (key) _parents(key, value);
 			const other = refs.get(value);
