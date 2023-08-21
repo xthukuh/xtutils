@@ -133,3 +133,11 @@ export declare const _dotValue: <TResult = any>(dot_path: string, target: any, _
  * @returns `any` - parsed value
  */
 export declare const _dumpVal: (value: any, maxStrLength?: number) => any;
+/**
+ * Get `Symbol.iterator` object values
+ *
+ * @param value - parse value
+ * @param _nulls - disable `null`/`undefined` filter
+ * @returns `any[]` ~ `[...any]` values
+ */
+export declare const _values: <T = any>(value: any, _nulls?: boolean) => T[];

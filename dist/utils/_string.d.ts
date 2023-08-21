@@ -188,18 +188,44 @@ export declare const _base64Encode: (buffer: BufferString, bufferEncoding?: Buff
  */
 export declare const _base64Decode: (base64: string) => Buffer;
 /**
- * Validate data URI `string` (i.e. `'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD'`)
- *
- * @param value
- * @returns `boolean`
+ * Parsed data URI interface
  */
-export declare const _isDataURI: (value: any) => boolean;
+export interface IDataUri {
+    mime: string;
+    encoding: string;
+    charset: string;
+    data: string;
+}
 /**
- * Validate URL `string`
+ * Parse data URI (uniform resource identifier)
  *
- * @param value
- * @param matchDataURI
- * @returns `boolean`
+ * @example
+ * _parseDataUri('data:text/plain;charset=utf-8,Hello%20world%21') => {
+ *   mime: 'text/plain',
+ *   encoding: 'charset=utf-8',
+ *   charset: 'utf-8',
+ *   data: 'Hello%20world%21',
+ * }
+ * _parseDataUri('data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD') => {
+ *   mime: 'image/jpeg',
+ *   encoding: 'base64',
+ *   charset: '',
+ *   data: '/9j/4AAQSkZJRgABAgAAZABkAAD',
+ * }
+ *
+ * @param value - parse data uri value
+ * @returns
+ * - `IDataUri` ~ `{mime:string;encoding:string;charset:string;data:string}`
+ * - `undefined` on error
+ */
+export declare const _parseDataUri: (value: any) => IDataUri | undefined;
+/**
+ * Validate URL `string` (uniform resource locator)
+ * - includes IP (v4) addresses
+ *
+ * @param value - parse url `string` value
+ * @param matchDataURI - validation includes data URI (i.e. 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD')
+ * @returns `boolean` - valid url
  */
 export declare const _isUrl: (value: any, matchDataURI?: boolean) => boolean;
 /**
