@@ -45,6 +45,7 @@ export {
 	_dotFlat,
 	_dumpVal,
 	_bool,
+	_values,
 } from './_objects';
 
 //promise
@@ -77,7 +78,8 @@ export {
 	_hash53,
 	_base64Encode,
 	_base64Decode,
-	_isDataURI,
+	IDataUri,
+	_parseDataUri,
 	_isUrl,
 	_isEmail,
 	_escapeSql,

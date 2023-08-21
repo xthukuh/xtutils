@@ -27,10 +27,45 @@ import {
 	_int,
 	_mime,
 	EXT_MIMES,
+	_basename,
+	IMimeType,
+	_parseDataUri,
 } from '../lib';
 
 (async()=>{
 	// _sayHello(); //dev tests
+
+	Term.debug('--uuid = ' + _uuid(16, 'orders_'));
+	return;
+	
+	// const _input = _str(process.argv[2], true);
+	// Term.debug(`-- input = "${_input}"`);
+
+	// //parse uri
+	// const data_uri = _parseDataUri(_input);
+	// Term.log({data_uri});
+	// return
+	
+	// const _input = _str(process.argv[2], true);
+	// Term.debug(`-- input = "${_input}"`);
+	// const _get_path = (v: any) => {
+	// 	let tmp: IMimeType;
+	// 	const bn = _basename(v, false, true);
+	// 	return !bn.basename ? '' : (bn.ext && (tmp = _mime(bn.ext)).toString() ? bn.name + '.' + tmp.ext : bn.basename.replace(/__c$/i, '') + '.png');
+	// };
+	
+	// const path = _get_path(_input);
+	// Term.debug(`-- path = "${path}"`);
+
+	// const mime = _mime(path).toString();
+	// Term.debug(`-- mime = "${mime}"`);
+	
+	// const title = path.replace(/(.+)\.[a-z]+$/i, '$1').trim().replace(/[^a-z0-9]/ig, ' ').replace(/[ ]+/g, ' ').trim();
+	// Term.debug(`-- title = "${title}"`);
+	
+	// const res = path.replace(/([\w]+)(\.[a-z]+)$/i, '$1-' + _uuid(7) + '$2');
+	// Term.debug(`-- res = "${res}"`);
+	return;
 
 	Term.info('>> Test mime');
 	Term.table(['image/png', 'xlsx', 'test.pdf', '', 'xxxx', '.tmp'].map(v => {

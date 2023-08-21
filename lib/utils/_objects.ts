@@ -137,8 +137,8 @@ export const _validDotPath = (dot_path: string, operations: boolean = false, _fa
 	}
 	catch (e){
 		if (_failure){
-			console.warn(e, {dot_path, operations});
-			if (_failure === 2) throw e;
+			if (_failure === 1) console.warn(e, {dot_path, operations});
+			else if (_failure === 2) throw e;
 		}
 		return '';
 	}
@@ -240,8 +240,8 @@ export const _dotGet = (dot_path: string, target: any, _failure: 0|1|2 = 0, _def
 	}
 	catch (e) {
 		if (_failure){
-			console.warn(e, {dot_path, target});
-			if (_failure === 2) throw e;
+			if (_failure === 1) console.warn(e, {dot_path, target});
+			else if (_failure === 2) throw e;
 		}
 		return _default;
 	}
@@ -263,18 +263,12 @@ export const _dotValue = <TResult = any>(dot_path: string, target: any, _failure
 	}
 	catch (e) {
 		if (_failure){
-			console.warn(e, {dot_path, target});
-			if (_failure === 2) throw e;
+			if (_failure === 1) console.warn(e, {dot_path, target});
+			else if (_failure === 2) throw e;
 		}
 		return undefined;
 	}
 };
-
-// //TODO: dot path deep assign
-// export const _dotAssign = (dot_path: string, target: any, value: any, array_object=false, throwable=false) => {
-// 	let item = dotPathValue(path, value, throwable);
-// 	return deepAssignGet(obj, [item], [], [], !!array_object);
-// };
 
 /**
  * Get dump value with limit max string length
@@ -304,3 +298,58 @@ export const _dumpVal = (value: any, maxStrLength: number = 100): any => {
 	};
 	return _parse(value);
 };
+
+/**
+ * Get `Symbol.iterator` object values
+ * 
+ * @param value - parse value
+ * @param _nulls - disable `null`/`undefined` filter
+ * @returns `any[]` ~ `[...any]` values
+ */
+export const _values = <T = any>(value: any, _nulls: boolean = false): T[] => {
+	let items: any[] = [];
+	if (value && 'object' === typeof value){
+		const it = value[Symbol.iterator];
+		if (Object(it) === it){
+			if (it.name === 'entries' && 'function' === typeof value.values) items = [...value.values()];
+			else items = [...value];
+		}
+		else items = [value];
+	}
+	return items.filter(v => _nulls || ![null, undefined].includes(v));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//..eof
+
+
+
+
+
+// //TODO: dot path deep assign
+// export const _dotAssign = (dot_path: string, target: any, value: any, array_object=false, throwable=false) => {
+// 	let item = dotPathValue(path, value, throwable);
+// 	return deepAssignGet(obj, [item], [], [], !!array_object);
+// };

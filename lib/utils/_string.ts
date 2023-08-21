@@ -335,28 +335,62 @@ export const _base64Decode = (base64: string): Buffer => {
 	return Buffer.from(base64, 'base64');
 };
 
-
 /**
- * Validate data URI `string` (i.e. `'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD'`)
- * 
- * @param value
- * @returns `boolean`
+ * Parsed data URI interface
  */
-export const _isDataURI = (value: any): boolean => {
-	if (!(value && 'string' === typeof value && value.trim())) return false;
-	return new RegExp(/^(data:)([\w\/\+-]*)(;charset=[\w-]+|;base64){0,1},(.*)/gi).test(value);
+export interface IDataUri {
+	mime: string;
+	encoding: string;
+	charset: string;
+	data: string;
 }
 
 /**
- * Validate URL `string`
+ * Parse data URI (uniform resource identifier)
  * 
- * @param value
- * @param matchDataURI
- * @returns `boolean`
+ * @example
+ * _parseDataUri('data:text/plain;charset=utf-8,Hello%20world%21') => {
+ *   mime: 'text/plain',
+ *   encoding: 'charset=utf-8',
+ *   charset: 'utf-8',
+ *   data: 'Hello%20world%21',
+ * }
+ * _parseDataUri('data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD') => {
+ *   mime: 'image/jpeg',
+ *   encoding: 'base64',
+ *   charset: '',
+ *   data: '/9j/4AAQSkZJRgABAgAAZABkAAD',
+ * }
+ * 
+ * @param value - parse data uri value
+ * @returns
+ * - `IDataUri` ~ `{mime:string;encoding:string;charset:string;data:string}`
+ * - `undefined` on error
+ */
+export const _parseDataUri = (value: any): IDataUri|undefined => {
+	if (!(value = _str(value, true))) return undefined;
+	const re = /data:(?<mime>[\w/\-\.]+);(?<encoding>(charset=)?([^,]+)),(?<data>[^\s]+)/;
+	const res: RegExpExecArray|null = re.exec(value);
+	if (!res) return undefined;
+	return {
+		mime: res[1],
+		encoding: res[2],
+		charset: res[3] && res[4] || '',
+		data: res[5],
+	};
+};
+
+/**
+ * Validate URL `string` (uniform resource locator)
+ * - includes IP (v4) addresses
+ * 
+ * @param value - parse url `string` value
+ * @param matchDataURI - validation includes data URI (i.e. 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD')
+ * @returns `boolean` - valid url
  */
 export const _isUrl = (value: any, matchDataURI: boolean = false): boolean => {
 	if (!(value && 'string' === typeof value && value.trim())) return false;
-	if (matchDataURI && _isDataURI(value)) return true;
+	if (matchDataURI && _parseDataUri(value)) return true;
 	const pattern = '^(https?:\\/\\/)?'  // protocol
 	+ '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'  // domain name
 	+ '((\\d{1,3}\\.){3}\\d{1,3}))'  // or IP (v4) address
