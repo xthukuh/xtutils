@@ -28,6 +28,15 @@ export declare const _toNum: (value: any, _default?: number, fixFloat?: bool) =>
  */
 export declare const _num: (value: any, _default?: number) => number;
 /**
+ * Get parsed positive number
+ *
+ * @param value - parse value
+ * @param min - set min limit
+ * @param max - set max limit
+ * @returns `number` positive | `undefined` when invalid
+ */
+export declare const _posNum: (value: any, min?: number, max?: number) => number | undefined;
+/**
  * Parse value to integer
  *
  * @param value  Parse value
@@ -35,6 +44,15 @@ export declare const _num: (value: any, _default?: number) => number;
  * @returns `number` integer
  */
 export declare const _int: (value: any, _default?: number) => number;
+/**
+ * Get parsed positive integer
+ *
+ * @param value - parse value
+ * @param min - set min limit
+ * @param max - set max limit
+ * @returns `number` positive | `undefined` when invalid
+ */
+export declare const _posInt: (value: any, min?: number, max?: number) => number | undefined;
 /**
  * Round number to decimal places
  *

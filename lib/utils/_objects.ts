@@ -1,7 +1,8 @@
 import { bool } from '../types';
 import { _jsonParse, _jsonStringify } from './_json';
 import { _int, _num } from './_number';
-import { _str } from './_string';
+import { _str, _string, _stringable } from './_string';
+import { _isBuffer } from '../3rd-party';
 
 /**
  * Flatten array recursively
@@ -62,9 +63,8 @@ export const _isFunc = (value: any, orClass: boolean = false): boolean => {
 	return value && 'function' === typeof value && (orClass ? true : !_isClass(value));
 };
 
-
 /**
- * Get `[min, max]` compared and arranged
+ * Get `[min, max]` compared and arranged in order
  * - Example: `_minMax(20, 10)` => `[10, 20]`
  * - Example: `_minMax(0.23, null)` => `[null, 0.23]`
  *  
@@ -299,57 +299,124 @@ export const _dumpVal = (value: any, maxStrLength: number = 100): any => {
 	return _parse(value);
 };
 
+//Get all property descriptors
+export const _getAllPropertyDescriptors = (value: any): {[key: string|number|symbol]: any} => {
+	if ([null, undefined].includes(value)) return {};
+	const proto = Object.getPrototypeOf(value);
+	return {..._getAllPropertyDescriptors(proto), ...Object.getOwnPropertyDescriptors(value)};
+};
+
+//Get all properties
+export const _getAllProperties = (value: any, statics: boolean = false): (string|number|symbol)[] => {
+	if ([null, undefined].includes(value)) return []; //ignore null/undefined
+	const props = new Set<string|number|symbol>(); //properies
+
+	//add own property names
+	Object.getOwnPropertyNames(value).forEach(v => props.add(v)); //own
+	
+	//fn => get keys helper
+	const __get_keys = (obj: any): (string|number|symbol)[] => {
+		const keys: (string|number|symbol)[] = [];
+		for (let key in obj) keys.push(key);
+		return keys;
+	};
+
+	//fn => get properties helper
+	const __get_props = (val: any): (string|number|symbol)[] => __get_keys(_getAllPropertyDescriptors(val)).concat(Object.getOwnPropertySymbols(val));
+
+	//excluded default props
+	const excluded_props: (string|number|symbol)[] = [...new Set([
+		
+		//Function
+		...__get_props(Function.prototype),
+		...(!statics ? [] : __get_props(Function)),
+
+		//Object
+		...__get_props(Object.prototype),
+		...(!statics ? [] : __get_props(Object)),
+	])];
+
+	//fn => add props helper
+	const __add_props = (val: any): void => __get_props(val).filter(v => !excluded_props.includes(v)).forEach(v => props.add(v));
+
+	//add props
+	__add_props(value);
+	if (statics) __add_props(Object(value).constructor);
+
+	//result
+	return [...props];
+};
+
 /**
- * Get `Symbol.iterator` object values
+ * @deprecated
+ * Get coerced `number/string/JSON` value ~ `value.valueOf()`
  * 
  * @param value - parse value
- * @param _nulls - disable `null`/`undefined` filter
- * @returns `any[]` ~ `[...any]` values
+ * @returns `any` ~ `object`|`undefined`|`boolean`|`number`|`bigint`|`string`|`symbol`
  */
-export const _values = <T = any>(value: any, _nulls: boolean = false): T[] => {
-	let items: any[] = [];
-	if (value && 'object' === typeof value){
-		const it = value[Symbol.iterator];
-		if (Object(it) === it){
-			if (it.name === 'entries' && 'function' === typeof value.values) items = [...value.values()];
-			else items = [...value];
-		}
-		else items = [value];
+export const _valueOf = (value: any): any => {
+	if (!(value && 'object' === typeof value)) return value;
+	let val: any = value.valueOf();
+	if (val === value){
+		if (Object(value[Symbol.toPrimitive]) === value[Symbol.toPrimitive] && !isNaN(val = Number(value))) return val; //hint number
+		if ((val = _stringable(value)) !== false) return val; //hint string | value.toString()
+		if ('function' === typeof value.toJSON && (val = value.toJSON()) !== value) return val; //value.toJSON()
 	}
-	return items.filter(v => _nulls || ![null, undefined].includes(v));
-}
+	return val; //value.valueOf()
+};
 
+/**
+ * Check if value is empty ~ `null`/`undefined`/`NaN`/`''`/`{}`/`![...value]`
+ * 
+ * @param value - parse value
+ * @param trim - trim whitespace ~ when value is `string/Buffer`
+ * @returns `boolean`
+ */
+export const _empty = (value: any, trim: boolean = false): boolean => {
+	if ([null, undefined, NaN, ''].includes(value)) return true; //default empty
+	if (['function', 'boolean', 'number'].includes(typeof value)) return false; //function/boolean/number - ignore
+	if ('string' === typeof value || _isBuffer(value)) return !_str(value, trim).length; //string/Buffer - !length
+	if ('object' !== typeof value) return false; //non object - ignore
+	if (value instanceof Map || value instanceof Set) return !value.size; //Map/Set - !size
+	if (Array.isArray(value)) return !value.length; //Array - !length
+	if (Object(value[Symbol.iterator]) === value[Symbol.iterator]) return ![...value].length; //value[Symbol.iterator] - !length
+	if (!_getAllProperties(value).length) return true; //has no self properties
+	return false; //ignore
+};
 
+/**
+ * Check if value can be iterated ~ `[...value]`
+ * 
+ * @param value - parse value
+ * @param _async - using `[Symbol.asyncIterator]` (default `false` ~ `[Symbol.iterator]`)
+ * @returns `boolean`
+ */
+export const _iterable = (value: any, _async: boolean = false): boolean => 'function' === typeof value?.[_async ? Symbol.asyncIterator : Symbol.iterator];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//..eof
-
-
-
-
-
-// //TODO: dot path deep assign
-// export const _dotAssign = (dot_path: string, target: any, value: any, array_object=false, throwable=false) => {
-// 	let item = dotPathValue(path, value, throwable);
-// 	return deepAssignGet(obj, [item], [], [], !!array_object);
-// };
+/**
+ * Object array values
+ * 
+ * @param value - parse array value
+ * @param entries - enable get entries (i.e. `[key: any, value: any][]`) instead of default values (i.e. `any[]`)
+ * @param object - enable get `Object.values(value)`/`Object.entries(value)`
+ * @returns
+ * - `any[]` values or `[key: any, value: any][]` when `entries` argument is `true`
+ * - `[value]` when `value` argument is not iterable or arrayable
+ * - `[]` when `value` argument is empty ~ `[]`/`{}`/`undefined`
+ */
+export const _values = (value: any, entries: boolean = false, object: boolean = false): any[] => {
+	let items: any[] = value === undefined ? [] : entries ? [['0', value]] : [value];
+	if (value && 'object' === typeof value && 'function' !== typeof value){
+		if (Object(value[Symbol.iterator]) === value[Symbol.iterator]){
+			const has_entries = (items = [...value]).length && items.findIndex(v => !(Array.isArray(v) && v.length === 2 && Object.keys(v) + '' === '0,1')) < 0;
+			if (entries) items = has_entries ? items : Object.entries(items);
+			else if (has_entries) items = items.map(v => v[1]);
+		}
+		else if (object){
+			const arr = Object.entries(value);
+			if (arr.length || (_empty(value) && Object.getPrototypeOf(value) === Object.prototype)) items = !entries && arr.length ? arr.map(v => v[1]) : arr;
+		}
+		else if (_empty(value) && Object.getPrototypeOf(value) === Object.prototype) items = []; //{}
+	}
+	return items;
+};

@@ -65,7 +65,26 @@ export const _toNum = (value: any, _default: number = NaN, fixFloat: bool = true
  * @param _default  [default: `NaN`] Default result when parse result is `NaN`
  * @returns `number` parsed
  */
-export const _num = (value: any, _default: number = NaN): number => _toNum(value, _default);
+export const _num = (value: any, _default: number = NaN): number => {
+	const val = _toNum(value, _default);
+	return !isNaN(val) && val >= Number.MIN_VALUE && val <= Number.MAX_VALUE ? val : _default;
+};
+
+/**
+ * Get parsed positive number
+ * 
+ * @param value - parse value
+ * @param min - set min limit
+ * @param max - set max limit
+ * @returns `number` positive | `undefined` when invalid
+ */
+export const _posNum = (value: any, min?: number, max?: number): number|undefined => {
+	const val = _num(value);
+	if (!(!isNaN(val) && val >= 0)) return undefined;
+	if ('number' === typeof min && !isNaN(min = parseFloat(min + '')) && min >= 0 && val < min) return undefined;
+	if ('number' === typeof max && !isNaN(max = parseFloat(max + '')) && max >= 0 && val > max) return undefined;
+	return val;
+};
 
 /**
  * Parse value to integer
@@ -74,7 +93,26 @@ export const _num = (value: any, _default: number = NaN): number => _toNum(value
  * @param _default  [default: `NaN`] Default result when parse result is `NaN`
  * @returns `number` integer
  */
-export const _int = (value: any, _default: number = NaN): number => parseInt(String(_toNum(value, _default)));
+export const _int = (value: any, _default: number = NaN): number => {
+	const val = parseInt(String(_toNum(value, _default)));
+	return !isNaN(val) && val >= Number.MIN_SAFE_INTEGER && val <= Number.MAX_SAFE_INTEGER ? val : _default;
+};
+
+/**
+ * Get parsed positive integer
+ * 
+ * @param value - parse value
+ * @param min - set min limit
+ * @param max - set max limit
+ * @returns `number` positive | `undefined` when invalid
+ */
+export const _posInt = (value: any, min?: number, max?: number): number|undefined => {
+	const val = _num(value);
+	if (!(!isNaN(val) && val >= 0)) return undefined;
+	if ('number' === typeof min && !isNaN(min = parseInt(min + '')) && min >= 0 && val < min) return undefined;
+	if ('number' === typeof max && !isNaN(max = parseInt(max + '')) && max >= 0 && val > max) return undefined;
+	return val;
+};
 
 /**
  * Round number to decimal places

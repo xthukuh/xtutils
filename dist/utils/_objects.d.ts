@@ -44,7 +44,7 @@ export declare const _isClass: (value: any) => boolean;
  */
 export declare const _isFunc: (value: any, orClass?: boolean) => boolean;
 /**
- * Get `[min, max]` compared and arranged
+ * Get `[min, max]` compared and arranged in order
  * - Example: `_minMax(20, 10)` => `[10, 20]`
  * - Example: `_minMax(0.23, null)` => `[null, 0.23]`
  *
@@ -133,11 +133,45 @@ export declare const _dotValue: <TResult = any>(dot_path: string, target: any, _
  * @returns `any` - parsed value
  */
 export declare const _dumpVal: (value: any, maxStrLength?: number) => any;
+export declare const _getAllPropertyDescriptors: (value: any) => {
+    [key: string]: any;
+    [key: number]: any;
+    [key: symbol]: any;
+};
+export declare const _getAllProperties: (value: any, statics?: boolean) => (string | number | symbol)[];
 /**
- * Get `Symbol.iterator` object values
+ * @deprecated
+ * Get coerced `number/string/JSON` value ~ `value.valueOf()`
  *
  * @param value - parse value
- * @param _nulls - disable `null`/`undefined` filter
- * @returns `any[]` ~ `[...any]` values
+ * @returns `any` ~ `object`|`undefined`|`boolean`|`number`|`bigint`|`string`|`symbol`
  */
-export declare const _values: <T = any>(value: any, _nulls?: boolean) => T[];
+export declare const _valueOf: (value: any) => any;
+/**
+ * Check if value is empty ~ `null`/`undefined`/`NaN`/`''`/`{}`/`![...value]`
+ *
+ * @param value - parse value
+ * @param trim - trim whitespace ~ when value is `string/Buffer`
+ * @returns `boolean`
+ */
+export declare const _empty: (value: any, trim?: boolean) => boolean;
+/**
+ * Check if value can be iterated ~ `[...value]`
+ *
+ * @param value - parse value
+ * @param _async - using `[Symbol.asyncIterator]` (default `false` ~ `[Symbol.iterator]`)
+ * @returns `boolean`
+ */
+export declare const _iterable: (value: any, _async?: boolean) => boolean;
+/**
+ * Object array values
+ *
+ * @param value - parse array value
+ * @param entries - enable get entries (i.e. `[key: any, value: any][]`) instead of default values (i.e. `any[]`)
+ * @param object - enable get `Object.values(value)`/`Object.entries(value)`
+ * @returns
+ * - `any[]` values or `[key: any, value: any][]` when `entries` argument is `true`
+ * - `[value]` when `value` argument is not iterable or arrayable
+ * - `[]` when `value` argument is empty ~ `[]`/`{}`/`undefined`
+ */
+export declare const _values: (value: any, entries?: boolean, object?: boolean) => any[];

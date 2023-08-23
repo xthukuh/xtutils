@@ -1,4 +1,4 @@
-import { Buffer } from 'buffer';
+import { Buffer } from '../3rd-party';
 
 /**
  * Clone utils

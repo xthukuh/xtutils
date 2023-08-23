@@ -1,5 +1,4 @@
-import { Buffer } from 'buffer';
-import { bool, BufferString, BufferEncoding } from '../types';
+import { bool } from '../types';
 import { _jsonStringify } from './_json';
 
 /**
@@ -309,30 +308,6 @@ export const _hash53 = (buffer: any, seed: number = 0): number => {
 	h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
 	h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
 	return 4294967296 * (2097151 & h2) + (h1 >>> 0);
-};
-
-/**
- * Base64 encode
- * - Example: `_base64Encode('Hello world!')` => `'SGVsbG8gd29ybGQh'`
- * 
- * @param buffer
- * @param bufferEncoding
- * @returns base64 encoded `string`
- */
-export const _base64Encode = (buffer: BufferString, bufferEncoding?: BufferEncoding): string => {
-	return Buffer.from(buffer, bufferEncoding).toString('base64');
-};
-
-/**
- * Base64 decode
- * - Example: `_base64Decode('SGVsbG8gd29ybGQh')` => `<Buffer 48 65 6c 6c 6f 20 77 6f 72 6c 64 21>`
- * - Example: `_base64Decode('SGVsbG8gd29ybGQh').toString()` => `'Hello world!'`
- * 
- * @param base64
- * @returns decoded `Buffer`
- */
-export const _base64Decode = (base64: string): Buffer => {
-	return Buffer.from(base64, 'base64');
 };
 
 /**

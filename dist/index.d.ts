@@ -1,4 +1,4 @@
-export { Buffer } from 'buffer';
+export * from './3rd-party';
 export * from './types';
 export * from './utils';
 export * from './ElapsedTime';
