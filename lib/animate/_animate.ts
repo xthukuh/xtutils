@@ -1,4 +1,4 @@
-import { _isFunc, _toNum } from '../utils';
+import { _isFunc, _num, _posInt } from '../utils';
 import { EasingFunction, EasingsKey, Easings } from './easings';
 import { requestAnimationFrame, cancelAnimationFrame } from './_polyfill';
 
@@ -94,13 +94,13 @@ export function _animate(this: any, options: IAnimateOptions, _debug: boolean = 
 		if ('string' === typeof _easing && Easings.hasOwnProperty(_easing)) _easing = Easings[_easing];
 		return 'function' === typeof _easing ? _easing : DEFAULT_EASING;
 	})();
-	const duration = (_duration = _toNum(_duration, 0)) > 0 ? _duration : DEFAULT_DURATION;
-	const delay = (_delay = _toNum(_delay, 0)) > 0 ? _delay : 0;
+	const duration = _posInt(_duration, 0) ?? DEFAULT_DURATION;
+	const delay = _posInt(_delay, 0) ?? 0;
 	const delayed = Boolean(_delayed);
 	const manual = Boolean(_manual);
-	const timeout = (_timeout = _toNum(_timeout, 0)) > 0 ? _timeout : 0;
-	const from = _toNum(_from, 0);
-	const to = _toNum(_to, 0);
+	const timeout = _posInt(_timeout, 0) ?? 0;
+	const from = _num(_from, 0);
+	const to = _num(_to, 0);
 	const diff = to - from;
 
 	let id: number|undefined = undefined;
@@ -132,7 +132,7 @@ export function _animate(this: any, options: IAnimateOptions, _debug: boolean = 
 		if (time === prev || is_done) return;
 		prev = time;
 		index += 1;
-		let delta = !duration ? 0 : _toNum(easing.call(context, time, 0, 1, duration), 0);
+		let delta = !duration ? 0 : easing.call(context, time, 0, 1, duration);
 		let pos = 0;
 		if (diff){
 			pos = Math.min(delta * Math.abs(diff), Math.abs(diff));

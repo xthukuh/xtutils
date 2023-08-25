@@ -1,4 +1,4 @@
-import { _clone, _jsonStringify, _isDate, _timestamp, _str, _string, _stringable } from '../utils';
+import { _clone, _jsonStringify, _isDate, _timestamp, _str, _string, _stringable, _strEscape } from '../utils';
 
 /**
  * Term format result interface
@@ -342,15 +342,9 @@ export class Term
 				color = 'magenta';
 			}
 			val = val.replace(/\t/g, '  ');
-			return [val, color];
+			const _val: string = _strEscape(val);
+			return [_val, color];
 		};
-
-		//value log - cannot be tabled
-		// if (data_type === 'values' && data_items.length < 2){
-		// 	const [_value, _format] = strVal(data);
-		// 	console.log(that.text(_value, _format));
-		// 	return;
-		// }
 
 		//table items
 		let mode: 'values'|'entries';

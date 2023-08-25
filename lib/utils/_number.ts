@@ -8,7 +8,7 @@ import { bool } from '../types';
  * @param blanks  Pass empty `string` values (because `!isNaN('') === true`)
  * @returns `boolean` is numeric
  */
-export const _isNum = (value: any, booleans: bool = false, blanks: bool = false): boolean => {
+export const _numeric = (value: any, booleans: bool = false, blanks: bool = false): boolean => {
 	if ('number' === typeof value) return !isNaN(value);
 	if ('boolean' === typeof value) return !!booleans;
 	const v = String(value).trim();
@@ -17,100 +17,106 @@ export const _isNum = (value: any, booleans: bool = false, blanks: bool = false)
 };
 
 /**
- * Convert value to normalized number
+ * Get parsed and normalized `number`
  * 
- * - Blank trimmed `string` value is considered `NaN` (i.e. "")
+ * - trims `string` value and `''` => `NaN`
+ * - supports (#/#.#/.#/#.) & comma separated/spaced string (i.e. `'1, 200, 000 . 3455'` => `1200000.3455`)
+ * - normalizes float `3+` last zeros from `5th` place (i.e. `1.1/100` = `0.011000000000000001` => `0.011`)
  * 
- * @param value  Parse value
- * @param _default  [default: `NaN`] Default result when parse result is `NaN`
- * @param fixFloat  [default: `true`] Whether to fix float zeros (i.e. `1.1/100` = `0.011000000000000001` => `0.011`)
- * @returns `number` parsed
- */
-export const _toNum = (value: any, _default: number = NaN, fixFloat: bool = true): number => {
-	let num = value;
-	if ('number' !== typeof value){
-		if ('string' === typeof value){
-			let p = /^\s*([\+-])\s*/, matches = value.match(p); //match prefix +/-
-			if (matches) value = value.replace(p, ''); //remove prefix +/-
-			value = value.replace(/^\s*[\+-]/, '').trim(); //remove prefix +/-
-			if (value.match(/^\d{1,3}(,\d{3})*(\.|(\.\d+))?$/)) value = value.replace(/,/g, '').trim(); //match and remove "," thousand separator
-			if (!value.match(/^\d*(\.|(\.\d+))?$/)) value = 'x'; //invalidate invalid leading decimal (i.e. '.10')
-			else if (matches) value = matches[1] + value; //restore prefix +/-
-		}
-		num = !isNaN(num = Number(value)) ? num : parseFloat(num); //parse number
-	}
-	if (!(num !== '' && num !== null && !isNaN(num = Number(num)))) return _default; //return default when value is not not numeric
-	let val, matches, places = 5; //fix float - max 5 decimal places
-	if (fixFloat && new RegExp(`\\.\\d*(0{${3}}\\d*)`).test(val = String(num)) && (matches = val.match(/\.(\d+)/))){ 
-		let floats = matches[1], len = floats.length, n = -1, x = -1;
-		for (let i = len - 1; i >= 0; i--){
-			if (!Number(floats[i])){
-				if (x < 0) x = i;
-			}
-			else if (x > -1){
-				n = i;
-				if (x - n >= places) break;
-				else x = n = -1;
-			}
-		}
-		if (n > -1 && x > -1 && (x - n >= places)) num = +val.substring(0, val.length - len + x + 1);
-	}
-	return num;
-};
-
-/**
- * Parse value to number (shorthand)
- * 
- * @param value  Parse value
- * @param _default  [default: `NaN`] Default result when parse result is `NaN`
- * @returns `number` parsed
+ * @param value - parse number value
+ * @param _default - default `number` result when invalid (default `NaN`)
+ * @returns `number` | `NaN` when invalid or when `''`
  */
 export const _num = (value: any, _default: number = NaN): number => {
-	const val = _toNum(value, _default);
-	return !isNaN(val) && val >= Number.MIN_VALUE && val <= Number.MAX_VALUE ? val : _default;
+	
+	//parse string value
+	if ('string' === typeof value){
+		
+		//parse filled, single line text
+		if ((value = value.trim()) && /^.*$/.test(value)){
+			
+			//match leading +/- operator prefix
+			let prefix = '';
+			let match = value.trim().match(/^([\+-])\s*(\d.*)$/);
+			if (match){
+				prefix = match[1]; //+|-
+				value = match[2]; //value
+			}
+
+			//remove whitespace around [\d,\.]
+			value = value.replace(/\s*([\.,])\s*/g, '$1');
+
+			//match & remove "," thousand separator
+			if (value.match(/^\d{1,3}(,\d{3})*(\.|(\.\d+))?$/)) value = value.replace(/,/g, '').trim();
+			
+			//validate number format - allow (#/#.#/.#/#.)
+			if (/^\d+\.$|^\.\d+$|^\d+(\.\d+){0,1}$/.test(value)){
+				
+				//parse number & restore +/- operator prefix
+				if (!isNaN(value = parseFloat(value)) && prefix) value = parseFloat(prefix + value);
+			}
+			else value = NaN;
+		}
+		else value = NaN; //invalid number string
+	}
+	else value = Number(value); //coerce number
+
+	//valid safe number => result
+	if (!isNaN(value = Number(value)) && value >= Number.MIN_SAFE_INTEGER && value <= Number.MAX_SAFE_INTEGER){
+		
+		//check & normalize float `3+` last zeros from 5th place ~ 0.011000000000000001 => 0.011
+		let match = String(value).match(/^([\+-]?\d+\.\d{5,})(0{3,}\d*)$/);
+		if (match) value = Number(match[1]);
+		
+		//result
+		return value;
+	}
+
+	//invalid => default result
+	return Number(_default);
 };
 
 /**
- * Get parsed positive number
+ * Get parsed safe positive `number` with optional within min/max limit check
  * 
- * @param value - parse value
- * @param min - set min limit
- * @param max - set max limit
- * @returns `number` positive | `undefined` when invalid
+ * @param value - parse number value
+ * @param min - set min limit ~ enabled when `min` is a valid positive number
+ * @param max - set max limit ~ enabled when `max` is a valid positive number
+ * @returns `number` positive | `undefined` when invalid or out of `min/max` bounds
  */
 export const _posNum = (value: any, min?: number, max?: number): number|undefined => {
 	const val = _num(value);
 	if (!(!isNaN(val) && val >= 0)) return undefined;
-	if ('number' === typeof min && !isNaN(min = parseFloat(min + '')) && min >= 0 && val < min) return undefined;
-	if ('number' === typeof max && !isNaN(max = parseFloat(max + '')) && max >= 0 && val > max) return undefined;
+	if ('number' === typeof min && !isNaN(min) && min >= 0 && val < min) return undefined;
+	if ('number' === typeof max && !isNaN(max) && max >= 0 && val > max) return undefined;
 	return val;
 };
 
 /**
- * Parse value to integer
+ * Get parsed safe `integer` value
  * 
- * @param value  Parse value
- * @param _default  [default: `NaN`] Default result when parse result is `NaN`
+ * @param value - parse number value
+ * @param _default - result `number` when invalid (default `NaN`)
  * @returns `number` integer
  */
 export const _int = (value: any, _default: number = NaN): number => {
-	const val = parseInt(String(_toNum(value, _default)));
-	return !isNaN(val) && val >= Number.MIN_SAFE_INTEGER && val <= Number.MAX_SAFE_INTEGER ? val : _default;
+	const val = Math.floor(_num(value, _default));
+	return !isNaN(val) ? val : _default;
 };
 
 /**
- * Get parsed positive integer
+ * Get parsed safe positive `integer` value with optional within min/max limit check
  * 
- * @param value - parse value
- * @param min - set min limit
- * @param max - set max limit
- * @returns `number` positive | `undefined` when invalid
+ * @param value - parse number value
+ * @param min - set min limit ~ enabled when `min` is a valid positive number
+ * @param max - set max limit ~ enabled when `max` is a valid positive number
+ * @returns `number` positive | `undefined` when invalid or out of `min/max` bounds
  */
 export const _posInt = (value: any, min?: number, max?: number): number|undefined => {
-	const val = _num(value);
+	const val = _int(value);
 	if (!(!isNaN(val) && val >= 0)) return undefined;
-	if ('number' === typeof min && !isNaN(min = parseInt(min + '')) && min >= 0 && val < min) return undefined;
-	if ('number' === typeof max && !isNaN(max = parseInt(max + '')) && max >= 0 && val > max) return undefined;
+	if ('number' === typeof min && !isNaN(min) && min >= 0 && val < min) return undefined;
+	if ('number' === typeof max && !isNaN(max) && max >= 0 && val > max) return undefined;
 	return val;
 };
 

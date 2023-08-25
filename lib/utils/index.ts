@@ -23,8 +23,7 @@ export { _jsonStringify, _jsonParse, _jsonClone } from './_json';
 
 //number
 export {
-	_isNum,
-	_toNum,
+	_numeric,
 	_num,
 	_posNum,
 	_int,
