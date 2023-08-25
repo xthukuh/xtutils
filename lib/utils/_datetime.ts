@@ -15,7 +15,7 @@ export const _getDate = (value?: any, _default?: Date|string|number|null|undefin
 	if (!_isDate(value) && !_isDate(value = new Date(value))){
 		if (_default instanceof Date) value = _default;
 		else if (_default === undefined) value = new Date();
-		else if (!_isDate(value = new Date(_default as any))) value = new Date();
+		else value = new Date(_default as any);
 	}
 	return value;
 };

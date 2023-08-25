@@ -36,6 +36,7 @@ import {
 	_getDate,
 	_posNum,
 	_num,
+	_jsonParse,
 } from '../lib';
 
 enum EnumType {
@@ -50,51 +51,19 @@ const _validId = (value: any): string => (value = _str(value, true)) && /^[0-9a-
 
 	//test date
 	let tmp: any, input: any = process.argv[2];
-	if (!isNaN(tmp = parseFloat(input))) input = tmp;
-	else input = _str(input);
+	if (!isNaN(tmp = _num(input))) input = tmp;
+	else {
+		input = _str(input);
+		input = _jsonParse(input, input);
+		if (input === 'undefined') input = undefined;
+		else if (input === 'NaN') input = NaN;
+	}
 	Term.info(`>> INPUT ${typeof input} '${input}'`);
 
 	// 1692909874165
 	// 2023-08-24T20:44:34.165Z
 	// "Thu, 24 Aug 2023 20:44:34 GMT"
-	Term.table(Object.entries({
-		_int: 10.345,
-		_num: 10.345,
-		_commas: '1, 200, 000 . 3455',
-		_float: '45.011000000000000001',
-		_float1: '2,234,230.345',
-		_float2: '+ 2,234,230.345',
-		_float3: '- 3.45340003445',
-		_dot: '.10',
-		_dot2: '10.',
-		_dot3: '.',
-		_err1: '- 3.453 40 003445',
-		_err2: '..10',
-		_err3: '10..',
-		_err4: '100,00.34',
-		_err5: '100.00.34',
-		_err6: '010\n3400000002',
-		_err7: '   ',
-		_err8: '',
-		_err9: '10 a',
-		_val0: '00010.34000',
-		_val2: '00000000005',
-		_val3: '6.000000000000000000',
-	}).map(entry => {
-		const [key, val] = entry;
-		return {
-			key,
-			val,
-			int: _int(val),
-			num: _num(val),
-			posInt: _posInt(val),
-			posNum: _posNum(val),
-			posIntLim: _posInt(val, 20),
-			posNumLim: _posNum(val, 20, 100),
-		};
-	}));
-	return;
-	let date = _getDate(input);
+	let date = _getDate(input, 'error');
 	let date_toString = date.toString();
 	let str = _str(date, true);
 	let val = date.getTime(); //new Date('2023-08-24T20:44:34.165Z');
