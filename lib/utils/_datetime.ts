@@ -1,46 +1,54 @@
+import { _str } from './_string';
+
+/**
+ * Parse `Date` value ~ does not accept `[undefined, null, 0, '']`
+ * 
+ * @param value - parse date value
+ * @returns
+ * - `Date` value instance ~ `date.getTime() > 0`
+ * - `undefined` when invalid
+ */
+export const _date = (value: any): Date|undefined => {
+	let date: Date|undefined = undefined;
+	if (value instanceof Date) date = value;
+	else if (![undefined, null].includes(value)){
+		if ('number' === typeof value) date = new Date(value);
+		else if (value = _str(value, true)) date = new Date(/^\d{0,13}$/.test(value) ? Number(value) : value);
+	}
+	return date && date.getTime() > 0 ? date : undefined;
+};
+
 /**
  * Validate `Date` instance
  * 
  * @param value
+ * @returns `boolean`
  */
 export const _isDate = (value: any): boolean => value instanceof Date && !isNaN(value.getTime());
 
 /**
- * Get/create `Date` instance
+ * Convert `Date` value to `datetime` format (i.e. `2023-05-27 22:11:57` ~ `YYYY-MM-DD HH:mm:ss`)
  * 
- * @param value  Parse value ~ `value instanceOf Date ? value : new Date(value)`
- * @param _default  Parse default on failure [default: `undefined` => `new Date()`]
+ * @param value - parse date value
+ * @returns
+ * - `string` ~ formatted `YYYY-MM-DD HH:mm:ss`
+ * - `''` when date value is invalid
  */
-export const _getDate = (value?: any, _default?: Date|string|number|null|undefined): Date => {
-	if (!_isDate(value) && !_isDate(value = new Date(value))){
-		if (_default instanceof Date) value = _default;
-		else if (_default === undefined) value = new Date();
-		else value = new Date(_default as any);
-	}
-	return value;
+export const _datetime = (value: any): string => {
+	const date = _date(value);
+	if (!date) return '';
+	const arr = [
+		date.getFullYear(), //yyyy
+		date.getMonth() + 1, //MM
+		date.getDate(), //dd
+		date.getHours(), //HH
+		date.getMinutes(), //mm
+		date.getSeconds(), //ss
+	].map(v => `${v}`.padStart(2, '0')); //pad ~ `'1' => '01'`
+	return arr.splice(0, 3).join('-') + ' ' + arr.join(':'); //timestamp
 };
 
-/**
- * Convert `Date` value to datetime format (i.e. `2023-05-27 22:11:57` ~ `YYYY-MM-DD HH:mm:ss`)
- * 
- * @param value  Parse value ~ `value instanceOf Date ? value : new Date(value)`
- * @param _default  Parse default on failure [default: `undefined` => `new Date()`]
- */
-export const _datetime = (value?: any, _default?: Date|string|number|null|undefined): string => {
-	const date = _getDate(value, _default), _pad = (v: number) => `${v}`.padStart(2, '0');
-	return !_isDate(date) ? `${date}` : `${date.getFullYear()}-${_pad(date.getMonth() + 1)}-${_pad(date.getDate())} ${_pad(date.getHours())}:${_pad(date.getMinutes())}:${_pad(date.getSeconds())}`;
-};
 
-/**
- * Convert `Date` value to ISO format (i.e. `new Date().toISOString()` ~ `2023-05-27T19:30:44.575Z`)
- * 
- * @param value  Parse value ~ `value instanceOf Date ? value : new Date(value)`
- * @param _default  Parse default on failure [default: `undefined` => `new Date()`]
- */
-export const _timestamp = (value?: any, _default?: Date|string|number|null|undefined): string => {
-	const date = _getDate(value, _default);
-	return !_isDate(date) ? `${date}` : date.toISOString();
-};
 
 
 //TODO: (from yup) parse ISO date string

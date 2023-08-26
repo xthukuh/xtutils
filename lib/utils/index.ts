@@ -10,7 +10,11 @@ export { _compare } from './_compare';
 export { _compareShallow } from './_compareShallow';
 
 //datetime
-export { _isDate, _getDate, _datetime, _timestamp } from './_datetime';
+export {
+	_date,
+	_isDate,
+	_datetime,
+} from './_datetime';
 
 //debounced
 export { _debouced } from './_debouced';

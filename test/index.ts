@@ -33,7 +33,7 @@ import {
 	_values,
 	_empty,
 	_posInt,
-	_getDate,
+	_date,
 	_posNum,
 	_num,
 	_jsonParse,
@@ -63,10 +63,10 @@ const _validId = (value: any): string => (value = _str(value, true)) && /^[0-9a-
 	// 1692909874165
 	// 2023-08-24T20:44:34.165Z
 	// "Thu, 24 Aug 2023 20:44:34 GMT"
-	let date = _getDate(input, 'error');
-	let date_toString = date.toString();
+	let date = _date(input);
+	let date_toString = date?.toString();
 	let str = _str(date, true);
-	let val = date.getTime(); //new Date('2023-08-24T20:44:34.165Z');
+	let val = date?.getTime(); //new Date('2023-08-24T20:44:34.165Z');
 	let num = _posInt(val, 1692909874165);
 	let match = num === 1692909874165;
 	console.log({

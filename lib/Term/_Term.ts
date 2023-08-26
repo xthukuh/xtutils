@@ -1,4 +1,4 @@
-import { _clone, _jsonStringify, _isDate, _timestamp, _str, _string, _stringable, _strEscape } from '../utils';
+import { _clone, _jsonStringify, _isDate, _str, _string, _stringable, _strEscape } from '../utils';
 
 /**
  * Term format result interface
