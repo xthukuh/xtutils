@@ -1,11 +1,26 @@
+//===================================================================================
+// simple date helpers - consider useful libraries: https://momentjs.com/ 
+//===================================================================================
+
 import { _str } from './_string';
+import { _posInt } from './_number';
+
+/**
+ * Date time locales
+ */
+export const DateLocales = {
+	monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+	dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+	AM: 'AM',
+	PM: 'PM'
+};
 
 /**
  * Parse `Date` value ~ does not accept `[undefined, null, 0, '']`
  * 
  * @param value - parse date value
  * @returns
- * - `Date` value instance ~ `date.getTime() > 0`
+ * - `Date` value instance
  * - `undefined` when invalid
  */
 export const _date = (value: any): Date|undefined => {
@@ -13,9 +28,25 @@ export const _date = (value: any): Date|undefined => {
 	if (value instanceof Date) date = value;
 	else if (![undefined, null].includes(value)){
 		if ('number' === typeof value) date = new Date(value);
-		else if (value = _str(value, true)) date = new Date(/^\d{0,13}$/.test(value) ? Number(value) : value);
+		else if ((value = _str(value, true)) && !isNaN(value = Date.parse(value))) date = new Date(value);
 	}
-	return date && date.getTime() > 0 ? date : undefined;
+	return date && !isNaN(date.getTime()) ? date : undefined;
+};
+
+/**
+ * Get parsed `Date` value time milliseconds (i.e. `date.getTime()`)
+ * 
+ * @param value - parse date value
+ * @param min - set `min` timestamp limit ~ enabled when `min` is a valid timestamp integer
+ * @param max - set `max` timestamp limit ~ enabled when `max` is a valid timestamp integer
+ * @returns
+ * - `number` timestamp milliseconds
+ * - `undefined` when invalid
+ */
+export const _time = (value: any, min?: number, max?: number): number|undefined => {
+	const date: Date|undefined = _date(value);
+	if (!date) return undefined;
+	return _posInt(date.getTime(), min, max);
 };
 
 /**
@@ -27,7 +58,7 @@ export const _date = (value: any): Date|undefined => {
 export const _isDate = (value: any): boolean => value instanceof Date && !isNaN(value.getTime());
 
 /**
- * Convert `Date` value to `datetime` format (i.e. `2023-05-27 22:11:57` ~ `YYYY-MM-DD HH:mm:ss`)
+ * Parse `Date` value to `datetime` format (i.e. `2023-05-27 22:11:57` ~ `YYYY-MM-DD HH:mm:ss`)
  * 
  * @param value - parse date value
  * @returns
@@ -48,45 +79,36 @@ export const _datetime = (value: any): string => {
 	return arr.splice(0, 3).join('-') + ' ' + arr.join(':'); //timestamp
 };
 
-
-
-
-//TODO: (from yup) parse ISO date string
-//var isoReg = /^(\d{4}|[+\-]\d{6})(?:-?(\d{2})(?:-?(\d{2}))?)?(?:[ T]?(\d{2}):?(\d{2})(?::?(\d{2})(?:[,\.](\d{1,}))?)?(?:(Z)|([+\-])(\d{2})(?::?(\d{2}))?)?)?$/;
-// function parseISO(str, utcMode, xdate) {
-// 	var m = str.match(/^(\d{4})(-(\d{2})(-(\d{2})([T ](\d{2}):(\d{2})(:(\d{2})(\.(\d+))?)?(Z|(([-+])(\d{2})(:?(\d{2}))?))?)?)?)?$/);
-// 	if (m) {
-// 					var d = new Date(UTC(
-// 									m[1],
-// 									m[3] ? m[3] - 1 : 0,
-// 									m[5] || 1,
-// 									m[7] || 0,
-// 									m[8] || 0,
-// 									m[10] || 0,
-// 									m[12] ? Number('0.' + m[12]) * 1000 : 0
-// 					));
-// 					if (m[13]) { // has gmt offset or Z
-// 									if (m[14]) { // has gmt offset
-// 													d.setUTCMinutes(
-// 																	d.getUTCMinutes() +
-// 																	(m[15] == '-' ? 1 : -1) * (Number(m[16]) * 60 + (m[18] ? Number(m[18]) : 0))
-// 													);
-// 									}
-// 					}else{ // no specified timezone
-// 									if (!utcMode) {
-// 													d = coerceToLocal(d);
-// 									}
-// 					}
-// 					return xdate.setTime(d.getTime());
-// 	}
-// }
-// XDate.locales = {
-// 	'': {
-// 					monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
-// 					monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-// 					dayNames: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
-// 					dayNamesShort: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
-// 					amDesignator: 'AM',
-// 					pmDesignator: 'PM'
-// 	}
-// };
+/**
+ * Parse ISO formatted date value to milliseconds timestamp
+ * - borrowed from https://github.com/jquense/yup/blob/1ee9b21c994b4293f3ab338119dc17ab2f4e284c/src/util/parseIsoDate.ts
+ * 
+ * @param value - ISO date `string` (i.e. `'2022-12-19T13:12:42.000+0000'`/`'2022-12-19T13:12:42.000Z'` => `1671455562000`)
+ * @returns
+ * - `number` milliseconds timestamp
+ * - `undefined` when invalid
+ */
+export const _parseIso = (value: string): number|undefined => {
+	//                1 YYYY                2 MM        3 DD              4 HH     5 mm        6 ss           7 msec         8 Z 9 ±   10 tzHH    11 tzmm
+	const regex  = /^(\d{4}|[+-]\d{6})(?:-?(\d{2})(?:-?(\d{2}))?)?(?:[ T]?(\d{2}):?(\d{2})(?::?(\d{2})(?:[,.](\d{1,}))?)?(?:(Z)|([+-])(\d{2})(?::?(\d{2}))?)?)?$/;
+	let struct: any, timestamp: number = NaN;
+	if (struct = regex.exec(value = _str(value, true))){
+		for (const k of [1, 4, 5, 6, 7, 10, 11]) struct[k] = +struct[k] || 0; //allow undefined days and months
+		struct[2] = (+struct[2]||1) - 1;
+		struct[3] = +struct[3]||1; //allow arbitrary sub-second precision beyond milliseconds
+		struct[7] = struct[7] ? String(struct[7]).substring(0, 3) : 0; //timestamps without timezone identifiers should be considered local time
+		if ((struct[8] === undefined || struct[8] === '') && (struct[9] === undefined || struct[9] === '')){
+			timestamp = +new Date(struct[1], struct[2], struct[3], struct[4], struct[5], struct[6], struct[7]);
+		}
+		else {
+			let min_offset = 0;
+			if (struct[8] !== 'Z' && struct[9] !== undefined){
+				min_offset = struct[10] * 60 + struct[11];
+				if (struct[9] === '+') min_offset = 0 - min_offset;
+			}
+			timestamp = Date.UTC(struct[1], struct[2], struct[3], struct[4], struct[5] + min_offset, struct[6], struct[7]);
+		}
+	}
+	else timestamp = Date.parse ? Date.parse(value) : NaN;
+	return !isNaN(timestamp) ? timestamp : undefined;
+};

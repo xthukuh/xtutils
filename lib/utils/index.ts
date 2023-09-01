@@ -11,9 +11,12 @@ export { _compareShallow } from './_compareShallow';
 
 //datetime
 export {
+	DateLocales,
 	_date,
+	_time,
 	_isDate,
 	_datetime,
+	_parseIso,
 } from './_datetime';
 
 //debounced
