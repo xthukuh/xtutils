@@ -1,4 +1,4 @@
-import { _jsonStringify, _jsonParse, _jsonClone } from '../lib';
+import { _jsonStringify, _jsonParse, _jsonCopy } from '../lib';
 import { _expectTests } from './__helpers';
 
 //_jsonStringify
@@ -163,10 +163,10 @@ describe('\n  _jsonParse: (value: string, _default?: any) => any', () => {
 	]);
 });
 
-//_jsonClone
-describe('\n  _jsonClone: <TReturn extends any>(value: any, space?: string|number|undefined, _undefined: any = null) => TReturn', () => {
-	describe(`/* Example */ const a = {name: 'John'}, b = a, c = _jsonClone(a);`, () => {
-		let a = {name: 'John'}, b = a, c = _jsonClone(a);
+//_jsonCopy
+describe('\n  _jsonCopy: <TReturn extends any>(value: any) => TReturn', () => {
+	describe(`/* Example */ const a = {name: 'John'}, b = a, c = _jsonCopy(a);`, () => {
+		let a = {name: 'John'}, b = a, c = _jsonCopy(a);
 		test(`a equals {name: 'John'} --> true`, () => expect(a).toEqual({name: 'John'}));
 		test(`b equals {name: 'John'} --> true`, () => expect(b).toEqual({name: 'John'}));
 		test(`c equals {name: 'John'} --> true`, () => expect(c).toEqual({name: 'John'}));

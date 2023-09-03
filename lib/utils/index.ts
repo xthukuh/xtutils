@@ -26,7 +26,7 @@ export { _debouced } from './_debouced';
 export { _sayHello } from './_hello';
 
 //json
-export { _jsonStringify, _jsonParse, _jsonClone } from './_json';
+export { _jsonStringify, _jsonParse, _jsonCopy } from './_json';
 
 //number
 export {

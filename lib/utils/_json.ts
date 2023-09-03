@@ -89,14 +89,9 @@ export const _jsonParse = (value: string, _default?: any): any => {
 };
 
 /**
- * Clone value via json stringify and parse
+ * Copy json stringify and parse value ~ `JSON.parse(JSON.stringify(value))`
  * 
- * @param value  Parse value
- * @param space  Indentation space
- * @param _undefined  Default `undefined` argument `value` substitute (default `null`)
+ * @param value - parse value
+ * @returns `any` json stringified and parsed value
  */
-export const _jsonClone = <TReturn extends any>(value: any, space?: string|number|undefined, _undefined: any = null): TReturn => {
-	let val: any = _jsonStringify(value, space, _undefined);
-	if (val !== undefined) val = _jsonParse(val);
-	return val as TReturn;
-};
+export const _jsonCopy = <TReturn = any>(value: any): TReturn => ('object' === typeof value && value ? _jsonParse(_jsonStringify(value)) : value) as any;

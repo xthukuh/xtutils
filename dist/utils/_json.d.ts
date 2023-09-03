@@ -19,10 +19,9 @@ export declare const _jsonStringify: (value: any, space?: string | number | null
  */
 export declare const _jsonParse: (value: string, _default?: any) => any;
 /**
- * Clone value via json stringify and parse
+ * Copy json stringify and parse value ~ `JSON.parse(JSON.stringify(value))`
  *
- * @param value  Parse value
- * @param space  Indentation space
- * @param _undefined  Default `undefined` argument `value` substitute (default `null`)
+ * @param value - parse value
+ * @returns `any` json stringified and parsed value
  */
-export declare const _jsonClone: <TReturn extends unknown>(value: any, space?: string | number | undefined, _undefined?: any) => TReturn;
+export declare const _jsonCopy: <TReturn = any>(value: any) => TReturn;

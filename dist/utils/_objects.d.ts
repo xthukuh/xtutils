@@ -128,8 +128,8 @@ export declare const _dotValue: <TResult = any>(dot_path: string, target: any, _
 /**
  * Get dump value with limit max string length
  *
- * @param value - parse value (`value = _jsonParse(_jsonStringify(value))`)
- * @param maxStrLength - max string length [default: `100`]
+ * @param value - parse value
+ * @param maxStrLength - max string length [default: `200`]
  * @returns `any` - parsed value
  */
 export declare const _dumpVal: (value: any, maxStrLength?: number) => any;

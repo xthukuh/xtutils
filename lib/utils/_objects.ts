@@ -1,5 +1,5 @@
 import { bool } from '../types';
-import { _jsonParse, _jsonStringify } from './_json';
+import { _jsonCopy, _jsonParse, _jsonStringify } from './_json';
 import { _int, _num } from './_number';
 import { _str, _string, _stringable } from './_string';
 import { _isBuffer } from '../3rd-party';
@@ -273,14 +273,14 @@ export const _dotValue = <TResult = any>(dot_path: string, target: any, _failure
 /**
  * Get dump value with limit max string length
  * 
- * @param value - parse value (`value = _jsonParse(_jsonStringify(value))`)
- * @param maxStrLength - max string length [default: `100`]
+ * @param value - parse value
+ * @param maxStrLength - max string length [default: `200`]
  * @returns `any` - parsed value
  */
-export const _dumpVal = (value: any, maxStrLength: number = 100): any => {
+export const _dumpVal = (value: any, maxStrLength: number = 200): any => {
 	const minStrLength = 20;
-	value = _jsonParse(_jsonStringify(value));
-	maxStrLength = !(maxStrLength = _int(maxStrLength, 100)) ? 0 : (maxStrLength >= minStrLength ? maxStrLength : 100);
+	value = _jsonCopy(value);
+	maxStrLength = !(maxStrLength = _int(maxStrLength, 200)) ? 0 : (maxStrLength >= minStrLength ? maxStrLength : 200);
 	const _maxStr = (v: any): any => {
 		if (!('string' === typeof v && v.length > maxStrLength)) return v;
 		const append = `...(${v.length})`;
