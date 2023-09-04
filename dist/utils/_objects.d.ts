@@ -125,14 +125,6 @@ export declare const _dotGet: (dot_path: string, target: any, _failure?: 0 | 1 |
  * @returns ``
  */
 export declare const _dotValue: <TResult = any>(dot_path: string, target: any, _failure?: 0 | 1 | 2) => TResult | undefined;
-/**
- * Get dump value with limit max string length
- *
- * @param value - parse value
- * @param maxStrLength - max string length [default: `200`]
- * @returns `any` - parsed value
- */
-export declare const _dumpVal: (value: any, maxStrLength?: number) => any;
 export declare const _getAllPropertyDescriptors: (value: any) => {
     [key: string]: any;
     [key: number]: any;
@@ -175,3 +167,12 @@ export declare const _iterable: (value: any, _async?: boolean) => boolean;
  * - `[]` when `value` argument is empty ~ `[]`/`{}`/`undefined`
  */
 export declare const _values: (value: any, entries?: boolean, object?: boolean) => any[];
+/**
+ * Get dump value with limit max string length
+ *
+ * @param value - parse value
+ * @param maxStrLength - max string length [default: `200`]
+ * @param first - summarize object array to count and first entry (i.e. `{count:number,first:any}`)
+ * @returns `any` - dump value
+ */
+export declare const _dumpVal: (value: any, maxStrLength?: number, first?: boolean) => any;

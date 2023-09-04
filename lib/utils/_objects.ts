@@ -270,35 +270,6 @@ export const _dotValue = <TResult = any>(dot_path: string, target: any, _failure
 	}
 };
 
-/**
- * Get dump value with limit max string length
- * 
- * @param value - parse value
- * @param maxStrLength - max string length [default: `200`]
- * @returns `any` - parsed value
- */
-export const _dumpVal = (value: any, maxStrLength: number = 200): any => {
-	const minStrLength = 20;
-	value = _jsonCopy(value);
-	maxStrLength = !(maxStrLength = _int(maxStrLength, 200)) ? 0 : (maxStrLength >= minStrLength ? maxStrLength : 200);
-	const _maxStr = (v: any): any => {
-		if (!('string' === typeof v && v.length > maxStrLength)) return v;
-		const append = `...(${v.length})`;
-		return v.substring(0, maxStrLength - append.length) + append;
-	};
-	const _parse = (val: any): any => {
-		if (!!val && 'object' === typeof val){
-			for (let k in val){
-				if (!val.hasOwnProperty(k)) continue;
-				val[k] = _parse(val[k]);
-			}
-		}
-		else val = _maxStr(val);
-		return val;
-	};
-	return _parse(value);
-};
-
 //Get all property descriptors
 export const _getAllPropertyDescriptors = (value: any): {[key: string|number|symbol]: any} => {
 	if ([null, undefined].includes(value)) return {};
@@ -419,4 +390,59 @@ export const _values = (value: any, entries: boolean = false, object: boolean = 
 		else if (_empty(value) && Object.getPrototypeOf(value) === Object.prototype) items = []; //{}
 	}
 	return items;
+};
+
+/**
+ * Get dump value with limit max string length
+ * 
+ * @param value - parse value
+ * @param maxStrLength - max string length [default: `200`]
+ * @param first - summarize object array to count and first entry (i.e. `{count:number,first:any}`) 
+ * @returns `any` - dump value
+ */
+export const _dumpVal = (value: any, maxStrLength: number = 200, first: boolean = false): any => {
+	const minStrLength = 20;
+	value = _jsonCopy(value);
+	maxStrLength = !(maxStrLength = _int(maxStrLength, 200)) ? 0 : (maxStrLength >= minStrLength ? maxStrLength : 200);
+	const _maxStr = (v: any): any => {
+		if (!('string' === typeof v && v.length > maxStrLength)) return v;
+		const append = `...(${v.length})`;
+		return v.substring(0, maxStrLength - append.length) + append;
+	};
+	const _get_first = (val: any): any => {
+		if (Array.isArray(val)){
+			let same_keys = 1, prev_keys = '';
+			for (let i = 0; i < val.length; i ++){
+				const v = val[i];
+				if (Object(v) !== v){
+					same_keys = 0;
+					break;
+				}
+				const keys = Object.keys(v);
+				if (keys.length){
+					same_keys = 0;
+					break;
+				}
+				const keys_val = keys.join(',');
+				if (!i) prev_keys = keys_val;
+				else if (keys_val !== prev_keys){
+					same_keys = 0;
+					break;
+				}
+			}
+			if (same_keys && val.length) return {count: val.length, first: _get_first(val[0])};
+		}
+		return val;
+	};
+	const _parse = (val: any): any => {
+		if ('object' === typeof val && val){
+			for (let k in val){
+				if (!val.hasOwnProperty(k)) continue;
+				val[k] = _parse(val[k]);
+			}
+		}
+		else val = _maxStr(val);
+		return val;
+	};
+	return _parse(first ? _get_first(value) : value);
 };
