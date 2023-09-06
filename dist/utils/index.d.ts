@@ -9,7 +9,7 @@ export { _sayHello } from './_hello';
 export { _jsonStringify, _jsonParse, _jsonCopy } from './_json';
 export { _numeric, _num, _posNum, _int, _posInt, _round, _commas, _rand, _px2rem, } from './_number';
 export { _flatten, _hasProp, _hasProps, _hasAnyProps, _isClass, _isFunc, _minMax, _dotFlat, _validDotPath, _bool, _dotGet, _dotValue, _dumpVal, _getAllPropertyDescriptors, _getAllProperties, _valueOf, _empty, _iterable, _values, } from './_objects';
-export { IPromiseResult, _asyncAll, _asyncValues, _sleep } from './_promise';
+export { IPromiseResult, _asyncAll, _asyncValues, _sleep, _resolve, IPending, IPendingPromise, PendingAbortError, PENDING_CACHE, _pending, _pendingAbort, } from './_promise';
 export { IQueue, _queue } from './_queue';
 export { _uuid, _string, _stringable, _str, _strNorm, _regEscape, _strEscape, _trim, _ltrim, _rtrim, _toTitleCase, _toSentenceCase, _toSnakeCase, _toSlugCase, _toStudlyCase, _toCamelCase, _toLowerCase, _toUpperCase, _hashCode, _hash53, IDataUri, _parseDataUri, _isUrl, _isEmail, _escapeSql, _parseCsv, _toCsv, _split, } from './_string';
 export { SortDirection, SortOrder, _sortValues } from './_sort';

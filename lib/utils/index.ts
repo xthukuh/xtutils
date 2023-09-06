@@ -65,7 +65,19 @@ export {
 } from './_objects';
 
 //promise
-export { IPromiseResult, _asyncAll, _asyncValues, _sleep } from './_promise';
+export {
+	IPromiseResult,
+	_asyncAll,
+	_asyncValues,
+	_sleep,
+	_resolve,
+	IPending,
+	IPendingPromise,
+	PendingAbortError,
+	PENDING_CACHE,
+	_pending,
+	_pendingAbort,
+} from './_promise';
 
 //queue
 export { IQueue, _queue } from './_queue';
