@@ -90,24 +90,23 @@ export declare const _bool: (value: any, strict?: boolean, trim?: boolean) => bo
  * @example
  *
  * //simple usage
- * _dotGet('x', {x:1}) => 1
- * _dotGet('a.b.c', {a:{b:{c:1}}}) => 1
- * _dotGet('a.b.d', {a:{b:{c:1}}}, 'a.b.d', null) => null
- * _dotGet('a.0', {a:['x','y']}) => 'x'
+ * _dotGet('x', {'x':1}) => 1
+ * _dotGet('a.b.c', {'a':{'b':{'c':1}}}) => 1
+ * _dotGet('a.b.d', {'a':{'b':{'c':1}}}) => null
+ * _dotGet('a.0', {'a':['x','y']}) => 'x'
  *
- * //array reverse operation
- * _dotGet('0.!reverse', [[1,2,3]]) => [3,2,1]
+ * //array reverse operation (done slice copy)
+ * _dotGet('0.!reverse', [[3,2,1]]) => [3,2,1]
  *
  * //array slice operation
  * _dotGet('0.!slice', [[1,2,3]]) => [1,2,3]
  *
  * //array slice negative `-number`
- * _dotGet([[1,2,3]], '0.-2') => [2,3]
+ * _dotGet('0.-2', [[1,2,3]]) => [2,3]
  *
  * //array `key=value` searching
- * _dotGet('0.a=2', [[{a:1,b:2},{a:2,b:3}]]) => {a:2,b:3}
- * _dotGet('0.a=1,b=2', [[{a:1,b:2,c:3}, {a:2,b:3,c:4}]]) => {a:1,b:2,c:3}
- *
+ * _dotGet('0.a=2', [[{'a':1,'b':2},{'a':2,'b':3}]]) => {'a':2,'b':3}
+ * _dotGet('0.a=1,b=2', [[{'a':1,'b':2,'c':3},{'a':2,'b':3,'c':4}]]) => {'a':1,'b':2,'c':3}
  *
  * @param dot_path - dot separated keys ~ optional array operations
  * @param target - traverse object

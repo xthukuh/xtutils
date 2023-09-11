@@ -2,7 +2,17 @@ import { bool } from '../types';
 import { _jsonStringify } from './_json';
 
 /**
- * Get unique string of random characters (in lowercase)
+ * Get unique string of random characters
+ * 
+ * @example
+ * _xuid() => 'zt7eg4eu3b6mf66jga' 18
+ * 
+ * @returns `string` ~ alphanumeric lowercase
+ */
+export const _xuid = (): string => Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+
+/**
+ * Get unique string of random characters `string` ~ alphanumeric lowercase
  * 
  * @example
  * _uuid() => 'g9eem5try3pll9ue' 16
@@ -13,14 +23,13 @@ import { _jsonStringify } from './_json';
  * 
  * @param length - uuid length - integer `number` min=`7`, max=`64` (default `16`)
  * @param template - uuid template - trimmed `string` ~ appends when `'{uuid}'` not in template
- * @returns unique `string` min-length = 7, max-length = 64
+ * @returns unique `string` ~ alphanumeric lowercase `(length[min: 7, max: 64])`
  */
-export function _uuid(length?: number, template?: string): string {
+export const _uuid = (length?: number, template?: string): string => {
 	const len: number = length !== undefined && !isNaN(parseInt(length + '')) && Number.isInteger(length) && length >= 7 && length <= 64 ? length : 16;
-	const __uid = () => Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
-	const __uuid = () => {
+	const _create = () => {
 		let buffer = '';
-		while (buffer.length < len) buffer += __uid();
+		while (buffer.length < len) buffer += _xuid();
 		return buffer.substring(0, len);
 	};
 	let uuid: string = '';
@@ -28,13 +37,13 @@ export function _uuid(length?: number, template?: string): string {
 		let append: boolean = true;
 		const tmp = template.replace(/\{uuid\}/g, () => {
 			if (append) append = false;
-			return __uuid();
+			return _create();
 		});
-		uuid = append ? tmp + __uuid() : tmp;
+		uuid = append ? tmp + _create() : tmp;
 	}
-	else uuid = __uuid();
+	else uuid = _create();
 	return uuid;
-}
+};
 
 /**
  * Safely `string` cast value
@@ -272,7 +281,10 @@ export const _toLowerCase = (value: any): string => _str(value).toLowerCase();
 export const _toUpperCase = (value: any): string => _str(value).toUpperCase();
 
 /**
- * Get string buffer unique hash code (i.e. `hashCode('Hello world!')` => `-52966915`)
+ * Get string buffer unique hash code
+ * 
+ * @example
+ * _hashCode('Hello world!') => -52966915
  * 
  * @param buffer  Parse string value
  * @returns `number` hash
@@ -287,6 +299,19 @@ export const _hashCode = (buffer: any): number => {
   }
   return hash;
 };
+
+/**
+ * Get string buffer unique hash code in `string` format
+ * - alias `String(_hashCode(buffer)).replace(/^-/, 'x')`
+ * 
+ * @example
+ * _hashCodeStr('Hello world!') => 'x52966915'
+ * _hashCodeStr('Hello') => '69609650'
+ * 
+ * @param buffer  Parse string value
+ * @returns `string` hash
+ */
+export const _hashCodeStr = (buffer: any): string => String(_hashCode(buffer)).replace(/^-/, 'x');
 
 /**
  * Get string buffer hashCode (i.e. `_hash53('Hello world!')` => `5211024121371232` (length=16))

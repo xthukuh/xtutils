@@ -1,6 +1,15 @@
 import { bool } from '../types';
 /**
- * Get unique string of random characters (in lowercase)
+ * Get unique string of random characters
+ *
+ * @example
+ * _xuid() => 'zt7eg4eu3b6mf66jga' 18
+ *
+ * @returns `string` ~ alphanumeric lowercase
+ */
+export declare const _xuid: () => string;
+/**
+ * Get unique string of random characters `string` ~ alphanumeric lowercase
  *
  * @example
  * _uuid() => 'g9eem5try3pll9ue' 16
@@ -11,9 +20,9 @@ import { bool } from '../types';
  *
  * @param length - uuid length - integer `number` min=`7`, max=`64` (default `16`)
  * @param template - uuid template - trimmed `string` ~ appends when `'{uuid}'` not in template
- * @returns unique `string` min-length = 7, max-length = 64
+ * @returns unique `string` ~ alphanumeric lowercase `(length[min: 7, max: 64])`
  */
-export declare function _uuid(length?: number, template?: string): string;
+export declare const _uuid: (length?: number, template?: string) => string;
 /**
  * Safely `string` cast value
  * - Returns ISO format timestamp for valid Date value
@@ -152,12 +161,27 @@ export declare const _toLowerCase: (value: any) => string;
  */
 export declare const _toUpperCase: (value: any) => string;
 /**
- * Get string buffer unique hash code (i.e. `hashCode('Hello world!')` => `-52966915`)
+ * Get string buffer unique hash code
+ *
+ * @example
+ * _hashCode('Hello world!') => -52966915
  *
  * @param buffer  Parse string value
  * @returns `number` hash
  */
 export declare const _hashCode: (buffer: any) => number;
+/**
+ * Get string buffer unique hash code in `string` format
+ * - alias `String(_hashCode(buffer)).replace(/^-/, 'x')`
+ *
+ * @example
+ * _hashCodeStr('Hello world!') => 'x52966915'
+ * _hashCodeStr('Hello') => '69609650'
+ *
+ * @param buffer  Parse string value
+ * @returns `string` hash
+ */
+export declare const _hashCodeStr: (buffer: any) => string;
 /**
  * Get string buffer hashCode (i.e. `_hash53('Hello world!')` => `5211024121371232` (length=16))
  * - A simple but high quality 53-bit string hash generator based on

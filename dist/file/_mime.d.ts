@@ -8,19 +8,31 @@ export declare const EXT_MIMES: {
  * Mime type object interface
  */
 export interface IMimeType {
+    /**
+     * - parse value
+     */
     value: any;
+    /**
+     * - mime type (e.g. `'image/png'`)
+     */
     type: string;
+    /**
+     * - file extension (e.g. `'png'`)
+     */
     ext: string;
+    /**
+     * - parse error text
+     */
     error: string;
     /**
-     * Get mime text
+     * - get `string` cast
      *
-     * @param prop - text value prop
+     * @param prop - get property (default: `'type'`)
      * @returns `string`
      */
     toString: (
     /**
-     * Specify text value prop (default `'type'`)
+     * - get property (default `'type'`)
      */
     prop?: 'type' | 'ext' | 'error') => string;
 }

@@ -1,1 +1,1 @@
-export { ElapsedTime } from './_ElapsedTime';
+export * from './_ElapsedTime';
