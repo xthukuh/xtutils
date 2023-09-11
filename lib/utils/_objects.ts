@@ -187,7 +187,7 @@ export const _bool = (value: any, strict: boolean = false, trim: boolean = true)
  * 
  * @param dot_path - dot separated keys ~ optional array operations
  * @param target - traverse object
- * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
+ * @param _failure - error handling ~ `0` = (default) disabled, `1` = warn error, `2` = throw error
  * @param _default - default result on failure
  * @returns `any` dot path match result
  */
