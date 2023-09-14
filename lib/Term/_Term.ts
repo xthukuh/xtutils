@@ -140,7 +140,9 @@ export class Term
 			 * @param args
 			 */
 			values(...args: any[]): any[] {
-				return _args.concat(args).map(val => _format(val));
+				const values: any[] = [];
+				for (const val of _args.concat(args)) values.push(_format(val));
+				return values;
 			},
 
 			/**
@@ -207,7 +209,9 @@ export class Term
 	 */
 	static clear(...args: any[]): any[] {
 		const _clear = (val: string): string => Object.values(this.FORMATS).reduce<string>((p, v)=> p.replace(new RegExp(String(v).replace(/\x1B/, '\\x1B').replace(/\[/, '\\['), 'g'), ''), val);
-		return args.map((val: any) => 'string' === typeof val && val.trim().length ? _clear(val) : val);
+		const values: any[] = [];
+		for (const val of args) values.push('string' === typeof val && val.trim().length ? _clear(val) : val);
+		return values;
 	}
 
 	/**
@@ -218,7 +222,11 @@ export class Term
 	 * @returns `string` Formatted
 	 */
 	static text(value: string, formats?: string|string[]): string {
-		const _val: string = _string(value), _formats: string[] = (Array.isArray(formats) ? formats : 'string' === typeof formats ? [formats] : []).filter(v => 'string' === typeof v && !!v.trim());
+		const _val: string = _string(value);
+		const _formats: string[] = [], _formats_list: string[] = (Array.isArray(formats) ? formats : 'string' === typeof formats ? [formats] : []);
+		for (const v of _formats_list){
+			if ('string' === typeof v && !!v.trim()) _formats.push(v);
+		}
 		if (!(_formats.length && _val.trim().length)) return _val;
 		return this.format(_formats, _val).values()[0];
 	}
@@ -347,7 +355,7 @@ export class Term
 		};
 
 		//table items
-		let mode: 'values'|'entries';
+		let mode: 'values'|'entries' = undefined as any;
 		const table_items: any[][] = [];
 		if (data_type === 'entries'){
 			table_items.push(['(index)', 'Values']);
@@ -355,11 +363,13 @@ export class Term
 		}
 		else {
 			let map_keys: string[] = [], map_items: {[key: string]: any}[] = [];
-			data_items.forEach((data_item, r) => {
+			for (let r = 0; r < data_items.length; r ++){
+				const data_item = data_items[r];
 				let [list_items, list_type] = that.list(data_item, !r || mode === 'entries');
 				if (!r) mode = list_type;
 				const map_item: {[key: string]: any} = {};
-				list_items.forEach((item, i) => {
+				for (let i = 0; i < list_items.length; i ++){
+					const item = list_items[i];
 					let k: string, v: any;
 					if (list_type === 'entries'){
 						k = _str(item[0], true, true);
@@ -371,39 +381,42 @@ export class Term
 					}
 					if (!map_keys.includes(k)) map_keys.push(k);
 					map_item[k] = v;
-				});
+				}
 				map_items.push(map_item);
-			});
+			}
 			table_items.push(['(index)', ...map_keys]);
-			map_items.forEach((map_item, r) => {
-				const table_item: any[] = [];
+			for (let r = 0; r < map_items.length; r ++){
+				const table_item: any[] = [], map_item = map_items[r];
 				for (const key of map_keys) table_item.push(map_item[key]);
 				table_items.push([r, ...table_item]);
-			});
+			}
 		}
 
 		//width
 		const width_map: {[key: number]: number} = {};
 		const str_items: [_value: string, _format: string][][] = [];
-		table_items.forEach(table_item => {
+		for (const table_item of table_items){
 			const str_item: [_value: string, _format: string][] = [];
-			table_item.forEach((val, i) => {
+			for (let i = 0; i < table_item.length; i ++){
+				const val = table_item[i];
 				const [_value, _format] = strVal(val);
 				if (!width_map.hasOwnProperty(i)) width_map[i] = 0;
 				let len = _value.length;
 				if (len > cellMaxLength) len = cellMaxLength; //cellMaxLength limit
 				if (len > width_map[i]) width_map[i] = len;
 				str_item.push([_value, _format]);
-			});
+			}
 			str_items.push(str_item);
-		});
+		}
 
 		//rows
 		const rows_len: number = str_items.length;
-		str_items.forEach((str_item, r) => {
-			let max_lines: number = 0, str_item_lines: string[][] = [];
-			str_item.forEach((val, i) => {
-				let [_value, _format] = val;
+		for (let r = 0; r < str_items.length; r ++){
+			const str_item = str_items[r];
+			let max_lines: number = 0;
+			let str_item_lines: string[][] = [];
+			for (let i = 0; i < str_item.length; i ++){
+				let [_value, _format] = str_item[i];
 				if (!i || !r) _format = (!i && r && mode === 'values') ? 'gray' : 'white';
 				const width: number = width_map[i];
 				const lines: string[] = [];
@@ -418,27 +431,50 @@ export class Term
 				else lines.push(that.text(_value.padEnd(width), _format)); //format
 				str_item_lines.push(lines);
 				if (max_lines < lines.length) max_lines = lines.length;
-			});
-			str_item_lines = str_item_lines.map((lines, c) => {
+			}
+			const max_str_item_lines: string[][] = [];
+			for (let c = 0; c < str_item_lines.length; c ++){
+				const lines = str_item_lines[c];
 				const width: number = width_map[c];
-				return [...Array(max_lines)].map((_, i) => {
-					const line = i < lines.length ? lines[i] : ''.padEnd(width);
-					return line;
-				});
-			});
-			const line_rows:string[][] = [...Array(max_lines)].map(() => []);
-			str_item_lines.forEach((lines, c) => {
-				lines.forEach((line, i) => line_rows[i][c] = line);
-			});
+				const str_max_lines: string[] = [];
+				const max_lines_array: any[] = [...Array(max_lines)];
+				for (let i = 0; i < max_lines_array.length; i ++) str_max_lines.push(i < lines.length ? lines[i] : ''.padEnd(width));
+				max_str_item_lines.push(str_max_lines);
+			}
+			str_item_lines = max_str_item_lines;
+			const line_rows:string[][] = [];
+			for (const _ of [...Array(max_lines)]) line_rows.push([]);
+			for (let c = 0; c < str_item_lines.length; c ++){
+				const lines = str_item_lines[c];
+				for (let i = 0; i < lines.length; i ++){
+					line_rows[i][c] = lines[i]
+				}
+			}
 			const rows: string[] = [];
 			const len = line_rows.length;
-			line_rows.forEach((line_row, n) => {
-				if (!n && !r) rows.push('┌─' + line_row.map((_, i) => ''.padEnd(width_map[i], '─')).join('─┬─') + '─┐'); //border top
-				rows.push('│ ' + line_row.join(' │ ') + ' │');
-				if ((!r || divider) && n + 1 === len && r + 1 < rows_len) rows.push('├─' + line_row.map((_, i) => ''.padEnd(width_map[i], '─')).join('─┼─') + '─┤'); //border mid
-				if (n + 1 === len && r + 1 === rows_len) rows.push('└─' + line_row.map((_, i) => ''.padEnd(width_map[i], '─')).join('─┴─') + '─┘'); //border bottom
-			});
-			rows.forEach(row => console.log(row));
-		});
+			for (let n = 0; n < line_rows.length; n ++){
+				const line_row = line_rows[n];
+				if (!n && !r){
+					let border_top: string = '┌─';
+					for (let i = 0; i < line_row.length; i ++) border_top += (i ? '─┬─' : '') + ''.padEnd(width_map[i], '─');
+					border_top += '─┐';
+					rows.push(border_top); //border top
+				}
+				rows.push('│ ' + line_row.join(' │ ') + ' │'); //border left & right
+				if ((!r || divider) && n + 1 === len && r + 1 < rows_len){
+					let border_mid: string = '├─';
+					for (let i = 0; i < line_row.length; i ++) border_mid += (i ? '─┼─' : '') + ''.padEnd(width_map[i], '─');
+					border_mid += '─┤';
+					rows.push(border_mid); //border mid
+				}
+				if (n + 1 === len && r + 1 === rows_len){
+					let border_bottom: string = '└─';
+					for (let i = 0; i < line_row.length; i ++) border_bottom += (i ? '─┴─' : '') + ''.padEnd(width_map[i], '─');
+					border_bottom += '─┘';
+					rows.push(border_bottom); //border bottom
+				}
+			}
+			for (const row of rows) console.log(row); //<< print row ~ console.log
+		}
 	}
 }

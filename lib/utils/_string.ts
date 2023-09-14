@@ -143,24 +143,24 @@ export const _strEscape = (value: any): string => JSON.stringify(_str(value))
  * @returns trimmed `string`
  */
 export const _trim = (value: any, chars: string = ' \r\n\t\f\v\x00', rl: ''|'r'|'l'|'right'|'left' = ''): string => {
-	value = _str(value);
-	if (!chars.length) return value;
+	if (!(value = _str(value)) || !((chars = _str(chars)))) return value;
 	chars = chars.replace(/\{default\}/, ' \r\n\t\f\v\x00');
-	let d1 = 0, d2 = 0;
-	let _chars: string[] = [...new Set([...chars])].filter(v => {
+	let trim_chars: string[] = [], d1 = 0, d2 = 0;
+	for (const v of [...new Set([...chars])]){
+		if (!v) continue;
 		if (v === '-'){
 			d1 = 1;
-			return false;
+			continue;
 		}
 		if (v === '_'){
 			d2 = 1;
-			return false;
+			continue;
 		}
-		return true;
-	});
-	if (d2) _chars.unshift('_');
-	if (d1) _chars.unshift('-');
-	let p = `[${_regEscape(_chars.join(''))}]*`, pattern = `^${p}|${p}$`;
+		trim_chars.push(v);
+	}
+	if (d2) trim_chars.unshift('_');
+	if (d1) trim_chars.unshift('-');
+	let p = `[${_regEscape(trim_chars.join(''))}]*`, pattern = `^${p}|${p}$`;
 	if (['l', 'left'].includes(rl)) pattern = `^${p}`;
 	else if (['r', 'right'].includes(rl)) pattern = `${p}$`;
 	return value.replace(new RegExp(pattern, 'gs'), '');
@@ -202,17 +202,18 @@ export const _toTitleCase = (value: any, keepCase: bool = false): string => _str
  * @param keepCase  Disable lowercasing uncapitalized characters
  * @returns Sentence case `string`
  */
-export const _toSentenceCase = (value: any, keepCase: bool = false): string => _str(value)
-.split(/((?:\.|\?|!)\s*)/)
-.map(val => {
-  if (val.length){
-    const first = val.charAt(0).toUpperCase();
-    const rest = val.length > 1 ? val.slice(1) : '';
-    val = first + (keepCase ? rest : rest.toLowerCase());
-  }
-  return val;
-})
-.join('');
+export const _toSentenceCase = (value: any, keepCase: bool = false): string => {
+	let buffer: string = '';
+	for (let val of _str(value).split(/((?:\.|\?|!)\s*)/)){
+		if (val.length){
+			const first = val.charAt(0).toUpperCase();
+			const rest = val.length > 1 ? val.slice(1) : '';
+			val = first + (keepCase ? rest : rest.toLowerCase());
+		}
+		buffer += val;
+	}
+	return buffer;
+};
 
 /**
  * Convert value to snake case (i.e. 'HelloWorld' => 'hello_world')
@@ -246,11 +247,14 @@ export const _toSlugCase = (value: any, trimTrailing: boolean|'l'|'left'|'r'|'ri
  * @param value  Parse string
  * @returns StudlyCase `string`
  */
-export const _toStudlyCase = (value: any): string => _toSnakeCase(value)
-.split('_')
-.filter(v => v.length)
-.map(word => word[0].toUpperCase() + word.substring(1).toLowerCase())
-.join('');
+export const _toStudlyCase = (value: any): string => {
+	let buffer: string = '';
+	for (const word of _toSnakeCase(value).split('_')){
+		if (!word.length) continue;
+		buffer += word[0].toUpperCase() + word.substring(1).toLowerCase();
+	}
+	return buffer;
+};
 
 /**
  * Convert value to camel case (i.e. 'hello-world' => 'helloWorld')
@@ -423,8 +427,9 @@ export const _isEmail = (value: any): boolean => {
  */
 export const _escapeSql = (value: any): string => {
 	if (!(value = _str(value))) return value;
-	const chars = ['\\', '\'', '\"', '\b', '\n', '\r', '\t', '\x1a'];
-	chars.forEach(char => value = value.replace(new RegExp(char, 'g'), '\\' + char));
+	for (const char of ['\\', '\'', '\"', '\b', '\n', '\r', '\t', '\x1a']){
+		value = value.replace(new RegExp(char, 'g'), '\\' + char);
+	}
 	return value;
 };
 
@@ -442,13 +447,21 @@ export const _parseCsv = (text: string, delimiter?: string, br?: string): string
 	const c_sep = '\x1F'; const c_sep_re = new RegExp(c_sep, 'g');
 	const delim: string = (delimiter = _str(delimiter, true)).length === 1 ? delimiter : ',';
 	const field_re = new RegExp('(^|[' + delim + '\\n])"([^"]*(?:""[^"]*)*)"(?=($|[' + delim + '\\n]))', 'g');
-	return _str(text, true)
+	const lines: string[] = _str(text, true)
 	.replace(/\r/g, '')
 	.replace(/\n+$/, '')
 	.replace(field_re, (_: string, p1: string, p2: string) => p1 + p2.replace(/\n/g, n_sep).replace(/""/g, q_sep).replace(/,/g, c_sep))
-	.split(/\n/)
-	.filter(line => line.length) 
-	.map(line => line.split(delim).map(cell => cell.replace(n_sep_re, br ?? '\n').replace(q_sep_re, '"').replace(c_sep_re, ',')));
+	.split(/\n/);
+	const rows: string[][] = [];
+	for (const line of lines){
+		if (!line.length) continue;
+		const row: string[] = [];
+		for (const cell of line.split(delim)){
+			row.push(cell.replace(n_sep_re, br ?? '\n').replace(q_sep_re, '"').replace(c_sep_re, ','));
+		}
+		rows.push(row);
+	}
+	return rows;
 };
 
 /**
@@ -471,12 +484,48 @@ export const _toCsv = (data: string|string[]|string[][], delimiter?: string, br?
 		return val;
 	};
 	if (data && 'object' === typeof data && data[Symbol.iterator]){
-		const values = Object.values([...data]);
-		if (values.filter(v => 'object' === typeof v && v[Symbol.iterator]).length) rows.push(...values.map((r: any) => r.map((c: any) => _cell(c))));
-		else rows.push(values.map((c: any) => _cell(c)));
+		const iterables: any[] = [], values = Object.values([...data]);
+		for (const v of values){
+			if ('object' === typeof v && v[Symbol.iterator]) iterables.push(v);
+		}
+		if (iterables.length){
+			for (const val of values){
+				const v_row: string[] = [];
+				for (const cell of val){
+					v_row.push(_cell(cell as any));
+				}
+				rows.push(v_row);
+			}
+		}
+		else {
+			const v_row: string[] = [];
+			for (const val of values){
+				v_row.push(_cell(val as any));
+			}
+			rows.push(v_row);
+		}
 	}
-	else if (data = _str(data, true)) rows.push(..._parseCsv(data, delim, br).map(r => r.map(c => _cell(c))));
-	return rows.map(cols => cols.join(delim)).filter(v => v.length).join('\n');
+	else if (data = _str(data, true)){
+		const data_rows: string[][] = _parseCsv(data, delim, br);
+		for (const data_row of data_rows){
+			const d_row: string[] = [];
+			for (const val of data_row){
+				d_row.push(_cell(val));
+			}
+			rows.push(d_row);
+		}
+	}
+	let csv: string = '', div = 0;
+	for (let i = 0; i < rows.length; i ++){
+		const line: string = rows[i].join(delim).trim();
+		if (!line) continue;
+		if (!div){
+			div = 1;
+			csv += line;
+		}
+		else csv += '\n' + line;
+	}
+	return csv;
 };
 
 /**
@@ -485,7 +534,7 @@ export const _toCsv = (data: string|string[]|string[][], delimiter?: string, br?
  * @param value - split string
  * @param separator - split separator (default: `undefined`)
  * @param limit - split items limit/count (default: `undefined`)
- * @returns `[part: string, separator: string | ''][]` parts
+ * @returns `[part: string, separator: string | ''][]` split parts
  */
 export const  _split = (value: any, separator?: string|RegExp, limit?: number): [part: string, separator: string | ''][] => {
 	let val = _str(value);
@@ -496,5 +545,11 @@ export const  _split = (value: any, separator?: string|RegExp, limit?: number): 
 	limit = limit && !isNaN(limit = parseInt(limit + '')) && limit >= 0 ? limit : undefined;
 	const parts: string[] = re ? val.split(re, limit) : val.split(undefined as any, limit);
 	const matches: string[] = re ? val.match(re) || [] : val.match(undefined as any) || [];
-	return parts.map((v, i) => [v, matches[i] ?? '']);
+	const items: [part: string, separator: string | ''][] = [];
+	for (let i = 0; i < parts.length; i ++){
+		const part: string = parts[i];
+		const separator: string = matches[i] ?? '';
+		items.push([part, separator]);
+	}
+	return items;
 };

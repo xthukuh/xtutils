@@ -5,13 +5,6 @@ import { _str, _string, _stringable } from './_string';
 import { _isBuffer } from '../3rd-party';
 
 /**
- * Flatten array recursively
- * 
- * @param values
- */
-export const _flatten = (values: any[]): any[] => values.flat(Infinity);
-
-/**
  * Check if value has property
  * 
  * @param value  Search `object` value
@@ -31,7 +24,13 @@ export const _hasProp = (value: any, prop: any, own: bool = false): boolean => {
  * @param props  Spread find properties
  * 
  */
-export const _hasProps = (value: any, ...props: any): boolean => !props.length ? false : !props.filter((k: any) => !_hasProp(value, k)).length;
+export const _hasProps = (value: any, ...props: any): boolean => {
+	if (!props.length) return false;
+	for (const key of props){
+		if (!_hasProp(value, key)) return false;
+	}
+	return true;
+};
 
 /**
  * Check if object has any of the properties
@@ -40,7 +39,13 @@ export const _hasProps = (value: any, ...props: any): boolean => !props.length ?
  * @param props  Spread find properties
  * 
  */
-export const _hasAnyProps = (value: any, ...props: any): boolean => !props.length ? false : !!props.filter((k: any) => _hasProp(value, k)).length;
+export const _hasAnyProps = (value: any, ...props: any): boolean => {
+	if (!props.length) return false;
+	for (const key of props){
+		if (_hasProp(value, key)) return true;
+	}
+	return false;
+};
 
 /**
  * Check if value is a class function
@@ -92,13 +97,13 @@ export const _dotFlat = (value: any, omit: string[] = []):{[key: string]: any} =
 	if (!(value && 'object' === typeof value)) return {};
 	const _entries: [key: string, val: any][] = [];
 	const _addEntries = (obj: any, _p_key: string) => {
-		Object.entries(obj).forEach(entry => {
+		for (const entry of Object.entries(obj)){
 			const [k, v] = entry;
 			const _key = `${(_p_key ? `${_p_key}.` : '')}${k}`;
 			if (omit && Array.isArray(omit) && omit.length && (omit.includes(`${k}`) || omit.includes(_key))) return;
 			if (v && 'object' === typeof v) _addEntries(v, _key);
 			else _entries.push([_key, v]);
-		});
+		}
 	};
 	_addEntries(value, '');
 	return Object.fromEntries(_entries);
@@ -115,7 +120,10 @@ export const _dotFlat = (value: any, omit: string[] = []):{[key: string]: any} =
 export const _validDotPath = (dot_path: string, operations: boolean = false, _failure: 0|1|2 = 0): string => {
 	try {
 		if (!(dot_path = _str(dot_path, true))) throw new TypeError('Invalid dot path value.');
-		const parts: string[] = dot_path.split('.').map(v => v.trim()).filter(v => v.length);
+		const parts: string[] = [];
+		for (let v of dot_path.split('.')){
+			if (!!(v = v.trim())) parts.push(v);
+		}
 		if (!parts.length) throw new TypeError(`Invalid dot path format "${dot_path}".`);
 		const buffer = [];
 		for (let i = 0; i < parts.length; i ++){
@@ -124,9 +132,10 @@ export const _validDotPath = (dot_path: string, operations: boolean = false, _fa
 			if (!valid && operations){
 				if (['!reverse', '!slice'].includes(part)) valid = true;
 				else if (part.indexOf('=') > -1){
-					const _invalid = part.split(',')
-					.filter(v => v.trim())
-					.filter(v => !/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/.test(v));
+					const _invalid: string[] = [];
+					for (let v of part.split(',')){
+						if ((v = v.trim()) && !/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/.test(v)) _invalid.push(v);
+					}
 					if (!_invalid.length) valid = true;
 				}
 			}
@@ -209,21 +218,29 @@ export const _dotGet = (dot_path: string, target: any, _failure: 0|1|2 = 0, _def
 					
 					//array search
 					if (prev.length && key.indexOf('=') > -1){
-						const search_entries = key.split(',')
-						.filter(v => v.trim())
-						.map(val => {
+						const search_entries: [key: string, val: string][] = [];
+						for (let val of key.split(',')){
+							if (!(val = val.trim())) continue;
 							let arr = val.split('=');
 							if (arr.length !== 2) return [];
 							let k = arr[0].trim();
 							let v = decodeURIComponent(arr[1]);
-							return k ? [k, _jsonParse(v, v)] : [];
-						})
-						.filter(v => v.length);
+							if (k) search_entries.push([k, _jsonParse(v, v)]);
+						}
 						let index = -1;
-						if (search_entries.length) index = prev.findIndex(o => {
-							const matches = search_entries.filter(v => _hasProp(o, v[0]) && o[v[0]] === v[1]);
-							return matches.length && matches.length === search_entries.length;
-						});
+						if (search_entries.length){
+							for (let i = 0; i < prev.length; i ++){
+								const o = prev[i];
+								const matches: [key: string, val: string][] = [];
+								for (const v of search_entries){
+									if (_hasProp(o, v[0]) && o[v[0]] === v[1]) matches.push(v);
+								}
+								if (matches.length && matches.length === search_entries.length){
+									index = i;
+									break;
+								}
+							}
+						}
 						if (index > -1) return prev[index];
 						abort = true;
 						return undefined;
@@ -282,7 +299,7 @@ export const _getAllProperties = (value: any, statics: boolean = false): (string
 	const props = new Set<string|number|symbol>(); //properies
 
 	//add own property names
-	Object.getOwnPropertyNames(value).forEach(v => props.add(v)); //own
+	for (const v of Object.getOwnPropertyNames(value)) props.add(v); //own
 	
 	//fn => get keys helper
 	const __get_keys = (obj: any): (string|number|symbol)[] => {
@@ -307,7 +324,11 @@ export const _getAllProperties = (value: any, statics: boolean = false): (string
 	])];
 
 	//fn => add props helper
-	const __add_props = (val: any): void => __get_props(val).filter(v => !excluded_props.includes(v)).forEach(v => props.add(v));
+	const __add_props = (val: any): void => {
+		for (const v of __get_props(val)){
+			if (!excluded_props.includes(v)) props.add(v);
+		}
+	}
 
 	//add props
 	__add_props(value);
@@ -369,24 +390,42 @@ export const _iterable = (value: any, _async: boolean = false): boolean => 'func
  * @param value - parse array value
  * @param entries - enable get entries (i.e. `[key: any, value: any][]`) instead of default values (i.e. `any[]`)
  * @param object - enable get `Object.values(value)`/`Object.entries(value)`
+ * @param flatten - flatten depth ~ `Array.flat` depth (alias: `-1` => `Array.flat(Infinity)`, `true|null` => `Array.flat()`)
  * @returns
  * - `any[]` values or `[key: any, value: any][]` when `entries` argument is `true`
  * - `[value]` when `value` argument is not iterable or arrayable
  * - `[]` when `value` argument is empty ~ `[]`/`{}`/`undefined`
  */
-export const _values = (value: any, entries: boolean = false, object: boolean = false): any[] => {
+export const _values = (value: any, entries: boolean = false, object: boolean = false, flatten?: number|boolean|null): any[] => {
 	let items: any[] = value === undefined ? [] : entries ? [['0', value]] : [value];
 	if (value && 'object' === typeof value && 'function' !== typeof value){
 		if (Object(value[Symbol.iterator]) === value[Symbol.iterator]){
 			const has_entries = (items = [...value]).length && items.findIndex(v => !(Array.isArray(v) && v.length === 2 && Object.keys(v) + '' === '0,1')) < 0;
 			if (entries) items = has_entries ? items : Object.entries(items);
-			else if (has_entries) items = items.map(v => v[1]);
+			else if (has_entries){
+				const values: any[] = [];
+				for (const v of items) values.push(v[1]);
+				items = values;
+			}
 		}
 		else if (object){
 			const arr = Object.entries(value);
-			if (arr.length || (_empty(value) && Object.getPrototypeOf(value) === Object.prototype)) items = !entries && arr.length ? arr.map(v => v[1]) : arr;
+			if (arr.length || (_empty(value) && Object.getPrototypeOf(value) === Object.prototype)){
+				if (!entries && arr.length){
+					const values: any[] = [];
+					for (const v of arr) values.push(v[1]);
+					items = values; 
+				}
+				else items = arr;
+			}
 		}
 		else if (_empty(value) && Object.getPrototypeOf(value) === Object.prototype) items = []; //{}
+	}
+	if ('undefined' !== typeof flatten){
+		let depth: any = flatten;
+		if (flatten === -1) depth = Infinity;
+		else if ([null, true].includes(depth)) depth = undefined;
+		items = items.flat(depth);
 	}
 	return items;
 };
@@ -444,4 +483,42 @@ export const _dumpVal = (value: any, maxStrLength: number = 200, first: boolean 
 		return val;
 	};
 	return _parse(first ? _get_first(value) : value);
+};
+
+/**
+ * Sort array values
+ * 
+ * @param array - array values
+ * @param sort - sort (default: `asc`) ~ `1|-1|'asc'|'desc'|{[key: string]: 1|-1|'asc'|'desc'}`
+ * @returns Sorted `T[]`
+ */
+export const _sortValues = <T = any>(array: T[], sort?: 1|-1|'asc'|'desc'|{[key:string]:1|-1|'asc'|'desc'}): T[] => {
+	const _compare = (a: any, b: any): number => {
+		if ('string' === typeof a && 'string' === typeof b && 'function' === typeof a?.localeCompare) return a.localeCompare(b);
+		return a > b ? 1 : (a < b ? -1 : 0);
+	};
+	const _direction = (val: any): number => {
+		if ('number' === typeof val) return val >= 0 ? 1 : -1;
+		if ('string' === typeof val){
+			val = val.trim().toLowerCase();
+			if (val.startsWith('asc')) return 1;
+			if (val.startsWith('desc')) return -1;
+		}
+		return 1;
+	};
+	const _method = (): ((a: any, b: any)=>number) => {
+		if (Object(sort) === sort){
+			const entries = Object.entries(sort as any);
+			if (entries.length) return (a, b) => {
+				let i, result;
+				for (result = 0, i = 0; result === 0 || i < entries.length; i ++){
+					const [key, val] = entries[i];
+					result = _compare(a?.[key], b?.[key]) * _direction(val);
+				}
+				return result;
+			};
+		}
+		return (a, b) => _compare(a, b) * _direction(sort);
+	};
+	return array.sort(_method());
 };

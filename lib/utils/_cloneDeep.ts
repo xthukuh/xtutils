@@ -61,7 +61,7 @@ export interface IDeepCloneOptions {
  * @param options  Clone options
  * @returns `<T>` clone
  */
-export function _cloneDeep<T extends any>(value: T, options?: IDeepCloneOptions): T {
+export function _cloneDeep<T = any>(value: T, options?: IDeepCloneOptions): T {
 	const {
 		circular: _circular = true,
 		depth: _depth = Infinity,
@@ -120,17 +120,17 @@ export function _cloneDeep<T extends any>(value: T, options?: IDeepCloneOptions)
 			allChildren.push(child);
 		}
 		if (_instanceof(parent, Map)){
-			parent.forEach((val: any, key: any) => {
+			for (const [key, val] of parent){
 				const keyChild = _clone(key, depth - 1);
 				const valChild = _clone(val, depth - 1);
 				child.set(keyChild, valChild);
-			});
+			}
 		}
 		if (_instanceof(parent, Set)){
-			parent.forEach((val: any) => {
+			for (const val of parent){
 				const valChild = _clone(val, depth - 1);
 				child.add(valChild);
-			});
+			}
 		}
 		for (let key in parent){
 			const attrs = Object.getOwnPropertyDescriptor(parent, key);

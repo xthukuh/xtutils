@@ -189,8 +189,9 @@ export class Tasks
 			let has_started: boolean = false;
 			let has_incomplete: boolean = false;
 
-			//tasks data
-			const tasks: {[name: string]: ITask} = Object.fromEntries([...props._tasks.values()].map(task => {
+			//parse tasks data
+			const task_entries: [name: string, task: ITask][] = [];
+			for (const task of [...props._tasks.values()]){
 				const data = task.data();
 				size ++;
 
@@ -215,8 +216,9 @@ export class Tasks
 				if (data.endTime && (!endTime && data.endTime > endTime)) endTime = data.endTime;
 
 				//task entry
-				return [task.name, data];
-			}));
+				task_entries.push([task.name, data]);
+			}
+			const tasks: {[name: string]: ITask} = Object.fromEntries(task_entries);
 			
 			//calc data
 			const progress = (!all_progress || !full_progress) ? 0 : ((all_progress >= full_progress) ? 100 :  _round(all_progress/full_progress * 100, props.precision));

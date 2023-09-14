@@ -15,14 +15,14 @@ export interface IPromiseResult<TResult> {
  * @param callback  Entry callback
  * @returns `Promise<IPromiseResult<TResult>[]>`
  */
-export declare const _asyncAll: <T extends unknown, TResult extends unknown>(array: T[], callback?: ((value: T, index: number, length: number) => Promise<TResult>) | undefined) => Promise<IPromiseResult<TResult>[]>;
+export declare const _asyncAll: <T = any, TResult = any>(array: T[], callback?: ((value: T, index: number, length: number) => Promise<TResult>) | undefined) => Promise<IPromiseResult<TResult>[]>;
 /**
  * Get async iterable values (i.e. `for await (const value of _asyncValues(array)){...}`)
  *
  * @param array  Values
  * @returns Async iterable object
  */
-export declare const _asyncValues: <T extends unknown>(array: T[]) => {
+export declare const _asyncValues: <T = any>(array: T[]) => {
     values: () => T[];
     size: () => number;
     each: (callback: (value: T, index: number, length: number, _break: () => void) => Promise<any>) => Promise<void>;

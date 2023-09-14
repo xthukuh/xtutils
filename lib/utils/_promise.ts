@@ -18,19 +18,24 @@ export interface IPromiseResult<TResult> {
  * @param callback  Entry callback
  * @returns `Promise<IPromiseResult<TResult>[]>`
  */
-export const _asyncAll = async<T extends any, TResult extends any>(array: T[], callback?: (value: T, index: number, length: number) => Promise<TResult>): Promise<IPromiseResult<TResult>[]> => {
+export const _asyncAll = async<T = any, TResult = any>(array: T[], callback?: (value:T,index:number,length:number)=>Promise<TResult>): Promise<IPromiseResult<TResult>[]> => {
 	return new Promise((resolve) => {
 		const _buffer: IPromiseResult<TResult>[] = [];
 		const _resolve = () => resolve(_buffer);
-		const len = array.length;
-		if (!len) return _resolve();
+		const length = array.length;
+		if (!length) return _resolve();
 		let done = 0;
-		array.forEach((v, i) => {
-			(async()=>Promise.resolve(callback ? callback(v, i, len) : v) as Promise<TResult>)()
-			.then(value => _buffer.push({status: 'resolved', index: i, value}))
-			.catch(reason => _buffer.push({status: 'rejected', index: i, reason}))
-			.finally(() => ++done === len ? _resolve() : undefined);
-		});
+		const _handler: undefined|((value:T,index:number,length:number)=>Promise<TResult>) = 'function' === typeof callback ? callback : undefined;
+		for (let index = 0; index < length; index ++){
+			const value = array[index];
+			(async()=>_handler ? _handler(value, index, length) : value)()
+			.then((value: any) => {
+				_buffer.push({status: 'resolved', index, value});
+				return value;
+			})
+			.catch((reason: any) => _buffer.push({status: 'rejected', index, reason}))
+			.finally(() => ++done >= length ? _resolve() : undefined);
+		}
 	});
 };
 
@@ -40,7 +45,7 @@ export const _asyncAll = async<T extends any, TResult extends any>(array: T[], c
  * @param array  Values
  * @returns Async iterable object
  */
-export const _asyncValues = <T extends any>(array: T[]): {
+export const _asyncValues = <T = any>(array: T[]): {
 	values: () => T[],
 	size: () => number;
 	each: (callback: (value: T, index: number, length: number, _break: ()=>void)=>Promise<any>) => Promise<void>;
@@ -315,8 +320,10 @@ export const _pendingAbort = (remove: boolean = false, key?: string, reason?: st
 		if ('function' === typeof pending?.abort) pending.abort(reason);
 		if (remove && pending?.key) delete PENDING_CACHE[pending.key];
 	}
-	else Object.values(PENDING_CACHE).forEach(pending => {
-		if ('function' === typeof pending?.abort) pending.abort(reason);
-		if (remove && pending?.key) delete PENDING_CACHE[pending.key];
-	});
+	else {
+		for (const pending of Object.values(PENDING_CACHE)){
+			if ('function' === typeof pending?.abort) pending.abort(reason);
+			if (remove && pending?.key) delete PENDING_CACHE[pending.key];
+		}
+	}
 };

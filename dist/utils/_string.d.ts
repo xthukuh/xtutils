@@ -271,6 +271,6 @@ export declare const _toCsv: (data: string | string[] | string[][], delimiter?: 
  * @param value - split string
  * @param separator - split separator (default: `undefined`)
  * @param limit - split items limit/count (default: `undefined`)
- * @returns `[part: string, separator: string | ''][]` parts
+ * @returns `[part: string, separator: string | ''][]` split parts
  */
 export declare const _split: (value: any, separator?: string | RegExp, limit?: number) => [part: string, separator: string][];

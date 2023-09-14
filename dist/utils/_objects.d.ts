@@ -1,11 +1,5 @@
 import { bool } from '../types';
 /**
- * Flatten array recursively
- *
- * @param values
- */
-export declare const _flatten: (values: any[]) => any[];
-/**
  * Check if value has property
  *
  * @param value  Search `object` value
@@ -160,12 +154,13 @@ export declare const _iterable: (value: any, _async?: boolean) => boolean;
  * @param value - parse array value
  * @param entries - enable get entries (i.e. `[key: any, value: any][]`) instead of default values (i.e. `any[]`)
  * @param object - enable get `Object.values(value)`/`Object.entries(value)`
+ * @param flatten - flatten depth ~ `Array.flat` depth (alias: `-1` => `Array.flat(Infinity)`, `true|null` => `Array.flat()`)
  * @returns
  * - `any[]` values or `[key: any, value: any][]` when `entries` argument is `true`
  * - `[value]` when `value` argument is not iterable or arrayable
  * - `[]` when `value` argument is empty ~ `[]`/`{}`/`undefined`
  */
-export declare const _values: (value: any, entries?: boolean, object?: boolean) => any[];
+export declare const _values: (value: any, entries?: boolean, object?: boolean, flatten?: number | boolean | null) => any[];
 /**
  * Get dump value with limit max string length
  *
@@ -175,3 +170,13 @@ export declare const _values: (value: any, entries?: boolean, object?: boolean) 
  * @returns `any` - dump value
  */
 export declare const _dumpVal: (value: any, maxStrLength?: number, first?: boolean) => any;
+/**
+ * Sort array values
+ *
+ * @param array - array values
+ * @param sort - sort (default: `asc`) ~ `1|-1|'asc'|'desc'|{[key: string]: 1|-1|'asc'|'desc'}`
+ * @returns Sorted `T[]`
+ */
+export declare const _sortValues: <T = any>(array: T[], sort?: 1 | -1 | "asc" | "desc" | {
+    [key: string]: 1 | -1 | "asc" | "desc";
+} | undefined) => T[];

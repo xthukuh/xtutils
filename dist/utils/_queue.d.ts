@@ -15,4 +15,4 @@ export interface IQueue<T> {
  *
  * @returns `IQueue`
  */
-export declare const _queue: <T extends unknown>() => IQueue<T>;
+export declare const _queue: <T = any>() => IQueue<T>;

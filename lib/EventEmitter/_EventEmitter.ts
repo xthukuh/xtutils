@@ -109,7 +109,11 @@ export class EventEmitter
 		if ((type = EventEmitter.type(type)) && props._events.hasOwnProperty(type)){
 			const listener: any = props._events[type];
 			if ('function' === typeof listener) listeners.push(listener);
-			else if (Array.isArray(listener) && listener.length) listeners.push(...listener.filter(v => 'function' === typeof v));
+			else if (Array.isArray(listener) && listener.length){
+				for (const val of listener){
+					if ('function' === typeof val) listeners.push(val);
+				}
+			}
 		}
 		return listeners;
 	}
@@ -136,7 +140,7 @@ export class EventEmitter
 		const event = {type, data, time: Date.now()};
 		const listeners = this.listeners(type = EventEmitter.type(type, true));
 		if (listeners.length){
-			listeners.forEach(fn => fn.call(this, event));
+			for (const fn of listeners) fn.call(this, event);
 			return true;
 		}
 		else if (type === 'error'){
@@ -277,7 +281,9 @@ export class EventEmitter
 		const emit_remove_listener = type !== 'removeListener' && props._events.removeListener;
 		const listeners = emit_remove_listener ? this.listeners(type) : [];
 		delete props._events[type];
-		if (emit_remove_listener && listeners.length) listeners.forEach(listener => this.emit('removeListener', {type, listener}));
+		if (emit_remove_listener && listeners.length){
+			for (const listener of listeners) this.emit('removeListener', {type, listener});
+		}
 		return this;
 	}
 }

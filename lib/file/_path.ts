@@ -1,4 +1,4 @@
-import { _split, _str } from '../utils';
+import { _jsonStringify, _split, _str } from '../utils';
 
 /**
  * Basename (stringable) object interface
@@ -210,90 +210,116 @@ export const _filepath = (value: any, separator?: ''|'/'|'\\', _strict: boolean 
 		},
 	};
 
+	//parse path
 	let path: string = _str(value, true);
 	try {
 		let root = '', drive = '', m: RegExpMatchArray|null = null;
-		const items = _split(path, /[\\\/]/).map((item, i) => {
-			let [part, div] = item;
+		const items: [part: string, div: string][] = [];
+		const path_parts: [part: string, div: string][] = _split(path, /[\\\/]/);
+		for (let i = 0; i < path_parts.length; i ++){
+			let [part, div] = path_parts[i];
 			div = div ? (sep ? sep : div) : '';
 			if (!i){
 				if (/[a-z]\:/i.test(part)) root = drive = part.toUpperCase() + ((sep ? sep : div) || '\\');
 				else if (!part && div) root = div;
-				if (root) return [];
+				if (root) continue;
 			}
-			return [part, div];
-		})
-		.filter(v => v.length);
+			items.push([part, div]);
+		}
+
+		//parse items - trim basename
+		const trimmed_parts: [part: string, div: string][] = [];
+		for (let i = 0; i < items.length; i ++){
+			let [part, div] = items[i];
+			part = _str(part, true);
+			if (!(i && !part)) continue; //skip blank ('') entries
+			trimmed_parts.push([part, div]);
+		}
+
+		//parse trimmed - normalize dot path
+		const norm_parts: [part: string, div: string][] = [];
+		for (let i = 0; i < trimmed_parts.length; i ++){
+			let [part, div] = trimmed_parts[i];
+			if (part === '.' && (!i && root || i)){ //match dot path ('.') (at start with root, not at start)
+				if (i && i === trimmed_parts.length - 1) trimmed_parts[i - 1][1] = ''; //if last remove previous separator
+				continue; //skip unnecessary dot path ('.')
+			}
+			norm_parts.push([part, div]);
+		}
+
+		//parse normalized - validate parts
 		const invalid: Set<string> = new Set();
 		const illegal: Set<string> = new Set();
-		const parts: [part: string, div: string][] = [];
 		const outbound: [part: string, div: string][] = [];
-		items
-		.map(v => [_str(v[0], true), v[1]]) //trim basename
-		.filter((v, i) => !(i && !v[0])) //filter out blank ('') entries
-		.map((v, i, arr) => {
-			if (v[0] === '.' && (!i && root || i)){ //match dot path ('.') (at start with root, not at start)
-				if (i && i === arr.length - 1) arr[i - 1][1] = ''; //if last remove previous separator
-				return []; //omit unnecessary dot path ('.')
-			}
-			return v;
-		}).filter(v => v.length) //filter out omitted entries
-		.forEach(v => {
-			const [part, div] = v; //part entry
-
-			//validate basename
+		const parts: [part: string, div: string][] = [];
+		for (let i = 0; i < norm_parts.length; i ++){
+			const [part, div] = norm_parts[i]; //part entry
 			try {
-				_basename(part, true, false, 2);
+				_basename(part, true, false, 2); //validate basename
 			}
 			catch (e: any) {
-				if (e?.item?.invalid?.length) e.item.invalid.forEach((v: any) => invalid.add(v));
-				if (e?.item?.illegal?.length) e.item.illegal.forEach((v: any) => illegal.add(v));
+				if (Array.isArray(e?.item?.invalid) && e.item.invalid.length){
+					for (const v of e.item.invalid) invalid.add(v);
+				}
+				if (Array.isArray(e?.item?.illegal) && e.item.illegal.length){
+					for (const v of e.item.illegal) illegal.add(v);
+				}
 			}
-
-			//dot path ('..') nav
-			if (part === '..'){
+			if (part === '..'){ //dot path ('..') nav
 				if (parts.length){ //pop parent
 					const p = parts.length - 1;
 					if (p > -1 && !!parts[p][0] && !['.', '..'].includes(parts[p][0])){
 						parts.pop();
-						return;
+						continue;
 					}
 				}
 				else if (root){ //root parent - outbound 
 					outbound.push([part, div]);
-					if (drive) return; //ignore when root is drive
+					if (drive) continue; //ignore when root is drive
 				}
 			}
 			parts.push([part, div]); //add entry
-		});
+		}
 		if (root && parts.length && !parts[0][0] && parts[0][1]) parts[0][1] = ''; //fix root separator
 		if (outbound.length) outbound.push(...parts); //outbound entries
 
 		//update item - set root, drive, dir, basename, ext, dir
 		item.root = root;
 		item.drive = drive;
-		item.dir = item.path = path = root + parts.map(v => v.join('')).join('').replace(/[\\/]$/, '');
+
+		//join parts - update dir, path
+		let tmp_path: string = '';
+		for (const part of parts) tmp_path += part.join('');
+		item.dir = item.path = path = root + tmp_path.replace(/[\\/]$/, '');
+
+		//update item - set basename, name, ext, dir
 		const end = parts.pop();
 		if (end && !['', '.', '..'].includes(end[0])){
 			const basename: IBasename = _basename(end[0]);
 			item.basename = basename.basename;
 			item.name = basename.name;
 			item.ext = basename.ext;
-			item.dir = root + parts.map(v => v.join('')).join('').replace(/[\\/]$/, '');
+
+			//join parts - update dir
+			tmp_path = '';
+			for (const part of parts) tmp_path += part.join('');
+			item.dir = root + tmp_path.replace(/[\\/]$/, '');
 		}
-		
+
 		//check errors - update item
 		const errors: string[] = [];
-		const outbound_path = outbound.length ? root + outbound.map(v => v.join('')).join('') : '';
+		tmp_path = '';
+		for (const part of outbound) tmp_path += part.join('');
+		const outbound_path = tmp_path ? root + tmp_path : '';
 		if (outbound_path) errors.push(`The ${type}root (${root}) dot nav path is outbound "${outbound_path}" => "${path}"`); //outbound
-		if (invalid.size) errors.push(`The ${type}path contains invalid name${invalid.size > 1 ? 's' : ''} (${[...invalid].map(v => `"${v}"`).join(', ')})`); //invalid
+		if (invalid.size) errors.push(`The ${type}path contains invalid name${invalid.size > 1 ? 's' : ''} (${_jsonStringify([...invalid])})`); //invalid
 		if (illegal.size) errors.push(`The ${type}path contains illegal characters (:?"<>|*) => "${[...illegal].join('')}"`); //illegal
-		if (errors.length){
+		if (errors.length){ //throw errors
 			item.invalid = [...invalid];
 			item.illegal = [...illegal];
 			throw new Error(item.error = errors.join('; ') + '.'); //error - set, throw
 		}
-		return item; //result
+		return item; //<< result - IFilePath
 	}
 	catch (e: any){
 		if (_strict){ //strict - clear
@@ -314,6 +340,6 @@ export const _filepath = (value: any, separator?: ''|'/'|'\\', _strict: boolean 
 			if (failure === 2) throw error; //throw
 			else console.warn(error + '', {item}); //warn
 		}
-		return item;
+		return item; //<< result - IFilePath (failed)
 	}
 };

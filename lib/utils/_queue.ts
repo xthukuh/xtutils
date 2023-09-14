@@ -16,7 +16,7 @@ export interface IQueue<T> {
  * 
  * @returns `IQueue`
  */
-export const _queue = <T extends any>(): IQueue<T> => {
+export const _queue = <T = any>(): IQueue<T> => {
 	const items: {[key: number]: T} = {};
 	let head: number = 0;
 	let tail: number = 0;

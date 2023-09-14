@@ -68,15 +68,17 @@ export const _isDate = (value: any): boolean => value instanceof Date && !isNaN(
 export const _datetime = (value: any): string => {
 	const date = _date(value);
 	if (!date) return '';
-	const arr = [
+	const values: number[] = [
 		date.getFullYear(), //yyyy
 		date.getMonth() + 1, //MM
 		date.getDate(), //dd
 		date.getHours(), //HH
 		date.getMinutes(), //mm
 		date.getSeconds(), //ss
-	].map(v => `${v}`.padStart(2, '0')); //pad ~ `'1' => '01'`
-	return arr.splice(0, 3).join('-') + ' ' + arr.join(':'); //timestamp
+	];
+	const padded: string[] = [];
+	for (const val of values) padded.push((val + '').padStart(2, '0')); //pad ~ `'1' => '01'`
+	return padded.splice(0, 3).join('-') + ' ' + padded.join(':'); //timestamp
 };
 
 /**
