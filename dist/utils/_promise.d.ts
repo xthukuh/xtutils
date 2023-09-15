@@ -43,11 +43,12 @@ export declare const _sleep: (timeout: number) => Promise<number>;
 /**
  * Resolve promise callback/value
  *
+ * @param this - call context
  * @param promise - resolve ~ `()=>Promise<any>|any` callback result | `any` value
  * @param _new - whether to return new promise
  * @returns `Promise<any>` ~ `Promise.resolve` value/result
  */
-export declare const _resolve: (promise: (() => Promise<any> | any) | any, _new?: boolean) => Promise<any>;
+export declare function _resolve(this: any, promise: (() => Promise<any> | any) | any, _new?: boolean): Promise<any>;
 /**
  * Pending promise interface
  */

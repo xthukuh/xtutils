@@ -100,7 +100,7 @@ export const _dotFlat = (value: any, omit: string[] = []):{[key: string]: any} =
 		for (const entry of Object.entries(obj)){
 			const [k, v] = entry;
 			const _key = `${(_p_key ? `${_p_key}.` : '')}${k}`;
-			if (omit && Array.isArray(omit) && omit.length && (omit.includes(`${k}`) || omit.includes(_key))) return;
+			if (omit && Array.isArray(omit) && omit.length && (omit.includes(`${k}`) || omit.includes(_key))) continue;
 			if (v && 'object' === typeof v) _addEntries(v, _key);
 			else _entries.push([_key, v]);
 		}

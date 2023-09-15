@@ -94,12 +94,13 @@ export const _sleep = async (timeout: number): Promise<number> => {
 /**
  * Resolve promise callback/value
  * 
+ * @param this - call context
  * @param promise - resolve ~ `()=>Promise<any>|any` callback result | `any` value
  * @param _new - whether to return new promise
  * @returns `Promise<any>` ~ `Promise.resolve` value/result
  */
-export const _resolve = async (promise: (()=>Promise<any>|any)|any, _new: boolean = false): Promise<any> => {
-	const resolved = Promise.resolve('function' !== typeof promise ? promise : (async () => promise())());
+export async function _resolve(this: any, promise: (()=>Promise<any>|any)|any, _new: boolean = false): Promise<any> {
+	const resolved = Promise.resolve('function' !== typeof promise ? promise : (async () => promise.call(this))());
 	return !_new ? resolved : new Promise((resolve: (value: any)=>void, reject: (reason: any)=>void) => resolved.then(resolve, reject));
 };
 
