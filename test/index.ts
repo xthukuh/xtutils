@@ -43,62 +43,112 @@ import {
 	IPendingPromise,
 	PendingAbortError,
 	_dotGet,
+	_dotFlat,
+	_dotInflate,
 } from '../lib';
 
+//tests
 (async()=>{
 	
-	//test _doGet
-	let t: any, p: string = '';
-	const _failure = 1;
-	// const _default = undefined;
-	const _default = `_fail_${Date.now()}_`;
-	const _null = _default;
-	const _test = (...args: any[]):(()=>any) => () => _dotGet.apply(this, args as any);
-	const items = [
-		[t = {x:1}, p = 'x', _test(p, t, _failure, _default), 1],
-		[t = {x:1}, p = 'y', _test(p, t, _failure, _default), _null],
-		[t = {a:{b:{c:1}}}, p = 'a.b.c', _test(p, t, _failure, _default), 1],
-		[t = {a:{b:{c:1}}}, p = 'a.b.d', _test(p, t, _failure, _default), _null],
-		[t = {a:{b:{c:1,d:undefined}}}, p = 'a.b.d', _test(p, t, _failure, _default), undefined],
-		[t = {a:['x','y']}, p = 'a.0', _test(p, t, _failure, _default), 'x'],
+	//test item
+	const item: any = demoItem();
+	// item.nums = [1, 2, 3, {four: [4, 'four']}];
 
-		//array reverse operation
-		[t = [[1,2,3]], p = '0.!reverse', _test(p, t, _failure, _default), [3,2,1]],
-		[t = [[1,2,3]], p = '0.!slice.!reverse', _test(p, t, _failure, _default), [3,2,1]],
+	// //test dot - flat/inflate
+	// const flat = _dotFlat(item);
+	// const inflated = _dotInflate(flat);
+	// console.log('=============================================');
+	// console.log('-- item:', item);
+	// console.log('');
+	// console.log('=============================================');
+	// console.log('-- flat:', flat);
+	// console.log('');
+	// console.log('=============================================');
+	// console.log('-- inflated:', inflated);
+	// console.log('=============================================');
+	// console.log('-- match:', _jsonStringify(item) === _jsonStringify(inflated));
 
-		//array slice operation
-		[t = [[1,2,3]], p = '0.!slice', _test(p, t, _failure, _default), [1,2,3]],
+	//test dot - get
+	console.log('=============================================');
+	let path = 'Visit_Plan__r.attributes.type';
+	console.log(`-- dot get (${path}) default (pass):`, _dotGet(path, item));
+	console.log('');
+	console.log('=============================================');
+	path = 'visit_plan__r.attributes.type';
+	console.log(`-- dot get (${path}) default (fails):`, _dotGet(path, item));
+	console.log('');
+	console.log('=============================================');
+	path = 'visit_plan__r.Attributes.TYPE';
+	console.log(`-- dot get (${path}) ignoreCase (pass):`, _dotGet(path, item, true));
+	console.log('');
 
-		//array slice negative `-number`
-		[t = [[1,2,3]], p = '0.-2', _test(p, t, _failure, _default), [2,3]],
-		[t = [[1,2,3]], p = '0.-2.!reverse', _test(p, t, _failure, _default), [3,2]],
-
-		//array `key=value` searching
-		[t = [[{a:1,b:2},{a:2,b:3}]], p = '0.a=2', _test(p, t, _failure, _default), {a:2,b:3}],
-		[t = [[{a:1,b:2},{a:2,b:3}]], p = '0.b=2', _test(p, t, _failure, _default), {a:1,b:2}],
-		[t = [[{a:1,b:2},{a:2,b:3}]], p = '0.c=4', _test(p, t, _failure, _default), _null],
-		[t = [[{a:1,b:2,c:3}, {a:2,b:3,c:4}]], p = '0.a=1,b=2', _test(p, t, _failure, _default), {a:1,b:2,c:3}],
-		[t = [[{a:1,b:2,c:3}, {a:2,b:3,c:4}]], p = '0.b=3,c=4', _test(p, t, _failure, _default), {a:2,b:3,c:4}],
-	];
-	const tests: any[] = [];
-	items.forEach(arr => {
-		const [_target, dot_path, cb, _expected] = arr;
-		const _cb: ()=>any = cb as any;
-		const target = JSON.stringify(_target);
-		const _result = _cb();
-		const after = JSON.stringify(_target);
-		const result = JSON.stringify(_result);
-		const expected = JSON.stringify(_expected);
-		const pass = result === expected;
-		const same = target === after;
-		// const txt = ` * _dotGet('${dot_path}', ${target.replace(/"/g, `'`)}) => ${expected.replace(/"/g, `'`)}`;
-		// if (pass) Term.success(txt);
-		// else Term.warn(txt);
-		tests.push({dot_path, target, after, result, expected, pass, same});
+	//test replace
+	console.log('=============================================');
+	console.log('--- replace dot path pattern.');
+	const re = /\{([_0-9a-zA-Z]+)((\.[_0-9a-zA-Z]+)+)\}/g
+	const text = `SELECT * FROM Test_Object__c WHERE Id = '{visits.Id}' AND name = '{visits.Account__r.name}' AND Status__c = '{visits.Visit_Plan__r.status__c}' LIMIT 10`;
+	const matches: any = [];
+	const res = text.replace(re, (...args: any[]) => {
+		const type = args[1];
+		const path = args[2].replace(/^\./, '').trim();
+		matches.push([type, path]);
+		return _dotGet(path, item, true);
 	});
-	Term.table(tests);
-
+	console.log(`-- text: "${text}"`);
+	console.log(`-- replaced: "${res}"`);
+	console.log(`-- pattern: "${re}"`);
+	console.log(`-- matches:`, matches);
 })()
 .catch((error: any) => {
 	Term.error(`[E] ${error?.stack || error}`);
 });
+function demoItem(){
+	return {
+		"Account__c": "0012600001RTLwwAAH",
+		"Account__r": {
+			"County__c": null,
+			"Customer_No__c": null,
+			"Customer_Type__c": null,
+			"Division__c": null,
+			"GPS_Updated__c": false,
+			"Geo_Code__Latitude__s": -15.4078,
+			"Geo_Code__Longitude__s": 28.35055,
+			"Last_Order_Date__c": null,
+			"Location__c": null,
+			"Name": "KALINGALINGA SERVICE STATION",
+			"Province__c": "Lusaka",
+			"Sales_Office_2__c": null,
+			"Sub_Location__c": null,
+			"Total_Amount__c": null,
+			"Total_Revenue__c": 0,
+			"attributes": {
+				"type": "Account",
+				"url": "/services/data/v55.0/sobjects/Account/0012600001RTLwwAAH"
+			}
+		},
+		"Checkin_DateTime__c": null,
+		"Checkin_Location__c": null,
+		"Checkout_DateTime__c": null,
+		"Checkout_Location__c": null,
+		"Id": "a052600000GinCwAAJ",
+		"Name": "KALINGALINGA SERVICE STATION - 2023-09-18",
+		"Reason__c": null,
+		"Status__c": "Planned",
+		"Visit_Plan_Date__c": "2023-09-20",
+		"Visit_Plan__c": "a0626000009N5IYAA0",
+		"Visit_Plan__r": {
+			"Status__c": "Approved",
+			"attributes": {
+				"type": "Visit_Plan__c",
+				"url": "/services/data/v55.0/sobjects/Visit_Plan__c/a0626000009N5IYAA0"
+			}
+		},
+		"attributes": {
+			"type": "Visit__c",
+			"url": "/services/data/v55.0/sobjects/Visit__c/a052600000GinCwAAJ"
+		},
+		"latitude": -15.4078,
+		"longitude": 28.35055,
+		"name": "KALINGALINGA SERVICE STATION"
+	};
+}

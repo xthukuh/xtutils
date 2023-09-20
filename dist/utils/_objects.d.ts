@@ -1,5 +1,25 @@
 import { bool } from '../types';
 /**
+ * Get all property descriptors
+ * - API ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
+ *
+ * @param value - parse value object
+ * @returns `{[key: string|number|symbol]: any}` ~ {property => descriptors} object
+ */
+export declare const _getAllPropertyDescriptors: (value: any) => {
+    [key: string]: any;
+    [key: number]: any;
+    [key: symbol]: any;
+};
+/**
+ * Get all value properties
+ *
+ * @param value - parse value object
+ * @param statics - include `static` class properties
+ * @returns `(string|number|symbol)[]` - found own/prototype/symbol properties | `[]` when none found
+ */
+export declare const _getAllProperties: (value: any, statics?: boolean) => (string | number | symbol)[];
+/**
  * Check if value has property
  *
  * @param value  Search `object` value
@@ -24,6 +44,37 @@ export declare const _hasProps: (value: any, ...props: any) => boolean;
  *
  */
 export declare const _hasAnyProps: (value: any, ...props: any) => boolean;
+/**
+ * Property interface ~ see `_getProp()`
+ */
+export interface IProperty {
+    /**
+     * - property match
+     */
+    match: any;
+    /**
+     * - found property
+     */
+    key: any;
+    /**
+     * - property value
+     */
+    value: any;
+    /**
+     * - property exists state ~ `0` = not found, `1` = own property, `2` = not own property
+     */
+    exists: 0 | 1 | 2;
+}
+/**
+ * Get value property
+ *
+ * @param value - parse value
+ * @param match - match property
+ * @param ignoreCase - whether to ignore property name case
+ * @param own - whether property is value's own ~ `value.hasOwnProperty`
+ * @returns `IProperty` ~ `{exists:boolean; name:string; value:any;}`
+ */
+export declare const _getProp: (value: any, match: any, ignoreCase?: bool) => IProperty;
 /**
  * Check if value is a class function
  *
@@ -55,6 +106,15 @@ export declare const _minMax: (a: any, b: any) => [min: any, max: any];
  * @returns `{[key: string]: any}`
  */
 export declare const _dotFlat: (value: any, omit?: string[]) => {
+    [key: string]: any;
+};
+/**
+ * Parse dot flattened object to [key => value] object ~ reverse `_dotFlat()`
+ *
+ * @param value - parse value ~ `{[dot_path: string]: any}`
+ * @returns `{[key: string]: any}` parsed result | `{}` when value is invalid
+ */
+export declare const _dotInflate: (value: any) => {
     [key: string]: any;
 };
 /**
@@ -102,28 +162,14 @@ export declare const _bool: (value: any, strict?: boolean, trim?: boolean) => bo
  * _dotGet('0.a=2', [[{'a':1,'b':2},{'a':2,'b':3}]]) => {'a':2,'b':3}
  * _dotGet('0.a=1,b=2', [[{'a':1,'b':2,'c':3},{'a':2,'b':3,'c':4}]]) => {'a':1,'b':2,'c':3}
  *
- * @param dot_path - dot separated keys ~ optional array operations
+ * @param path - dot separated keys ~ optional array operations
  * @param target - traverse object
+ * @param ignoreCase - whether to ignore case when matching keys (default: `false`)
  * @param _failure - error handling ~ `0` = (default) disabled, `1` = warn error, `2` = throw error
  * @param _default - default result on failure
  * @returns `any` dot path match result
  */
-export declare const _dotGet: (dot_path: string, target: any, _failure?: 0 | 1 | 2, _default?: any) => any;
-/**
- * Get dot path value
- *
- * @param dot_path - dot separated keys ~ optional array operations
- * @param target - traverse object
- * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
- * @returns ``
- */
-export declare const _dotValue: <TResult = any>(dot_path: string, target: any, _failure?: 0 | 1 | 2) => TResult | undefined;
-export declare const _getAllPropertyDescriptors: (value: any) => {
-    [key: string]: any;
-    [key: number]: any;
-    [key: symbol]: any;
-};
-export declare const _getAllProperties: (value: any, statics?: boolean) => (string | number | symbol)[];
+export declare const _dotGet: (path: string, target: any, ignoreCase?: boolean, _failure?: 0 | 1 | 2, _default?: any) => any;
 /**
  * @deprecated
  * Get coerced `number/string/JSON` value ~ `value.valueOf()`

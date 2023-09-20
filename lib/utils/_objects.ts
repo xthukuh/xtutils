@@ -5,6 +5,70 @@ import { _str, _string, _stringable } from './_string';
 import { _isBuffer } from '../3rd-party';
 
 /**
+ * Get all property descriptors
+ * - API ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
+ * 
+ * @param value - parse value object
+ * @returns `{[key: string|number|symbol]: any}` ~ {property => descriptors} object
+ */
+export const _getAllPropertyDescriptors = (value: any): {[key: string|number|symbol]: any} => {
+	if ([null, undefined].includes(value)) return {};
+	const proto = Object.getPrototypeOf(value);
+	return {..._getAllPropertyDescriptors(proto), ...Object.getOwnPropertyDescriptors(value)};
+};
+
+/**
+ * Get all value properties
+ * 
+ * @param value - parse value object
+ * @param statics - include `static` class properties
+ * @returns `(string|number|symbol)[]` - found own/prototype/symbol properties | `[]` when none found
+ */
+export const _getAllProperties = (value: any, statics: boolean = false): (string|number|symbol)[] => {
+	if ([null, undefined].includes(value)) return []; //ignore null/undefined
+	const props = new Set<string|number|symbol>(); //properies
+
+	//add own property names
+	for (const v of Object.getOwnPropertyNames(value)) props.add(v); //own
+	
+	//fn => get keys helper
+	const __get_keys = (obj: any): (string|number|symbol)[] => {
+		const keys: (string|number|symbol)[] = [];
+		for (let key in obj) keys.push(key);
+		return keys;
+	};
+
+	//fn => get properties helper
+	const __get_props = (val: any): (string|number|symbol)[] => __get_keys(_getAllPropertyDescriptors(val)).concat(Object.getOwnPropertySymbols(val));
+
+	//excluded default props
+	const excluded_props: (string|number|symbol)[] = [...new Set([
+		
+		//Function
+		...__get_props(Function.prototype),
+		...(!statics ? [] : __get_props(Function)),
+
+		//Object
+		...__get_props(Object.prototype),
+		...(!statics ? [] : __get_props(Object)),
+	])];
+
+	//fn => add props helper
+	const __add_props = (val: any): void => {
+		for (const v of __get_props(val)){
+			if (!excluded_props.includes(v)) props.add(v);
+		}
+	}
+
+	//add props
+	__add_props(value);
+	if (statics) __add_props(Object(value).constructor);
+
+	//result
+	return [...props];
+};
+
+/**
  * Check if value has property
  * 
  * @param value  Search `object` value
@@ -45,6 +109,79 @@ export const _hasAnyProps = (value: any, ...props: any): boolean => {
 		if (_hasProp(value, key)) return true;
 	}
 	return false;
+};
+
+/**
+ * Property interface ~ see `_getProp()`
+ */
+export interface IProperty {
+	
+	/**
+	 * - property match
+	 */
+	match: any;
+
+	/**
+	 * - found property
+	 */
+	key: any;
+
+	/**
+	 * - property value
+	 */
+	value: any;
+
+	/**
+	 * - property exists state ~ `0` = not found, `1` = own property, `2` = not own property
+	 */
+	exists: 0|1|2;
+}
+
+/**
+ * Get value property
+ * 
+ * @param value - parse value
+ * @param match - match property
+ * @param ignoreCase - whether to ignore property name case
+ * @param own - whether property is value's own ~ `value.hasOwnProperty`
+ * @returns `IProperty` ~ `{exists:boolean; name:string; value:any;}`
+ */
+export const _getProp = (value: any, match: any, ignoreCase: bool = false): IProperty => {
+	const property: IProperty = {
+		match,
+		key: undefined,
+		value: undefined,
+		exists: 0,
+	};
+	const props = _getAllProperties(value, false);
+	if (props.includes(match)){
+		property.key = match;
+		property.value = value[match];
+		property.exists = value.hasOwnProperty(match) ? 1 : 2;
+		return property;
+	}
+	const text_match = _stringable(match);
+	if (text_match !== false){
+		if (props.includes(match = text_match)){
+			property.key = match;
+			property.value = value[match];
+			property.exists = value.hasOwnProperty(match) ? 1 : 2;
+			return property;
+		}
+		if (ignoreCase){
+			for (const prop of props){
+				const key = _stringable(prop);
+				if (key === false) continue;
+				if (key.toLowerCase() === match.toLowerCase()){
+					property.key = key;
+					property.value = value[key];
+					property.exists = value.hasOwnProperty(match) ? 1 : 2;
+					return property;
+				}
+			}
+		}
+	}
+	return property;
 };
 
 /**
@@ -110,6 +247,42 @@ export const _dotFlat = (value: any, omit: string[] = []):{[key: string]: any} =
 };
 
 /**
+ * Parse dot flattened object to [key => value] object ~ reverse `_dotFlat()`
+ * 
+ * @param value - parse value ~ `{[dot_path: string]: any}`
+ * @returns `{[key: string]: any}` parsed result | `{}` when value is invalid
+ */
+export const _dotInflate = (value: any): {[key: string]: any} => {
+	const entries: [string, any][] = Object.entries(_dotFlat(value));
+	const buffer: {[key: string]: any} = {};
+	for (const [path, path_value] of entries){
+		const keys = path.split('.');
+		if (keys.length === 1){
+			const key = keys[0];
+			buffer[key] = path_value;
+			continue;
+		}
+		const item = keys.slice().reverse().reduce((prev, key) => ({[key]: prev}), path_value);
+		let keys_item: any = item;
+		let keys_buffer: any = buffer;
+		for (let i = 0; i < keys.length; i ++){
+			const key = keys[i];
+			const val = keys_item = keys_item[key];
+			if (!keys_buffer.hasOwnProperty(key)) keys_buffer[key] = val;
+			keys_buffer = keys_buffer[key];
+		}
+	}
+	const _norm = (val: any): any => {
+		if (Object(val) !== val) return val;
+		let keys: any, len = 0;
+		if ((len = (keys = Object.keys(val)).length) && Object.keys([...Array(len)]).join(',') === keys.join(',')) val = Object.values(val);
+		for (const key in val) val[key] = _norm(val[key]);
+		return val;
+	};
+	return _norm(buffer);
+};
+
+/**
  * Get validated object dot path (i.e. `'a.b.c'` to refer to `{a:{b:{c:1}}}`)
  * 
  * @param dot_path - dot separated keys
@@ -127,7 +300,7 @@ export const _validDotPath = (dot_path: string, operations: boolean = false, _fa
 		if (!parts.length) throw new TypeError(`Invalid dot path format "${dot_path}".`);
 		const buffer = [];
 		for (let i = 0; i < parts.length; i ++){
-			let tmp, part = parts[i];
+			let part = parts[i];
 			let valid: boolean = /^[-_0-9a-zA-Z]+$/.test(part);
 			if (!valid && operations){
 				if (['!reverse', '!slice'].includes(part)) valid = true;
@@ -194,20 +367,22 @@ export const _bool = (value: any, strict: boolean = false, trim: boolean = true)
  * _dotGet('0.a=2', [[{'a':1,'b':2},{'a':2,'b':3}]]) => {'a':2,'b':3}
  * _dotGet('0.a=1,b=2', [[{'a':1,'b':2,'c':3},{'a':2,'b':3,'c':4}]]) => {'a':1,'b':2,'c':3}
  * 
- * @param dot_path - dot separated keys ~ optional array operations
+ * @param path - dot separated keys ~ optional array operations
  * @param target - traverse object
+ * @param ignoreCase - whether to ignore case when matching keys (default: `false`)
  * @param _failure - error handling ~ `0` = (default) disabled, `1` = warn error, `2` = throw error
  * @param _default - default result on failure
  * @returns `any` dot path match result
  */
-export const _dotGet = (dot_path: string, target: any, _failure: 0|1|2 = 0, _default?: any): any => {
+export const _dotGet = (path: string, target: any, ignoreCase: boolean = false, _failure: 0|1|2 = 0, _default?: any): any => {
 	try {
-		const keys = (dot_path = _validDotPath(dot_path, true, _failure)).split('.');
+		const keys = (path = _validDotPath(path, true, _failure)).split('.');
 		if (!keys.length) throw new TypeError('Invalid resolve dot path format.');
 		let abort: boolean = false, value: any = keys.reduce((prev: any, key: string) => {
 			if (abort) return prev; //not found
 			if (prev && 'object' === typeof prev){
-				if (_hasProp(prev, key)) return prev[key]; //key value
+				const prop = _getProp(prev, key, ignoreCase);
+				if (prop.exists) return prop.value; //key value
 				if (Array.isArray(prev)){
 					if (key === '!reverse') return prev.slice().reverse(); //array reverse (slice)
 					if (key === '!slice') return prev.slice(); //array slice
@@ -230,10 +405,11 @@ export const _dotGet = (dot_path: string, target: any, _failure: 0|1|2 = 0, _def
 						let index = -1;
 						if (search_entries.length){
 							for (let i = 0; i < prev.length; i ++){
-								const o = prev[i];
+								const entry = prev[i];
 								const matches: [key: string, val: string][] = [];
 								for (const v of search_entries){
-									if (_hasProp(o, v[0]) && o[v[0]] === v[1]) matches.push(v);
+									const prop = _getProp(entry, v[0], ignoreCase);
+									if (prop.exists && prop.value === v[1]) matches.push(v);
 								}
 								if (matches.length && matches.length === search_entries.length){
 									index = i;
@@ -256,86 +432,11 @@ export const _dotGet = (dot_path: string, target: any, _failure: 0|1|2 = 0, _def
 	}
 	catch (e) {
 		if (_failure){
-			if (_failure === 1) console.warn(e, {dot_path, target});
+			if (_failure === 1) console.warn(e, {path, target});
 			else if (_failure === 2) throw e;
 		}
 		return _default;
 	}
-};
-
-/**
- * Get dot path value
- * 
- * @param dot_path - dot separated keys ~ optional array operations
- * @param target - traverse object
- * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
- * @returns ``
- */
-export const _dotValue = <TResult = any>(dot_path: string, target: any, _failure: 0|1|2 = 0): TResult|undefined => {
-	try {
-		const keys = (dot_path = _validDotPath(dot_path, true, _failure)).split('.');
-		if (!keys.length) throw new TypeError('Invalid resolve dot path format.');
-		return keys.reverse().reduce((prev, key) => ({[key]: prev}), target) as (TResult|undefined);
-	}
-	catch (e) {
-		if (_failure){
-			if (_failure === 1) console.warn(e, {dot_path, target});
-			else if (_failure === 2) throw e;
-		}
-		return undefined;
-	}
-};
-
-//Get all property descriptors
-export const _getAllPropertyDescriptors = (value: any): {[key: string|number|symbol]: any} => {
-	if ([null, undefined].includes(value)) return {};
-	const proto = Object.getPrototypeOf(value);
-	return {..._getAllPropertyDescriptors(proto), ...Object.getOwnPropertyDescriptors(value)};
-};
-
-//Get all properties
-export const _getAllProperties = (value: any, statics: boolean = false): (string|number|symbol)[] => {
-	if ([null, undefined].includes(value)) return []; //ignore null/undefined
-	const props = new Set<string|number|symbol>(); //properies
-
-	//add own property names
-	for (const v of Object.getOwnPropertyNames(value)) props.add(v); //own
-	
-	//fn => get keys helper
-	const __get_keys = (obj: any): (string|number|symbol)[] => {
-		const keys: (string|number|symbol)[] = [];
-		for (let key in obj) keys.push(key);
-		return keys;
-	};
-
-	//fn => get properties helper
-	const __get_props = (val: any): (string|number|symbol)[] => __get_keys(_getAllPropertyDescriptors(val)).concat(Object.getOwnPropertySymbols(val));
-
-	//excluded default props
-	const excluded_props: (string|number|symbol)[] = [...new Set([
-		
-		//Function
-		...__get_props(Function.prototype),
-		...(!statics ? [] : __get_props(Function)),
-
-		//Object
-		...__get_props(Object.prototype),
-		...(!statics ? [] : __get_props(Object)),
-	])];
-
-	//fn => add props helper
-	const __add_props = (val: any): void => {
-		for (const v of __get_props(val)){
-			if (!excluded_props.includes(v)) props.add(v);
-		}
-	}
-
-	//add props
-	__add_props(value);
-	if (statics) __add_props(Object(value).constructor);
-
-	//result
-	return [...props];
 };
 
 /**
