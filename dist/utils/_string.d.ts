@@ -76,6 +76,17 @@ export declare const _regEscape: (value: any) => string;
  */
 export declare const _strEscape: (value: any) => string;
 /**
+ * Escape `SQL` special characters from query `string` value
+ *
+ * @param value - parse `string`
+ * @returns
+ * - `string` with special characters escaped ~ `'\\'"\0\n\r\x1a'`
+ * - `number` (unchanged) when type is `number` and not  `NaN`
+ * - `boolean` (unchanged) when type is `true` or `false`
+ * - `null` when type is `undefined`|`NaN`|`null`
+ */
+export declare const _sqlEscape: (value: any) => string | number | boolean | null;
+/**
  * Regex string trim characters
  *
  * @param value  Trim value
@@ -240,13 +251,6 @@ export declare const _isUrl: (value: any, matchDataURI?: boolean) => boolean;
  * @returns `boolean`
  */
 export declare const _isEmail: (value: any) => boolean;
-/**
- * Escape `SQL` special characters from query `string` value
- *
- * @param value  Parse `string`
- * @returns Escaped `string`
- */
-export declare const _escapeSql: (value: any) => string;
 /**
  * Parse csv data into 2d string array
  *

@@ -12,7 +12,7 @@ export interface ITasksData {
     started: boolean;
     complete: boolean;
     startTime: number;
-    endTime: number;
+    stopTime: number;
     elapsedTime: number;
     tasks: {
         [name: string]: ITask;
@@ -69,7 +69,7 @@ export declare class Tasks {
     /**
      * Get tasks data
      *
-     * @returns `ITasksData` options ~ i.e. `{precision, event_debounce, size, progress, running, started, complete, startTime, endTime, elapsedTime, tasks}`
+     * @returns `ITasksData` options ~ i.e. `{precision, event_debounce, size, progress, running, started, complete, startTime, stopTime, elapsedTime, tasks}`
      */
     get data(): () => ITasksData;
     /**

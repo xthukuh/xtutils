@@ -135,6 +135,30 @@ export const _strEscape = (value: any): string => JSON.stringify(_str(value))
 .replace(/\\"/g, '"');
 
 /**
+ * Escape `SQL` special characters from query `string` value
+ * 
+ * @param value - parse `string`
+ * @returns
+ * - `string` with special characters escaped ~ `'\\'"\0\n\r\x1a'`
+ * - `number` (unchanged) when type is `number` and not  `NaN`
+ * - `boolean` (unchanged) when type is `true` or `false`
+ * - `null` when type is `undefined`|`NaN`|`null`
+ */
+export const _sqlEscape = (value: any): string|number|boolean|null => {
+	if (undefined === value || null === value) return null;
+	else if ('boolean' === typeof value) return value;
+	else if ('number' === typeof value) return !isNaN(value) ? value : null;
+	if (!(value = _str(value, false, true))) return value;
+	return value.replace(/\\/g, '\\\\')
+	.replace(/\0/g, '\\0')
+	.replace(/\n/g, '\\n')
+	.replace(/\r/g, '\\r')
+	.replace(/'/g, "\\'")
+	.replace(/"/g, '\\"')
+	.replace(/\x1a/g, '\\Z')
+};
+
+/**
  * Regex string trim characters
  * 
  * @param value  Trim value
@@ -418,20 +442,6 @@ export const _isEmail = (value: any): boolean => {
 };
 //REF: (yup email validation regex)
 // let rEmail = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-
-/**
- * Escape `SQL` special characters from query `string` value
- * 
- * @param value  Parse `string`
- * @returns Escaped `string`
- */
-export const _escapeSql = (value: any): string => {
-	if (!(value = _str(value))) return value;
-	for (const char of ['\\', '\'', '\"', '\b', '\n', '\r', '\t', '\x1a']){
-		value = value.replace(new RegExp(char, 'g'), '\\' + char);
-	}
-	return value;
-};
 
 /**
  * Parse csv data into 2d string array

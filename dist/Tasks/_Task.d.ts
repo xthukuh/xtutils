@@ -2,11 +2,11 @@ import { EventEmitter, IEvent } from '../EventEmitter';
 /**
  * Task status type
  */
-export type TaskStatus = 'new' | 'running' | 'stopped' | 'failed' | 'done';
+export type TStatus = 'new' | 'running' | 'stopped' | 'failed' | 'done';
 /**
  * Task statuses list
  */
-export declare const TASK_STATUSES: TaskStatus[];
+export declare const TASK_STATUSES: TStatus[];
 /**
  * Task interface
  */
@@ -20,9 +20,9 @@ export interface ITask {
     total: number;
     value: number;
     error: string;
-    status: TaskStatus;
+    status: TStatus;
     startTime: number;
-    endTime: number;
+    stopTime: number;
     elapsedTime: number;
     complete: boolean;
     item: any;
@@ -58,9 +58,9 @@ export declare class Task implements ITask {
         total: number;
         value: number;
         error: string;
-        status: TaskStatus;
+        status: TStatus;
         startTime: number;
-        endTime: number;
+        stopTime: number;
         complete: boolean;
         item: any;
         _done: boolean;
@@ -107,17 +107,17 @@ export declare class Task implements ITask {
     /**
      * Task status
      */
-    get status(): TaskStatus;
+    get status(): TStatus;
     /**
      * Task startTime - timestamp milliseconds (i.e. `Date.now()`)
      */
     get startTime(): number;
     /**
-     * Task endTime - timestamp milliseconds (i.e. `Date.now()`)
+     * Task stopTime - timestamp milliseconds (i.e. `Date.now()`)
      */
-    get endTime(): number;
+    get stopTime(): number;
     /**
-     * Task elapsedTime - millisecond timestamps difference (i.e. `endTime - startTime`)
+     * Task elapsedTime - millisecond timestamps difference (i.e. `stopTime - startTime`)
      */
     get elapsedTime(): number;
     /**
@@ -140,7 +140,7 @@ export declare class Task implements ITask {
     /**
      * Get task data
      *
-     * @returns `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item}`
+     * @returns `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, stopTime, complete, item}`
      */
     get data(): () => ITask;
     /**
@@ -214,7 +214,7 @@ export declare class Task implements ITask {
     /**
      * Create instance from existing task options
      *
-     * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item}`
+     * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, stopTime, complete, item}`
      * @param precision - decimal places (default: `Task.decimal_precision`)
      * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce`)
      * @returns `Task` instance

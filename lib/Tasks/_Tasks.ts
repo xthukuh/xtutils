@@ -13,7 +13,7 @@ export interface ITasksData {
 	started: boolean;
 	complete: boolean;
 	startTime: number;
-	endTime: number;
+	stopTime: number;
 	elapsedTime: number;
 	tasks: {[name: string]: ITask};
 }
@@ -175,14 +175,14 @@ export class Tasks
 	/**
 	 * Get tasks data
 	 * 
-	 * @returns `ITasksData` options ~ i.e. `{precision, event_debounce, size, progress, running, started, complete, startTime, endTime, elapsedTime, tasks}`
+	 * @returns `ITasksData` options ~ i.e. `{precision, event_debounce, size, progress, running, started, complete, startTime, stopTime, elapsedTime, tasks}`
 	 */
 	get data(): ()=>ITasksData {
 		return (): ITasksData => {
 			const props = this[PROPS];
 			let size: number = 0;
 			let startTime: number = 0;
-			let endTime: number = 0;
+			let stopTime: number = 0;
 			let all_progress: number = 0;
 			let full_progress: number = 0;
 			let has_running: boolean = false;
@@ -212,8 +212,8 @@ export class Tasks
 				//-- startTime
 				if (data.startTime && (!startTime && data.startTime < startTime)) startTime = data.startTime;
 				
-				//-- endTime
-				if (data.endTime && (!endTime && data.endTime > endTime)) endTime = data.endTime;
+				//-- stopTime
+				if (data.stopTime && (!stopTime && data.stopTime > stopTime)) stopTime = data.stopTime;
 
 				//task entry
 				task_entries.push([task.name, data]);
@@ -226,9 +226,9 @@ export class Tasks
 			const started = has_started;
 			const complete = started && !has_incomplete;
 			let elapsedTime = 0;
-			if (endTime && startTime){
-				if (endTime < startTime) startTime = endTime;
-				elapsedTime = endTime - startTime;
+			if (stopTime && startTime){
+				if (stopTime < startTime) startTime = stopTime;
+				elapsedTime = stopTime - startTime;
 			}
 
 			//data
@@ -241,7 +241,7 @@ export class Tasks
 				started,
 				complete,
 				startTime,
-				endTime,
+				stopTime,
 				elapsedTime,
 				tasks,
 			}

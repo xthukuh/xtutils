@@ -3,12 +3,12 @@ import { EventEmitter, IEvent } from '../EventEmitter';
 /**
  * Task status type
  */
-export type TaskStatus = 'new' | 'running' | 'stopped' | 'failed' | 'done';
+export type TStatus = 'new' | 'running' | 'stopped' | 'failed' | 'done';
 
 /**
  * Task statuses list
  */
-export const TASK_STATUSES: TaskStatus[] = ['new', 'running', 'stopped', 'failed', 'done'];
+export const TASK_STATUSES: TStatus[] = ['new', 'running', 'stopped', 'failed', 'done'];
 
 /**
  * Task interface
@@ -23,9 +23,9 @@ export interface ITask {
 	total: number;
 	value: number;
 	error: string;
-	status: TaskStatus;
+	status: TStatus;
 	startTime: number;
-	endTime: number;
+	stopTime: number;
 	elapsedTime: number;
 	complete: boolean;
 	item: any;
@@ -196,9 +196,9 @@ export class Task implements ITask
 		total: number;
 		value: number;
 		error: string;
-		status: TaskStatus;
+		status: TStatus;
 		startTime: number;
-		endTime: number;
+		stopTime: number;
 		complete: boolean;
 		item: any;
 		_done: boolean;
@@ -273,7 +273,7 @@ export class Task implements ITask
 	/**
 	 * Task status
 	 */
-	get status(): TaskStatus {
+	get status(): TStatus {
 		return this[PROPS].status;
 	}
 
@@ -285,17 +285,17 @@ export class Task implements ITask
 	}
 
 	/**
-	 * Task endTime - timestamp milliseconds (i.e. `Date.now()`)
+	 * Task stopTime - timestamp milliseconds (i.e. `Date.now()`)
 	 */
-	get endTime(): number {
-		return this[PROPS].endTime;
+	get stopTime(): number {
+		return this[PROPS].stopTime;
 	}
 
 	/**
-	 * Task elapsedTime - millisecond timestamps difference (i.e. `endTime - startTime`)
+	 * Task elapsedTime - millisecond timestamps difference (i.e. `stopTime - startTime`)
 	 */
 	get elapsedTime(): number {
-		return this.endTime ? this.endTime - this.startTime : 0;
+		return this.stopTime ? this.stopTime - this.startTime : 0;
 	}
 
 	/**
@@ -336,7 +336,7 @@ export class Task implements ITask
 			error: '',
 			status: 'new',
 			startTime: 0,
-			endTime: 0,
+			stopTime: 0,
 			complete: false,
 			item: undefined,
 			_done: false,
@@ -353,12 +353,12 @@ export class Task implements ITask
 	/**
 	 * Get task data
 	 * 
-	 * @returns `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item}`
+	 * @returns `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, stopTime, complete, item}`
 	 */
 	get data(): ()=>ITask {
 		return (): ITask => {
-			const { name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, elapsedTime, complete, item } = this;
-			return {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, elapsedTime, complete, item};
+			const { name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, stopTime, elapsedTime, complete, item } = this;
+			return {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, stopTime, elapsedTime, complete, item};
 		};
 	}
 
@@ -417,10 +417,10 @@ export class Task implements ITask
 			props.startTime = Date.now();
 		}
 
-		//-- endTime
-		if (props.endTime){
+		//-- stopTime
+		if (props.stopTime){
 			changes ++;
-			props.endTime = 0;
+			props.stopTime = 0;
 		}
 		
 		//-- error
@@ -449,11 +449,11 @@ export class Task implements ITask
 			props.status = 'stopped';
 		}
 
-		//-- endTime, startTime
-		if (!props.endTime){
+		//-- stopTime, startTime
+		if (!props.stopTime){
 			changes ++;
-			props.endTime = Date.now();
-			if (!props.startTime) props.startTime = props.endTime;
+			props.stopTime = Date.now();
+			if (!props.startTime) props.startTime = props.stopTime;
 		}
 
 		//changes - update
@@ -483,11 +483,11 @@ export class Task implements ITask
 			props.status = 'failed';
 		}
 
-		//-- endTime, startTime
-		if (!props.endTime){
+		//-- stopTime, startTime
+		if (!props.stopTime){
 			changes ++;
-			props.endTime = Date.now();
-			if (!props.startTime) props.startTime = props.endTime;
+			props.stopTime = Date.now();
+			if (!props.startTime) props.startTime = props.stopTime;
 		}
 
 		//changes - update
@@ -535,11 +535,11 @@ export class Task implements ITask
 			}
 		}
 
-		//-- startTime, endTime = now
-		if (!props.endTime){
+		//-- startTime, stopTime = now
+		if (!props.stopTime){
 			changes ++;
-			props.endTime = Date.now();
-			if (!props.startTime) props.startTime = props.endTime;
+			props.stopTime = Date.now();
+			if (!props.startTime) props.startTime = props.stopTime;
 		}
 
 		//done - emit changes
@@ -732,7 +732,7 @@ export class Task implements ITask
 	/**
 	 * Create instance from existing task options
 	 * 
-	 * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item}`
+	 * @param options - `ITask` options ~ i.e. `{name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, stopTime, complete, item}`
 	 * @param precision - decimal places (default: `Task.decimal_precision`)
 	 * @param event_debounce - event debounce milliseconds (default: `Task.event_debounce`)
 	 * @returns `Task` instance
@@ -751,7 +751,7 @@ export class Task implements ITask
 			error,
 			status,
 			startTime,
-			endTime,
+			stopTime,
 			complete,
 			item,
 		} = Object(options);
@@ -803,19 +803,19 @@ export class Task implements ITask
 				else if (progress) total = _round_p(100/progress * value);
 			}
 
-			//-- parse/adjust: error, status, startTime, endTime, complete
+			//-- parse/adjust: error, status, startTime, stopTime, complete
 			complete = !!complete;
 			error = _get_error(error);
 			if (!(status = _get_str(status).toLowerCase())) status = 'new';
 			else if (!TASK_STATUSES.includes(status)) status = 'new';
 			if ((tmp = _pos_int(startTime, -1)) < 0) throw new TypeError('Invalid task \`startTime\` value.');
 			startTime = tmp;
-			if ((tmp = _pos_int(endTime, -1)) < 0) throw new TypeError('Invalid task `endTime` value.');
-			endTime = tmp;
-			if (!(['stopped', 'failed', 'done'].includes(status) && startTime && endTime && startTime < endTime)){
+			if ((tmp = _pos_int(stopTime, -1)) < 0) throw new TypeError('Invalid task `stopTime` value.');
+			stopTime = tmp;
+			if (!(['stopped', 'failed', 'done'].includes(status) && startTime && stopTime && startTime < stopTime)){
 				status = 'new';
 				startTime = 0;
-				endTime = 0;
+				stopTime = 0;
 				error = '';
 				complete = false;
 			}
@@ -837,7 +837,7 @@ export class Task implements ITask
 			props.error = error;
 			props.status = status;
 			props.startTime = startTime;
-			props.endTime = endTime;
+			props.stopTime = stopTime;
 			props.complete = complete;
 			props.item = item; //-- item
 			props._debounced_update = _debounce(() => {
@@ -848,7 +848,7 @@ export class Task implements ITask
 		}
 		catch (e: any){
 			const error = `Create Task Failure! ${e instanceof Error ? e.message : e}`.trim();
-			const _options = {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, endTime, complete, item};
+			const _options = {name, label, linked, precision, event_debounce, progress, total, value, error, status, startTime, stopTime, complete, item};
 			console.warn(error, {_options});
 			if (e.name === 'TypeError') throw new TypeError(error);
 			else throw new Error(error);
