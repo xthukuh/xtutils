@@ -31,7 +31,12 @@ export const _date = (value: any, _default?: any): Date|undefined => {
 		if ('number' === typeof value) date = new Date(value);
 		else if ((value = _str(value, true)) && !isNaN(value = Date.parse(value))) date = new Date(value);
 	}
-	return date && !isNaN(date.getTime()) ? date : (_default === true ? new Date() : _date(_default));
+	const _get_default = (): Date|undefined => {
+		if (_empty(_default)) return undefined;
+		if (_default === true) return new Date();
+		return _date(_default);
+	};
+	return date && !isNaN(date.getTime()) ? date : _get_default();
 };
 
 /**
