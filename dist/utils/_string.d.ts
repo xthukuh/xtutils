@@ -278,3 +278,10 @@ export declare const _toCsv: (data: string | string[] | string[][], delimiter?: 
  * @returns `[part: string, separator: string | ''][]` split parts
  */
 export declare const _split: (value: any, separator?: string | RegExp, limit?: number) => [part: string, separator: string][];
+/**
+ * Get error text
+ *
+ * @param error - parse error value
+ * @returns `string`
+ */
+export declare const _errorText: (error: any) => string;
