@@ -4,6 +4,7 @@
 
 import { _str } from './_string';
 import { _posInt } from './_number';
+import { _empty } from './_objects';
 
 /**
  * Date time locales
@@ -16,21 +17,132 @@ export const DateLocales = {
 };
 
 /**
- * Parse `Date` value ~ does not accept `[undefined, null, 0, '']`
+ * Parse `Date` value
+ * - ignores empty or nil value (i.e. `undefined`|`null`|0|`''`)
  * 
  * @param value - parse date value
- * @returns
- * - `Date` value instance
- * - `undefined` when invalid
+ * @param _default - default date value when invalid (`true` => `new Date()`)
+ * @returns `Date` instance | `undefined` when invalid
  */
-export const _date = (value: any): Date|undefined => {
+export const _date = (value: any, _default?: any): Date|undefined => {
 	let date: Date|undefined = undefined;
 	if (value instanceof Date) date = value;
-	else if (![undefined, null].includes(value)){
+	else if (!_empty(value, true)){
 		if ('number' === typeof value) date = new Date(value);
 		else if ((value = _str(value, true)) && !isNaN(value = Date.parse(value))) date = new Date(value);
 	}
-	return date && !isNaN(date.getTime()) ? date : undefined;
+	return date && !isNaN(date.getTime()) ? date : (_default === true ? new Date() : _date(_default));
+};
+
+/**
+ * Get today's `Date` instance at midnight
+ * - i.e. `new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 0, 0, 0, 0))`
+ * 
+ * @param value - parse date value
+ * @returns `Date` instance
+ */
+export const _today = (): Date => {
+	const date = new Date();
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+};
+
+/**
+ * Get `Date` midnight value
+ * 
+ * @example
+ * _midnight('2023-10-05 23:18:52') => '2023-10-05 00:00:00'
+ * 
+ * @param value - parse date value (`undefined` => `new Date()`) ~ `value ?? new Date()`
+ * @param _default - default date value when invalid (`true` => `new Date()`)
+ * @returns `Date` instance | `undefined` when invalid
+ */
+export const _midnight = (value: any, _default?: any): Date|undefined => {
+	const date: Date|undefined = _date(value ?? new Date(), _default);
+	if (!date) return undefined;
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+};
+
+/**
+ * Get `Date` midnight value yesterday ~ **-1 DAY** 
+ * 
+ * @example
+ * _yesterday('2023-10-05 23:18:52') => '2023-10-04 00:00:00'
+ * 
+ * @param value - parse date value (`undefined` => `new Date()`) ~ `value ?? new Date()`
+ * @param _default - default date value when invalid (`true` => `new Date()`)
+ * @returns `Date` instance | `undefined` when invalid
+ */
+export const _yesterday = (value?: any, _default?: any): Date|undefined => {
+	const date: Date|undefined = _date(value ?? new Date(), _default);
+	if (!date) return undefined;
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1, 0, 0, 0, 0);
+};
+
+/**
+ * Get `Date` value at midnight tomorrow ~ **+1 DAY** 
+ * 
+ * @example
+ * _tomorrow('2023-10-05 23:18:52') => '2023-10-06 00:00:00'
+ * 
+ * @param value - parse date value (`undefined` => `new Date()`) ~ `value ?? new Date()`
+ * @param _default - default date value when invalid (`true` => `new Date()`)
+ * @returns `Date` instance | `undefined` when invalid
+ */
+export const _tomorrow = (value?: any, _default?: any): Date|undefined => {
+	const date: Date|undefined = _date(value, _default);
+	if (!date) return undefined;
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 0, 0, 0, 0);
+};
+
+/**
+ * Get `Date` value at midnight **first** day of the month
+ * 
+ * @example
+ * _monthStart('2023-10-05 23:18:52') => '2023-10-01 00:00:00'
+ * 
+ * @param value - parse date value (`undefined` => `new Date()`) ~ `value ?? new Date()`
+ * @param _default - default date value when invalid (`true` => `new Date()`)
+ * @returns `Date` instance | `undefined` when invalid
+ */
+export const _monthStart = (value?: any, _default?: any): Date|undefined => {
+	const date: Date|undefined = _date(value, _default);
+	if (!date) return undefined;
+	return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
+};
+
+/**
+ * Get `Date` value **last** day of the month ~ just before midnight (i.e. time `23:59:59 999`)
+ * 
+ * @example
+ * _monthEnd('2022-02-16 23:18:52') => '2022-02-28 23:59:59'
+ * _monthEnd('2020-02-16 23:18:52') => '2020-02-29 23:59:59'
+ * 
+ * @param value - parse date value (`undefined` => `new Date()`) ~ `value ?? new Date()`
+ * @param _default - default date value when invalid (`true` => `new Date()`)
+ * @returns `Date` instance | `undefined` when invalid
+ */
+export const _monthEnd = (value?: any, _default?: any): Date|undefined => {
+	const date: Date|undefined = _date(value, _default);
+	if (!date) return undefined;
+	return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+};
+
+/**
+ * Get `Date` value month days count ~ month's last date
+ * 
+ * @example
+ * _monthDays('2022-02-16 23:18:52') => 28
+ * _monthDays('2020-02-16 23:18:52') => 29
+ * 
+ * @param value - parse date value (`undefined` => `new Date()`) ~ `value ?? new Date()`
+ * @param _default - default date value when invalid (`true` => `new Date()`)
+ * @returns `number` last date | `undefined` when invalid
+ */
+export const _monthDays = (value?: any, _default?: any): number|undefined => {
+	const date: Date|undefined = _date(value, _default);
+	if (!date) return undefined;
+	const last = new Date(date.getFullYear(), date.getMonth() + 1, 0, 0, 0, 0, 0);
+	return last.getDate();
 };
 
 /**
@@ -39,14 +151,13 @@ export const _date = (value: any): Date|undefined => {
  * @param value - parse date value
  * @param min - set `min` timestamp limit ~ enabled when `min` is a valid timestamp integer
  * @param max - set `max` timestamp limit ~ enabled when `max` is a valid timestamp integer
- * @returns
- * - `number` timestamp milliseconds
- * - `undefined` when invalid
+ * @param _default - default date value when invalid (`true` => `new Date()`)
+ * @returns `number` timestamp in milliseconds | `undefined` when invalid
  */
-export const _time = (value: any, min?: number, max?: number): number|undefined => {
-	const date: Date|undefined = _date(value);
-	if (!date) return undefined;
-	return _posInt(date.getTime(), min, max);
+export const _time = (value: any, min?: number, max?: number, _default?: any): number|undefined => {
+	let date: Date|undefined, time: number|undefined = undefined;
+	if ((date = _date(value)) && Number.isInteger(time = _posInt(date.getTime(), min, max))) return time;
+	return (date = _date(_default)) && Number.isInteger(time = _posInt(date.getTime(), min, max)) ? time : undefined;
 };
 
 /**

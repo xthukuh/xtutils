@@ -563,3 +563,40 @@ export const  _split = (value: any, separator?: string|RegExp, limit?: number): 
 	}
 	return items;
 };
+
+/**
+ * Get error text
+ * 
+ * @param error - parse error value
+ * @returns `string`
+ */
+export const _errorText = (error: any): string => {
+	const errors: {[key: string]: string} = {};
+	const _parse = (item: any): void => {
+		if (!('object' === typeof item && item)){
+			const val = _str(item, true);
+			if (val) errors[val.toLowerCase()] = val;
+			return;
+		}
+		if (Array.isArray(item)){
+			for (const val of item) _parse(val);
+			return;
+		}
+		if (item instanceof Error){
+			let name: string = _str(error.name, true);
+			if (['Error', 'TypeError'].includes(name)) name = '';
+			const message = _str(error.message, true);
+			const val = message ? (name ? name + ' ': '') + message : '';
+			if (val) errors[val.toLowerCase()] = val;
+			return;
+		}
+		if (item.response) return _parse(item.response);
+		if (item.body) return _parse(item.body);
+		if (item.error) return _parse(item.error);
+		if (item.message) return _parse(item.message);
+		const val = _str(item, true, true);
+		if (val) errors[val.toLowerCase()] = val;
+	};
+	_parse(error);
+	return Object.values(errors).join('\n');
+};

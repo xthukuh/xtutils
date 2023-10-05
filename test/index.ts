@@ -46,17 +46,59 @@ import {
 	_dotFlat,
 	_dotInflate,
 	_sqlEscape,
+	_today,
+	_datetime,
+	_midnight,
+	_yesterday,
+	_tomorrow,
+	_monthStart,
+	_monthEnd,
+	_monthDays,
 } from '../lib';
 
 //tests
 (async()=>{
+	let val: any;
 
-	const val: any = `Ng'ang'a is \n here \t y'all !\\! /*?*"quotes"`;
-	console.log(`---- val:`, val);
-	const esc: any = _sqlEscape(val);
-	console.log(`---- esc: `, esc);
+	//-- today
+	Term.log('--- today', [val = _today(), _datetime(val)]);
+	Term.log('');
+	
+	//args
+	let param: any = _str(process.argv[2], true);
+	if (param === 'undefined') param = undefined;
+	else if (param === 'null') param = undefined;
+	else if (param === 'new') param = new Date();
+	console.log('>> ' + _jsonStringify(param));
 
-	//..
+	//-- date
+	let date: any = _date(param);
+	Term.log('--- date', _jsonStringify([date, _datetime(date)]));
+	// Term.log('');
+
+	//-- midnight
+	Term.log('--- midnight', _jsonStringify([val = _midnight(date), _datetime(val)]));
+	// Term.log('');
+
+	//-- yesterday
+	Term.log('--- yesterday', _jsonStringify([val = _yesterday(date), _datetime(val)]));
+	// Term.log('');
+
+	//-- tomorrow
+	Term.log('--- tomorrow', _jsonStringify([val = _tomorrow(date), _datetime(val)]));
+	// Term.log('');
+
+	//-- month start
+	Term.log('--- month start', _jsonStringify([val = _monthStart(date), _datetime(val)]));
+	// Term.log('');
+	
+	//-- month end
+	Term.log('--- month end', _jsonStringify([val = _monthEnd(date), _datetime(val)]));
+	// Term.log('');
+
+	//-- month days
+	Term.log('--- month days', _jsonStringify([val = _monthDays(date)]));
+	// Term.log('');
 })()
 .catch((error: any) => {
 	Term.error(`[E] ${error?.stack || error}`);
