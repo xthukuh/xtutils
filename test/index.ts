@@ -55,6 +55,7 @@ import {
 	_monthEnd,
 	_monthDays,
 	_trans,
+	_commas,
 } from '../lib';
 
 //tests
@@ -91,10 +92,11 @@ import {
 		{text: 'address.city', context: {Address: {City: 'Nairobi'}}, _default: 'NULL', _result: 'Nairobi'},
 		{text: 'address.town', context: {Address: {City: 'Nairobi', town: undefined}}, _default: 'NULL', _result: 'undefined'},
 		{text: 'No template.', context: {foo: 'bar'}, _default: 'NULL', _result: 'No template.'},
+		{text: 'KES {item.amount}/=', context: {item: {amount: 4500}}, _default: 'NULL', _format: (value: string) => _commas(value, 2, true), _result: 'KES 4,500.00/='},
 	];
 	for (const item of items){
-		const {text, context, _default, _result} = item;
-		const res = _trans(text, context, _default);
+		const {text, context, _default, _format, _result} = item;
+		const res = _trans(text, context, _default, _format);
 		const match = res === _result;
 		Term[match ? 'success' : 'warn']('<< ', match ? res : res + ' <> ' + _result);
 	}

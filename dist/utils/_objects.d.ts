@@ -239,13 +239,15 @@ export declare const _sortValues: <T = any>(array: T[], sort?: 1 | -1 | "asc" | 
  * _trans('address.city', {Address: {City: 'Nairobi'}}, 'NULL') => 'Nairobi'
  * _trans('address.town', {Address: {City: 'Nairobi', town: undefined}}, 'NULL') => 'undefined'
  * _trans('No template.', {foo: 'bar'}, 'NULL') => 'No template.'
+ * _trans('KES {item.amount}/=', {item: {amount: 4500}}, 'NULL', (value:string,path:string,name:string) => _commas(value, true, 2)) => 'No template.'
  *
  *
  * @param template - parse template ~ text with value template (e.g. `'My name is {user.name}'`)
  * @param context - values context ~ `{[name: string]: any}`
  * @param _default - default value when unable to resolve template value (default: `'NULL'`)
+ * @param _format - format resolved value callback (this allows you to further edit resolved template context values)
  * @returns `string` transformed text where template values are replaced with resolved context values (see examples)
  */
 export declare const _trans: (template: string, context: {
     [name: string]: any;
-}, _default?: string) => string;
+}, _default?: string, _format?: ((value: string, path: string, name: string) => any) | undefined) => string;

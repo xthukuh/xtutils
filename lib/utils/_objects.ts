@@ -637,23 +637,27 @@ export const _sortValues = <T = any>(array: T[], sort?: 1|-1|'asc'|'desc'|{[key:
  * _trans('address.city', {Address: {City: 'Nairobi'}}, 'NULL') => 'Nairobi'
  * _trans('address.town', {Address: {City: 'Nairobi', town: undefined}}, 'NULL') => 'undefined'
  * _trans('No template.', {foo: 'bar'}, 'NULL') => 'No template.'
+ * _trans('KES {item.amount}/=', {item: {amount: 4500}}, 'NULL', (value:string,path:string,name:string) => _commas(value, true, 2)) => 'No template.'
  *  
  * 
  * @param template - parse template ~ text with value template (e.g. `'My name is {user.name}'`)
  * @param context - values context ~ `{[name: string]: any}`
  * @param _default - default value when unable to resolve template value (default: `'NULL'`)
+ * @param _format - format resolved value callback (this allows you to further edit resolved template context values)
  * @returns `string` transformed text where template values are replaced with resolved context values (see examples)
  */
-export const _trans = (template: string, context: {[name: string]: any}, _default: string = 'NULL'): string => {
+export const _trans = (template: string, context: {[name: string]: any}, _default: string = 'NULL', _format?: (value:string,path:string,name:string)=>any): string => {
 	const pattern: RegExp = /\{([_0-9a-zA-Z]+)((\.[_0-9a-zA-Z]+)*)\}/g;
 	const value: string = _str(template);
 	if (!value.trim()) return value; //-- ignores blank
 	const missing = `!!_${Date.now()}_!!`;
+	const _trans_format: ((value:string,path:string,name:string)=>any)|undefined = 'function' === typeof _format ? _format : undefined;
 	const _trans_get = (name: string, path: string = ''): string => {
 		let val: any = _dotGet(name, context, true, 0, missing);
 		if (val === missing) return missing;
 		if (!!(path = _str(path, true))) val = _dotGet(path, val, true, 0, missing);
 		if (val === missing) return missing;
+		if (_trans_format) val = _trans_format(val, path, name);
 		const text = Array.isArray(val) ? false : _stringable(val);
 		return text !== false ? text : _str(val, false, true);
 	};
