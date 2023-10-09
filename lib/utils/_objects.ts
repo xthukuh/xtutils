@@ -623,3 +623,50 @@ export const _sortValues = <T = any>(array: T[], sort?: 1|-1|'asc'|'desc'|{[key:
 	};
 	return array.sort(_method());
 };
+
+/**
+ * Parse transform text template context values
+ * 
+ * - template must be in dot path pattern where first delimited value is the context key name.
+ * - template values must be put in curly brackets when within mixed text.
+ * - dot path matching is case insensitive.
+ * 
+ * @example
+ * _trans('My name is {user.name}.', {User: {Name: 'Root'}}, 'NULL') => 'My name is Root.'
+ * _trans('My phone number is {user.phone}.', {User: {Name: 'Root'}}, 'NULL') => 'My phone number is NULL.'
+ * _trans('address.city', {Address: {City: 'Nairobi'}}, 'NULL') => 'Nairobi'
+ * _trans('address.town', {Address: {City: 'Nairobi', town: undefined}}, 'NULL') => 'undefined'
+ * _trans('No template.', {foo: 'bar'}, 'NULL') => 'No template.'
+ *  
+ * 
+ * @param template - parse template ~ text with value template (e.g. `'My name is {user.name}'`)
+ * @param context - values context ~ `{[name: string]: any}`
+ * @param _default - default value when unable to resolve template value (default: `'NULL'`)
+ * @returns `string` transformed text where template values are replaced with resolved context values (see examples)
+ */
+export const _trans = (template: string, context: {[name: string]: any}, _default: string = 'NULL'): string => {
+	const pattern: RegExp = /\{([_0-9a-zA-Z]+)((\.[_0-9a-zA-Z]+)*)\}/g;
+	const value: string = _str(template);
+	if (!value.trim()) return value; //-- ignores blank
+	const missing = `!!_${Date.now()}_!!`;
+	const _trans_get = (name: string, path: string = ''): string => {
+		let val: any = _dotGet(name, context, true, 0, missing);
+		if (val === missing) return missing;
+		if (!!(path = _str(path, true))) val = _dotGet(path, val, true, 0, missing);
+		if (val === missing) return missing;
+		const text = Array.isArray(val) ? false : _stringable(val);
+		return text !== false ? text : _str(val, false, true);
+	};
+	if (!pattern.test(value)){
+		const val = _trans_get(value);
+		return val !== missing ? val : value;
+	}
+	let default_val: string = _str(_default);
+	return value.replace(pattern, (...args): string => {
+		const name = args[1];
+		const path = args[2].replace(/^\./, '');
+		let val = _trans_get(name, path);
+		if (val === missing) val = default_val;
+		return val;
+	});
+};

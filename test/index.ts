@@ -54,52 +54,83 @@ import {
 	_monthStart,
 	_monthEnd,
 	_monthDays,
+	_trans,
 } from '../lib';
 
 //tests
 (async()=>{
-	let val: any;
-
-	//-- today
-	Term.log('--- today', [val = _today(), _datetime(val)]);
-	Term.log('');
 	
-	//args
-	let param: any = _str(process.argv[2], true);
-	if (param === 'undefined') param = undefined;
-	else if (param === 'null') param = undefined;
-	else if (param === 'new') param = new Date();
-	console.log('>> ' + _jsonStringify(param));
+	//>_ npm run dev -- "I have my {address}" "{'Address':{'City':'Nairobi\'s'}}" "###"  
 
-	//-- date
-	let date: any = _date(param);
-	Term.log('--- date', _jsonStringify([date, _datetime(date)]));
-	// Term.log('');
+	//test trans
+	const txt = `
+	This is {test.name} and I have {test.count} items.
+	My town is {test.address.town}.
+	Missing is {test.foo}, {test.bar}, {test.num}.
+	`;
+	const ctx = {test: {name: 'Thuku', count: 20, Address: {Town: 'Nairobi'}, foo: undefined, bar: null}};
 
-	//-- midnight
-	Term.log('--- midnight', _jsonStringify([val = _midnight(date), _datetime(val)]));
-	// Term.log('');
+	//test args
+	let test_val: any = __argsGet(2, txt);
+	let test_ctx: any = __argsGet(3);
+	if (Object(test_ctx) !== test_ctx) test_ctx = ctx;
+	let test_default: any = __argsGet(4, 'NULL');
 
-	//-- yesterday
-	Term.log('--- yesterday', _jsonStringify([val = _yesterday(date), _datetime(val)]));
-	// Term.log('');
-
-	//-- tomorrow
-	Term.log('--- tomorrow', _jsonStringify([val = _tomorrow(date), _datetime(val)]));
-	// Term.log('');
-
-	//-- month start
-	Term.log('--- month start', _jsonStringify([val = _monthStart(date), _datetime(val)]));
-	// Term.log('');
+	//test debug
+	Term.info('>> ' + _jsonStringify({test_ctx, test_val}, 2));
+	Term.debug('');
+	Term.log('>> ', test_val);
+	Term.success('<< ', _trans(test_val, test_ctx, test_default));
+	Term.debug('');
 	
-	//-- month end
-	Term.log('--- month end', _jsonStringify([val = _monthEnd(date), _datetime(val)]));
-	// Term.log('');
-
-	//-- month days
-	Term.log('--- month days', _jsonStringify([val = _monthDays(date)]));
-	// Term.log('');
+	Term.info('>> examples...');
+	Term.debug('');
+	const items = [
+		{text: 'My name is {user.name}.', context: {User: {Name: 'Root'}}, _default: 'NULL', _result: 'My name is Root.'},
+		{text: 'My phone number is {user.phone}.', context: {User: {Name: 'Root'}}, _default: 'NULL', _result: 'My phone number is NULL.'},
+		{text: 'address.city', context: {Address: {City: 'Nairobi'}}, _default: 'NULL', _result: 'Nairobi'},
+		{text: 'address.town', context: {Address: {City: 'Nairobi', town: undefined}}, _default: 'NULL', _result: 'undefined'},
+		{text: 'No template.', context: {foo: 'bar'}, _default: 'NULL', _result: 'No template.'},
+	];
+	for (const item of items){
+		const {text, context, _default, _result} = item;
+		const res = _trans(text, context, _default);
+		const match = res === _result;
+		Term[match ? 'success' : 'warn']('<< ', match ? res : res + ' <> ' + _result);
+	}
 })()
 .catch((error: any) => {
 	Term.error(`[E] ${error?.stack || error}`);
 });
+
+/**
+ * Get test argument value
+ * 
+ * - _use `'` instead of `"` for JSON value quites (literal `'` is escaped as `\'`)_
+ * - also evaluates one of these code texts:
+ *   ```
+ *   [`_default`, `undefined`, `null`, `new Date()`, `Date.now()`]
+ *   ```
+ * 
+ * @param pos - argument index (default: `2`)
+ * @param _default - default value (default: `undefined`)
+ * @returns `any`
+ */
+function __argsGet(pos: number, _default: any = undefined): any {
+	pos = _posInt(pos, 0) ?? 2;
+	const value: any = process.argv[pos] ?? _default;
+	let tmp: any, val: any = _str(value);
+	if (!isNaN(tmp = _num(val))) return val;
+	const failed = '!!' + Date.now() + '!!';
+	tmp = (val = _str(val));
+	const q = '~' + Date.now();
+	tmp = tmp.replace(/\\'/g, q).replace(/'/g, '"').replace(new RegExp(q, 'g'), "'");
+	tmp = _jsonParse(tmp, failed);
+	if (tmp !== failed) val = tmp;
+	if (val === '`_default`') val = _default;
+	if (val === '`undefined`') val = undefined;
+	else if (val === '`null`') val = undefined;
+	else if (val === '`new Date()`') val = new Date();
+	else if (val === '`Date.now()`') val = Date.now();
+	return val;
+}
