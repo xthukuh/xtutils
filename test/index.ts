@@ -62,6 +62,11 @@ import {
 (async()=>{
 	
 	//>_ npm run dev -- "I have my {address}" "{'Address':{'City':'Nairobi\'s'}}" "###"  
+	//test table
+	Term.table({"name":"one","value":1});
+	Term.table('Hello world!');
+	Term.table([1, 2, 3]);
+	Term.table([{"name":"one","value":1},{"name":"two","value":2}]);
 
 	//test trans
 	const txt = `

@@ -2,9 +2,10 @@
  * Term format result interface
  */
 export interface ITermFormat {
+    method: (value: undefined | 'log' | 'debug' | 'warn' | 'error' | 'info') => ITermFormat;
     format: (formats: string | string[], ...args: any[]) => ITermFormat;
     values: (...args: any[]) => any[];
-    clear: (...args: any[]) => any[];
+    clean: (...args: any[]) => any[];
     log: (message?: any, ...optionalParams: any[]) => void;
     debug: (message?: any, ...optionalParams: any[]) => void;
     warn: (message?: any, ...optionalParams: any[]) => void;
@@ -16,19 +17,29 @@ export interface ITermFormat {
  */
 export declare class Term {
     /**
-     * Disable formats
+     * Format disabled
      */
-    static DISABLED: boolean;
+    static get FORMAT_DISABLED(): boolean;
+    static set FORMAT_DISABLED(value: any);
+    /**
+     * Console log methods
+     */
+    static get LOG_METHODS(): string[];
+    /**
+     * Preferred console log method
+     */
+    static get LOG_METHOD(): undefined | 'log' | 'debug' | 'warn' | 'error' | 'info';
+    static set LOG_METHOD(value: any);
     /**
      * Text formats
      */
-    static FORMATS: {
+    static get FORMATS(): {
         [key: string]: string;
     };
     /**
      * Predefined text formats
      */
-    static PREDEFINED_FORMATS: {
+    static get PREDEFINED_FORMATS(): {
         [key: string]: string | string[];
     };
     /**
@@ -37,7 +48,7 @@ export declare class Term {
      * @param formats Text format(s)
      * @returns `string[]`
      */
-    static getFormats(formats: string | string[]): string[];
+    static get getFormats(): (formats: string | string[]) => string[];
     /**
      * Text format log arguments
      *
@@ -45,14 +56,14 @@ export declare class Term {
      * @param args  Format values
      * @returns `ITermFormat`
      */
-    static format(formats: string | string[], ...args: any): ITermFormat;
+    static get format(): (formats: string | string[], ...args: any[]) => ITermFormat;
     /**
-     * Clear text value formatting
+     * Clean text value formatting
      *
      * @param args  Formatted values
      * @returns `any[]` Clear values
      */
-    static clear(...args: any[]): any[];
+    static get clean(): (...args: any[]) => any[];
     /**
      * Get formatted text
      *
@@ -60,7 +71,7 @@ export declare class Term {
      * @param formats  Text format(s)
      * @returns `string` Formatted
      */
-    static text(value: string, formats?: string | string[]): string;
+    static get text(): (value: string, formats?: string | string[]) => string;
     /**
      * Log `console.log` format
      *
@@ -84,31 +95,35 @@ export declare class Term {
      *
      * @param args
      */
-    static warn(...args: any): void;
+    static warn(...args: any[]): void;
     /**
      * Info `console.info` format
      *
      * @param args
      */
-    static info(...args: any): void;
+    static info(...args: any[]): void;
     /**
      * Success `console.log` format
      *
      * @param args
      */
-    static success(...args: any): void;
+    static success(...args: any[]): void;
     /**
      * Get value list
      *
      * @param value
      * @param _entries
      */
-    static list(value: any, _entries?: boolean): [list: any[], type: 'values' | 'entries'];
+    static get list(): (value: any, _entries?: boolean) => [list: any[], type: 'values' | 'entries'];
     /**
      * Custom `console.table` logger
      *
      * @param data
      * @param cellMaxLength
      */
-    static table(data: any, cellMaxLength?: number, divider?: boolean): void;
+    static get table(): (data: any, cellMaxLength?: number, divider?: boolean) => void;
+    /**
+     * Console clear logs
+     */
+    static get clear(): () => void;
 }
