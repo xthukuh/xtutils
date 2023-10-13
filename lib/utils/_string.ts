@@ -600,3 +600,23 @@ export const _errorText = (error: any): string => {
 	_parse(error);
 	return Object.values(errors).join('\n');
 };
+
+/**
+ * Get text with max length limit
+ * 
+ * @param value - parse text
+ * @param max - max characters length (default: `1000`)
+ * @param mode - result mode
+ * - `0` = `substring(0, max)`
+ * - `1` = `substring(0, max - 3) + '...'`
+ * - `2` = `substring(0, max - [append].length) + [append]` where `[append]` is `'...(' + value.length + ')'`
+ * @returns `string` ~ whose character length is <= max
+ */
+export const _textMaxLength = (value: any, max: number = 1000, mode: 0|1|2 = 0): string => {
+	const len = (value = _str(value)).length, max_len = !isNaN(max = parseInt(max as any)) && max > 0 ? max : 1000;
+	if (len <= max_len) return value;
+	const append = mode === 2 ? `...(${value.length})` : mode === 1 ? '...' : '';
+	const append_len = append.length, text_len = max_len - append_len;
+	if (text_len > append_len && len > text_len) return value.substring(0, text_len) + append;
+	return value.substring(0, max_len);
+};

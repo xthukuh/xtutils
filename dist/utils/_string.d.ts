@@ -285,3 +285,15 @@ export declare const _split: (value: any, separator?: string | RegExp, limit?: n
  * @returns `string`
  */
 export declare const _errorText: (error: any) => string;
+/**
+ * Get text with max length limit
+ *
+ * @param value - parse text
+ * @param max - max characters length (default: `1000`)
+ * @param mode - result mode
+ * - `0` = `substring(0, max)`
+ * - `1` = `substring(0, max - 3) + '...'`
+ * - `2` = `substring(0, max - [append].length) + [append]` where `[append]` is `'...(' + value.length + ')'`
+ * @returns `string` ~ whose character length is <= max
+ */
+export declare const _textMaxLength: (value: any, max?: number, mode?: 0 | 1 | 2) => string;
