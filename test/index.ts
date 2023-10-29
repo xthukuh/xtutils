@@ -57,6 +57,9 @@ import {
 	_trans,
 	_commas,
 	_textMaxLength,
+	_cr,
+	_strKeyValues,
+	_parseKeyValues,
 } from '../lib';
 
 //tests
@@ -71,12 +74,13 @@ import {
 	let test_mode: any = _posInt(__argsGet(4));
 	if (![0, 1, 2].includes(test_mode)) test_mode = 0;
 
-	const result = _textMaxLength(test_val, test_max, test_mode);
-	Term.debug(`>> max = ${test_max}`);
-	Term.debug(`>> mode = ${test_mode}`);
-	Term.log(`>>  value [${test_val?.length}] = ${test_val}`);
-	Term.success(`<< result [${result.length}] = ${result}`);
-	
+	//-- test
+	const items: any = demoValue();
+	Term.debug('>>', {items});
+	const res = _strKeyValues(items);
+	// const res = _strKeyValues(items, 'value', 'label');
+	Term.success('<<', res);
+	Term.success('<<', _parseKeyValues(res));
 })()
 .catch((error: any) => {
 	Term.error(`[E] ${error?.stack || error}`);
@@ -112,4 +116,37 @@ function __argsGet(pos: number, _default: any = undefined): any {
 	tmp = _jsonParse(tmp, failed);
 	if (tmp !== failed) val = tmp;
 	return val;
+}
+
+function demoValue(): {[key: string]: any}[] {
+	return [
+		{
+			"active": true,
+			"defaultValue": true,
+			"label": "Not Submitted",
+			"validFor": null,
+			"value": "Not Submitted"
+		},
+		{
+			"active": true,
+			"defaultValue": false,
+			"label": "Submitted",
+			"validFor": null,
+			"value": "Submitted"
+		},
+		{
+			"active": true,
+			"defaultValue": false,
+			"label": "Not Approved",
+			"validFor": null,
+			"value": "Not Approved"
+		},
+		{
+			"active": true,
+			"defaultValue": false,
+			"label": "Approved",
+			"validFor": null,
+			"value": "Approved"
+		}
+	];
 }

@@ -195,6 +195,26 @@ export declare const _empty: (value: any, trim?: boolean) => boolean;
  */
 export declare const _iterable: (value: any, _async?: boolean) => boolean;
 /**
+ * Validate `Object` value
+ *
+ * @param value - parse value
+ * @param _filled - must not be empty `{}`
+ * @returns `boolean`
+ */
+export declare const _isObject: (value: any, _filled?: boolean) => boolean;
+/**
+ * Validate values iterable array list
+ *
+ * @param value - parse value
+ * @param _mode - parse mode
+ * - `0` = (default) `[Symbol.iterator].name` is 'values'|'[Symbol.iterator]'
+ * - `1` = `Array.isArray`
+ * - `2` = is iterable `[Symbol.iterator]`
+ * @param _filled - must not be empty `[]`
+ * @returns `boolean`
+ */
+export declare const _isArray: (value: any, _filled?: boolean, _mode?: 0 | 1 | 2) => boolean;
+/**
  * Object array values
  *
  * @param value - parse array value
