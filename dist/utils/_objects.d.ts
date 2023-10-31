@@ -271,3 +271,27 @@ export declare const _sortValues: <T = any>(array: T[], sort?: 1 | -1 | "asc" | 
 export declare const _trans: (template: string, context: {
     [name: string]: any;
 }, _default?: string, _format?: ((value: string, path: string, name: string) => any) | undefined) => string;
+/**
+ * Parse iterable values array list
+ *
+ * @param values - parse values
+ * @returns `T[]` array list
+ */
+export declare const _arrayList: <T = any>(values: any) => T[];
+/**
+ * Map values (`object[]`) by key property ID value
+ * - ID value is a trimmed `string` (lowercase when argument `_lowercase` is `true`)
+ *
+ * @param values - parse values array ~ `<T = any>[]`
+ * @param prop - ID property name (default: `''` ~ uses `string` entry value as ID for scalar values array)
+ * @param _lowercase - (default: `false`) use lowercase ID value for uniform ID value case
+ * @param _texts - (default: `0`) parse text entry mode ~ **enabled when `prop` argument is blank**
+ * - `0` => disabled
+ * - `1` => trim text values
+ * - `2` => stringify and trim text values
+ * @param _silent - (default: `true`) do not log warnings when values entry with invalid ID is skipped
+ * @returns `{[id: string]: T}` object with {ID=entry} mapping
+ */
+export declare const _mapValues: <T = any>(values: T[], prop?: string, _lowercase?: boolean, _texts?: 0 | 1 | 2, _silent?: boolean) => {
+    [id: string]: T;
+};

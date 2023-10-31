@@ -712,3 +712,46 @@ export const _trans = (template: string, context: {[name: string]: any}, _defaul
 		return val;
 	});
 };
+
+/**
+ * Parse iterable values array list
+ * 
+ * @param values - parse values
+ * @returns `T[]` array list
+ */
+export const _arrayList = <T = any>(values: any): T[] => _isArray(values, true) ? [...values] : [];
+
+/**
+ * Map values (`object[]`) by key property ID value
+ * - ID value is a trimmed `string` (lowercase when argument `_lowercase` is `true`)
+ * 
+ * @param values - parse values array ~ `<T = any>[]`
+ * @param prop - ID property name (default: `''` ~ uses `string` entry value as ID for scalar values array)
+ * @param _lowercase - (default: `false`) use lowercase ID value for uniform ID value case
+ * @param _texts - (default: `0`) parse text entry mode ~ **enabled when `prop` argument is blank**
+ * - `0` => disabled
+ * - `1` => trim text values
+ * - `2` => stringify and trim text values
+ * @param _silent - (default: `true`) do not log warnings when values entry with invalid ID is skipped 
+ * @returns `{[id: string]: T}` object with {ID=entry} mapping
+ */
+export const _mapValues = <T = any>(values: T[], prop: string = '', _lowercase: boolean = false, _texts: 0|1|2 = 0, _silent: boolean = true): {[id: string]: T} => {
+	const buffer: {[key: string]: T} = {}, items: any[] = _arrayList(values), key = _str(prop, true);
+	for (let i = 0; i < items.length; i ++){
+		let entry: any = items[i], id: string = '';
+		if (!key){
+			if ((id = _str(entry, true)) && [1, 2].includes(_texts)){
+				if (_texts === 2) entry = _str(entry, true);
+				else if ('string' === typeof entry) entry = _str(entry, true);
+			}
+		}
+		else id = _str(entry?.[key], true);
+		if (!id){
+			if (!_silent) console.warn('Invalid map values entry. The ID value is blank.', {i, key, entry});
+			continue;
+		}
+		if (_lowercase) id = id.toLowerCase();
+		buffer[id] = entry;
+	}
+	return buffer;
+};

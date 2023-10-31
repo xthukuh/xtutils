@@ -60,12 +60,20 @@ import {
 	_cr,
 	_strKeyValues,
 	_parseKeyValues,
+	_mapValues,
 } from '../lib';
 
 //tests
-(async()=>{
+(async(): Promise<any> => {
 	
 	//test trans
+	const str = 'One, Two, Three,, Ask';
+	const arr: any[] = [...str.split(','), 5, 6, {name: 'test'}, null, 'Seven', 'EIGHT'];
+	// const arr: any[] = [["5",5],["6",6],["One","One"],["Two","Two"],["Three","Three"],["Ask","Ask"],["Seven","Seven"],["EIGHT","EIGHT"]].map((v, i) => ({index: i, key: v[0], val: v[1]}));
+	const _map = _mapValues(arr, '', true, 1);
+	console.log({arr, _map});
+	return;
+
 	const txt = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus justo odio, sit amet varius erat suscipit eu. Nulla ut tellus risus. Donec gravida tincidunt justo, id fringilla velit pulvinar sit amet. Nunc ut nisl sit amet purus sodales ultricies. Quisque hendrerit cursus ullamcorper. Quisque nec turpis suscipit, aliquet diam sit amet, condimentum justo. Proin finibus scelerisque ultricies. Nunc maximus nisl velit, vitae vestibulum nunc facilisis at. Cras imperdiet a nibh quis laoreet. Vestibulum fermentum tellus tellus, et cursus arcu gravida quis. Sed in maximus libero. Donec interdum nunc a nisi varius facilisis.`;
 
 	//test args
