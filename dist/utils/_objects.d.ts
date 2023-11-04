@@ -122,10 +122,10 @@ export declare const _dotInflate: (value: any) => {
  *
  * @param dot_path - dot separated keys
  * @param operations - supports operations (i.e. '!reverse'/'!slice=0') ~ tests dot keys using `/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/` instead of default `/^[-_0-9a-zA-Z]+$/`
- * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
+ * @param _failure - `FailError` mode ~ `0` = silent (default) | `1` = logs warning | `2` = logs error | `3` = throws error
  * @returns `string` valid dot path
  */
-export declare const _validDotPath: (dot_path: string, operations?: boolean, _failure?: 0 | 1 | 2) => string;
+export declare const _validDotPath: (dot_path: string, operations?: boolean, _failure?: 0 | 1 | 2 | 3) => string;
 /**
  * Get parsed `boolean` value
  *
@@ -165,11 +165,11 @@ export declare const _bool: (value: any, strict?: boolean, trim?: boolean) => bo
  * @param path - dot separated keys ~ optional array operations
  * @param target - traverse object
  * @param ignoreCase - whether to ignore case when matching keys (default: `false`)
- * @param _failure - error handling ~ `0` = (default) disabled, `1` = warn error, `2` = throw error
+ * @param _failure - `FailError` mode ~ `0` = silent (default) | `1` = logs warning | `2` = logs error | `3` = throws error
  * @param _default - default result on failure
  * @returns `any` dot path match result
  */
-export declare const _dotGet: (path: string, target: any, ignoreCase?: boolean, _failure?: 0 | 1 | 2, _default?: any) => any;
+export declare const _dotGet: (path: string, target: any, ignoreCase?: boolean, _failure?: 0 | 1 | 2 | 3, _default?: any) => any;
 /**
  * @deprecated
  * Get coerced `number/string/JSON` value ~ `value.valueOf()`
@@ -295,3 +295,33 @@ export declare const _arrayList: <T = any>(values: any) => T[];
 export declare const _mapValues: <T = any>(values: T[], prop?: string, _lowercase?: boolean, _texts?: 0 | 1 | 2, _silent?: boolean) => {
     [id: string]: T;
 };
+/**
+ * @class `FailError` _extends `Error`_
+ */
+export declare class FailError extends Error {
+    /**
+     * - error message
+     */
+    message: string;
+    /**
+     * - error mode
+     */
+    mode: 0 | 1 | 2 | 3;
+    /**
+     * - error debug
+     */
+    debug: any;
+    /**
+     * - error name
+     */
+    name: string;
+    /**
+     * Failure error instance/handler
+     *
+     * @param reason - parse error message
+     * @param mode - error mode ~ `0` = silent (default) | `1` = logs warning | `2` = logs error | `3` = throws error
+     * @param debug - error debug
+     * @param name - error name
+     */
+    constructor(reason: any, mode?: 0 | 1 | 2 | 3, debug?: any, name?: string);
+}

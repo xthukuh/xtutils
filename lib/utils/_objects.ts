@@ -1,7 +1,7 @@
 import { bool } from '../types';
 import { _jsonCopy, _jsonParse, _jsonStringify } from './_json';
-import { _int, _num } from './_number';
-import { _str, _string, _stringable } from './_string';
+import { _int, _num, _posInt } from './_number';
+import { _errorText, _str, _string, _stringable } from './_string';
 import { _isBuffer } from '../3rd-party';
 
 /**
@@ -287,10 +287,10 @@ export const _dotInflate = (value: any): {[key: string]: any} => {
  * 
  * @param dot_path - dot separated keys
  * @param operations - supports operations (i.e. '!reverse'/'!slice=0') ~ tests dot keys using `/^[-_0-9a-zA-Z]+\=([^\=\.]*)$/` instead of default `/^[-_0-9a-zA-Z]+$/`
- * @param _failure - error handling ~ `0` = (default) disabled, '1' = warn error, `2` = warn and throw error
+ * @param _failure - `FailError` mode ~ `0` = silent (default) | `1` = logs warning | `2` = logs error | `3` = throws error
  * @returns `string` valid dot path
  */
-export const _validDotPath = (dot_path: string, operations: boolean = false, _failure: 0|1|2 = 0): string => {
+export const _validDotPath = (dot_path: string, operations: boolean = false, _failure: 0|1|2|3 = 0): string => {
 	try {
 		if (!(dot_path = _str(dot_path, true))) throw new TypeError('Invalid dot path value.');
 		const parts: string[] = [];
@@ -318,10 +318,7 @@ export const _validDotPath = (dot_path: string, operations: boolean = false, _fa
 		return buffer.join('.');
 	}
 	catch (e){
-		if (_failure){
-			if (_failure === 1) console.warn(e, {dot_path, operations});
-			else if (_failure === 2) throw e;
-		}
+		new FailError(e, _failure, {dot_path, operations});
 		return '';
 	}
 };
@@ -370,11 +367,11 @@ export const _bool = (value: any, strict: boolean = false, trim: boolean = true)
  * @param path - dot separated keys ~ optional array operations
  * @param target - traverse object
  * @param ignoreCase - whether to ignore case when matching keys (default: `false`)
- * @param _failure - error handling ~ `0` = (default) disabled, `1` = warn error, `2` = throw error
+ * @param _failure - `FailError` mode ~ `0` = silent (default) | `1` = logs warning | `2` = logs error | `3` = throws error
  * @param _default - default result on failure
  * @returns `any` dot path match result
  */
-export const _dotGet = (path: string, target: any, ignoreCase: boolean = false, _failure: 0|1|2 = 0, _default?: any): any => {
+export const _dotGet = (path: string, target: any, ignoreCase: boolean = false, _failure: 0|1|2|3 = 0, _default?: any): any => {
 	try {
 		const keys = (path = _validDotPath(path, true, _failure)).split('.');
 		if (!keys.length) throw new TypeError('Invalid resolve dot path format.');
@@ -431,10 +428,7 @@ export const _dotGet = (path: string, target: any, ignoreCase: boolean = false, 
 		return !abort ? value : _default;
 	}
 	catch (e) {
-		if (_failure){
-			if (_failure === 1) console.warn(e, {path, target});
-			else if (_failure === 2) throw e;
-		}
+		new FailError(e, _failure, {path, target, ignoreCase, _default}, 'DotGetError');
 		return _default;
 	}
 };
@@ -755,3 +749,51 @@ export const _mapValues = <T = any>(values: T[], prop: string = '', _lowercase: 
 	}
 	return buffer;
 };
+
+/**
+ * @class `FailError` _extends `Error`_
+ */
+export class FailError extends Error
+{
+	/**
+	 * - error message
+	 */
+	message: string;
+
+	/**
+	 * - error mode
+	 */
+	mode: 0|1|2|3;
+
+	/**
+	 * - error debug
+	 */
+	debug: any;
+
+	/**
+	 * - error name
+	 */
+	name: string;
+
+	/**
+	 * Failure error instance/handler
+	 * 
+	 * @param reason - parse error message
+	 * @param mode - error mode ~ `0` = silent (default) | `1` = logs warning | `2` = logs error | `3` = throws error
+	 * @param debug - error debug
+	 * @param name - error name
+	 */
+	constructor(reason: any, mode: 0|1|2|3 = 0, debug: any = Symbol('undefined'), name?: string){
+		const err_message: string = _errorText(reason) || 'Blank error message.';
+		const err_mode: 0|1|2|3 = [0, 1, 2, 3].includes(mode = _posInt(mode, 0, 3) ?? 0 as any) ? mode : 0;
+		const err_debug: any[] = 'symbol' === typeof debug && String(debug) === 'Symbol(default)' ? [] : [debug];
+		const err_name: string = _str(name, true) || _str(reason?.name, true) || 'FailError';
+		super(err_message);
+		this.message = err_message;
+		this.mode = err_mode;
+		this.debug = err_debug[0];
+		this.name = err_name;
+		if (err_mode === 1 || err_mode === 2) console[err_mode === 1 ? 'warn' : 'error'](_str(this, true), ...err_debug);
+		else if (err_mode === 3) throw this;
+	}
+}
