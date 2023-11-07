@@ -336,3 +336,13 @@ export declare const _parseKeyValues: (value: any, _escape?: boolean, _value_del
  * @returns `string` serialized key values
  */
 export declare const _strKeyValues: (values: any, _key?: any, _value?: any, _value_delimiter?: string, _entries_delimiter?: string) => string;
+/**
+ * Text wrap lines on length limit
+ *
+ * @param text - parse text
+ * @param max_length - max line length
+ * @param word_break - whether to use word break (default `false`)
+ * @param onAddLine - add line buffer handler callback ~ return modified line value or `undefined`|`null` to skip
+ * @returns `string[]` text wrap lines
+ */
+export declare const _wrapLines: (text: any, max_length?: number, word_break?: boolean, onAddLine?: ((line: string, lines_buffer: string[]) => string | undefined) | undefined) => string[];
