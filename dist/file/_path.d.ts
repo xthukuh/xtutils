@@ -98,6 +98,15 @@ export interface IFilePathError extends Error {
  */
 export declare const _filepath: (value: any, separator?: '' | '/' | '\\', _strict?: boolean, _type?: string, _failure?: 0 | 1 | 2) => IFilePath;
 /**
+ * Convert bytes to `'B'|'KB'|'MB'|'GB'|'TB'|'PB'|'EB'|'ZB'|'YB'` value
+ *
+ * @param bytes - parse bytes
+ * @param mode - parse mode ~ `'B'|'KB'|'MB'|'GB'|'TB'|'PB'|'EB'|'ZB'|'YB'`
+ * @param places - decimal places
+ * @returns `number`
+ */
+export declare const _bytesValue: (bytes: number, mode?: 'B' | 'KB' | 'MB' | 'GB' | 'TB' | 'PB' | 'EB' | 'ZB' | 'YB', places?: number) => number;
+/**
  * Format bytes to `'B'|'KB'|'MB'|'GB'|'TB'|'PB'|'EB'|'ZB'|'YB'` text
  *
  * @param bytes - parse bytes
