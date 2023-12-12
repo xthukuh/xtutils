@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"editor.tabSize": 2,
+		"editor.detectIndentation": false,
+		"editor.insertSpaces": false,
+		"git.repositoryScanIgnoredFolders": [
+			"node_modules",
+			"dist"
+		],
+		"search.exclude": {
+			"**/dist": true
+		}
+	}
+}
