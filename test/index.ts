@@ -8,11 +8,40 @@ import {
 	_num,
 	_posInt,
 	_str,
+
+	_unescape,
+	_escape,
+	_utf8Encode,
+	_utf8Decode,
+	_strEscape,
 } from '../lib';
 
 //tests
 (async(): Promise<any> => {
 	
+	//test utf8
+	const tests = [
+		['abc123', 'abc123'],
+		['%E4%F6%FC', 'äöü'],
+		['%u0107', 'ć'],
+	];
+	console.log('');
+	console.log('_unescape:');
+	tests.forEach(v => {
+		console.log([...v, _unescape(v[0]) === v[1]]);
+	});
+	console.log('');
+	console.log('_escape:');
+	tests.forEach(arr => {
+		const v = arr.slice().reverse();
+		console.log([...v, _escape(v[0]) === v[1]]);
+	});
+	console.log('');
+	let val = 'Emoji 😎', ret = 'Emoji ð\x9F\x98\x8E', tmp = '';
+	console.log(`_utf8Encode('${val}') === '${ret}'`, (tmp = _utf8Encode(val)) === ret, `("${encodeURI(tmp)}")`);
+	console.log(`_utf8Decode('${_strEscape(ret)}') === '${val}'`, _utf8Decode(tmp) === val);
+	return;
+
 	//test trans
 	const str = 'One, Two, Three,, Ask';
 	const arr: any[] = [...str.split(','), 5, 6, {name: 'test'}, null, 'Seven', 'EIGHT'];
