@@ -14,6 +14,8 @@ import {
 	_utf8Encode,
 	_utf8Decode,
 	_strEscape,
+	_sort,
+	_jsonStringify,
 } from '../lib';
 
 //tests
