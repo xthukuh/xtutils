@@ -16,10 +16,36 @@ import {
 	_strEscape,
 	_sort,
 	_jsonStringify,
+	AlphaInt,
 } from '../lib';
 
 //tests
 (async(): Promise<any> => {
+	
+	//test AlphaInt
+	const pos = new AlphaInt();
+	for (let i = 0; i < 2000; i ++){
+		Term.debug(`[${i}]`, pos.value, `${pos}`, pos.indexes);
+		pos.add();
+	}
+	const parse_tests = [
+		'BXX',
+		2000,
+		'-BXX',
+		-2000,
+		'A',
+		0,
+		-1,
+		'B',
+		25,
+		26,
+		[1,23,23],
+	];
+	parse_tests.forEach(v => {
+		let pos = AlphaInt.parse(v);
+		Term.debug(`AlphaInt.parse(${_jsonStringify(v)})`, pos.value, `${pos}`, pos.indexes);
+	});
+	return;
 	
 	//test utf8
 	const tests = [
