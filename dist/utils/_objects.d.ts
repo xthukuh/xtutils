@@ -371,3 +371,17 @@ export declare const _propsObj: (value: any, props?: any[], _omit?: boolean, _un
  * @returns `T[][]`
  */
 export declare const _chunks: <T = any>(array: T[], size?: number) => T[][];
+/**
+ * Get objects array with keys selection
+ *
+ * @param array - parse iterable/spreadable objects array `{[key:string]:any}[]`
+ * @param keys - select keys `string[]`
+ * @param omit - (default: `false`) `false` disabled, `true` omit select keys, `string[]` omit keys
+ * @param filled_only - (default: `false`) omit keys that are empty values in all `array` items or omit item that have empty values in all keys
+ * @returns `{[key:string]:any}[]` selection
+ */
+export declare const _selectKeys: (array: {
+    [key: string]: any;
+}[], keys: string[], omit?: string[] | boolean, filled_only?: boolean) => {
+    [key: string]: any;
+}[];

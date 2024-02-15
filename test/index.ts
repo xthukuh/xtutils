@@ -17,10 +17,49 @@ import {
 	_sort,
 	_jsonStringify,
 	AlphaNum,
+	_selectKeys,
 } from '../lib';
 
 //tests
 (async(): Promise<any> => {
+	
+	//test _selectKeys
+	const test_array: any[] = [
+		'text',
+		null,
+		undefined,
+		true,
+		false,
+		[],
+		[1, 2, 3],
+		{},
+		{a: undefined, b: undefined, c: null, d: ''},
+		{a: 1, b: 2, c: undefined, d: null},
+		{a: 1, b: undefined, c: 3, d: ''},
+		{a: null, b: 'b', c: null, d: undefined},
+		{a: '1', b: '2', c: false, d: {}},
+		{a: 'one', b: 2, c: true, d: []},
+		{a: 1, b: 'two', c: 0, d: []},
+	];
+	const test_args = [
+		/* [0] */ [[], true],
+		/* [0] */ [[], false, true],
+		/* [0] */ [[], ['c', 'd']],
+		/* [0] */ [['b','c']],
+		/* [1] */ [['b','c'], true],
+		/* [2] */ [['a','b','c','d']],
+		/* [3] */ [['a','b','c','d'], true],
+		/* [4] */ [['a','b','c','d'], false, true],
+		/* [5] */ [['a','b','c','d'], ['b']],
+		/* [5] */ [['a','b','c','d'], ['b'], true],
+	];
+	Term.debug({test_array});
+	Term.br();
+	test_args.forEach((args: any, i) => {
+		args = [test_array, ...args];
+		Term.debug(`[${i}] _selectKeys(test_array, ${args.slice(1).map((v: any) => _jsonStringify(v)).join(', ')}):`, _selectKeys.apply(this, args));
+	});
+	return;
 	
 	//test AlphaNum
 	const pos = new AlphaNum();
