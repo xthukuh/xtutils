@@ -16,35 +16,39 @@ import {
 	_strEscape,
 	_sort,
 	_jsonStringify,
-	AlphaInt,
+	AlphaNum,
 } from '../lib';
 
 //tests
 (async(): Promise<any> => {
 	
-	//test AlphaInt
-	const pos = new AlphaInt();
+	//test AlphaNum
+	const pos = new AlphaNum();
 	for (let i = 0; i < 2000; i ++){
 		Term.debug(`[${i}]`, pos.value, `${pos}`, pos.indexes);
 		pos.add();
 	}
 	const parse_tests = [
-		'BXX',
-		2000,
-		'-BXX',
-		-2000,
 		'A',
 		0,
 		-1,
 		'B',
 		25,
 		26,
+		'BXX',
+		2000,
+		'-BXX',
+		-2000,
 		[1,23,23],
+		[0,23],
+		[-0,23],
 	];
 	parse_tests.forEach(v => {
-		let pos = AlphaInt.parse(v);
-		Term.debug(`AlphaInt.parse(${_jsonStringify(v)})`, pos.value, `${pos}`, pos.indexes);
+		let pos = AlphaNum.parse(v);
+		Term.debug(`AlphaNum.parse(${_jsonStringify(v)})`, pos.value, `${pos}`, pos.indexes);
 	});
+	Term.debug(`AlphaNum.text(49)`, AlphaNum.text(49));
+	Term.debug(`AlphaNum.text(-49)`, AlphaNum.text(-49));
 	return;
 	
 	//test utf8

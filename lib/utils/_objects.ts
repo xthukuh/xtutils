@@ -632,33 +632,14 @@ export const _dumpVal = (value: any, maxStrLength: number = 200, first: boolean 
 };
 
 /**
- * Sort mode `enum`
+ * Sort mode `type` ~ `1|-1|'asc'|'desc'|'ascending'|'descending'`
  */
-export enum SortMode {
-	asc = 'asc',
-	ascending = 'ascending',
-	desc = 'desc',
-	descending = 'descending',
-}
+export type TSortMode = 1|-1|'asc'|'desc'|'ascending'|'descending';
 
 /**
- * Sort mode `type` ~ `1|-1|'asc'|'desc'|'ascending'|'descending'|SortMode`
+ * Sort order `type` ~ `-1` (before) | `1` (after) | `0` (equal)
  */
-export type TSortMode = SortMode|`${SortMode}`|1|-1;
-
-/**
- * Sort order `enum`
- */
-export enum SortOrder {
-	before = -1,
-	after = 1,
-	equal = 0,
-}
-
-/**
- * Sort order `type`
- */
-export type TSortOrder = SortOrder|-1|1|0;
+export type TSortOrder = -1|1|0;
 
 /**
  * Sort `Array` **slice** values
@@ -687,7 +668,6 @@ export const _sort = <T = any>(
 			locales: localeCompareConfig?.locales || 'en',
 			options: {sensitivity: 'base', ...Object(localeCompareConfig?.options)},
 		};
-		console.debug({locale_compare_config});
 
 		// onCompare callback
 		const _on_compare: undefined|((a:any,b:any,key?:string)=>TSortOrder|[a:any,b:any]) = 'function' === typeof onCompare ? onCompare : undefined;
