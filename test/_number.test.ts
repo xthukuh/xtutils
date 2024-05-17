@@ -3,6 +3,8 @@ import {
 	_rad2deg,
 	_distance,
 	_round,
+	_logx,
+	_numk,
 } from '../lib';
 import { _expectTests } from './__helpers';
 
@@ -60,5 +62,73 @@ describe('_distance: (latitude1: number, longitude1: number, latitude2: number, 
 	});
 	it('throws `TypeError` when any argument value is `NaN`', () => {
 		expect(() => _distance('' as any, 13.4050, 48.8566, 2.3522)).toThrow(TypeError);
+	});
+});
+
+// _logx
+describe('_logx: (base: number, value: number) => number', () => {
+	it('calculates logarithm with custom base correctly', () => {
+		expect(_logx(2, 8)).toBeCloseTo(3);
+		expect(_logx(10, 1000)).toBeCloseTo(3);
+		expect(_logx(3, 27)).toBeCloseTo(3);
+	});
+	it('returns NaN for non-numeric base', () => {
+		expect(_logx(NaN, 8)).toBeNaN();
+		expect(_logx('a' as unknown as number, 8)).toBeNaN();
+		expect(_logx(Infinity, 8)).toBeNaN();
+	});
+	it('returns NaN for non-numeric value', () => {
+		expect(_logx(2, NaN)).toBeNaN();
+		expect(_logx(2, 'a' as unknown as number)).toBeNaN();
+		expect(_logx(2, Infinity)).toBeNaN();
+	});
+	it('handles edge cases correctly', () => {
+		expect(_logx(2, 1)).toBe(0); // log base x of 1 is always 0
+		expect(_logx(2, 2)).toBe(1); // log base x of x is always 1
+		expect(_logx(1, 8)).toBe(Infinity); // log base 1 is Infinity
+		expect(_logx(-1, 8)).toBeNaN(); // log base -1 is NaN
+		expect(_logx(2, 0)).toBe(-Infinity); // log base 2 of 0 is -Infinity
+		expect(_logx(-2, 8)).toBeNaN(); // log with negative base is NaN
+		expect(_logx(2, -8)).toBeNaN(); // log of negative number is NaN
+	});
+});
+
+// _numk
+describe('_numk: (value: number, places: number = 1) => string', () => {
+	it('formats numbers in thousands group correctly', () => {
+		expect(_numk(1000)).toBe('1k');
+		expect(_numk(1500)).toBe('1.5k');
+		expect(_numk(1000000)).toBe('1M');
+		expect(_numk(2500000000)).toBe('2.5B');
+		expect(_numk(1000000000000)).toBe('1T');
+	});
+	it('formats negative numbers correctly', () => {
+		expect(_numk(-1000)).toBe('-1k');
+		expect(_numk(-1500000)).toBe('-1.5M');
+	});
+	it('returns NaN for non-numeric values', () => {
+		expect(_numk(NaN)).toBe('NaN');
+		expect(_numk('a' as unknown as number)).toBe('NaN');
+	});
+	it('handles different decimal places correctly', () => {
+		expect(_numk(500.4535, 3)).toBe('500.454');
+		expect(_numk(1500, 0)).toBe('2k');
+		expect(_numk(1500, 1)).toBe('1.5k');
+		expect(_numk(1535, 2)).toBe('1.54k');
+		expect(_numk(1500, 3)).toBe('1.5k');
+	});
+	it('handles edge cases', () => {
+		expect(_numk(0)).toBe('0');
+		expect(_numk(1)).toBe('1');
+		expect(_numk(-1)).toBe('-1');
+		expect(_numk(999)).toBe('999');
+		expect(_numk(2.453e15)).toBe('2.5e3T');
+		expect(_numk(2.453e14)).toBe('245.3T');
+		expect(_numk(2.453e12, 2)).toBe('2.45T');
+	});
+	it('defaults to 1 decimal place if invalid places are provided', () => {
+		expect(_numk(1500, -1)).toBe('1.5k');
+		expect(_numk(1500, 4)).toBe('1.5k'); // Assuming places are constrained to 0-3
+		expect(_numk(1500, NaN)).toBe('1.5k');
 	});
 });
