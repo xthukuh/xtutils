@@ -18,10 +18,27 @@ import {
 	_jsonStringify,
 	AlphaNum,
 	_selectKeys,
+	_base64Encode,
+	_rc4,
+	_base64Decode,
+	_asyncAll,
+	_sleep,
+	_rand,
 } from '../lib';
 
 //tests
 (async(): Promise<any> => {
+
+	// test _asyncAll
+	let a: any, b: any, c: any, expected_ret: any = _jsonStringify([{status:'resolved',index:0,value:2},{status:'resolved',index:1,value:4}]);
+	a = await _asyncAll<number, number>([1, 2], async (num) => num * 2);
+  b = await _asyncAll([() => Promise.resolve(1), 2], async (num) => { await _sleep(_rand(500, 1000));  return num * 2}, (...args) => console.log('percent:', args));
+ 	c = await _asyncAll([async () => Promise.resolve(2), 4]);
+	console.log([a, b, c].map(v => {
+		const text = _jsonStringify(v);
+		return [text, text === expected_ret];
+	}), expected_ret);
+	return;
 	
 	//test _selectKeys
 	const test_array: any[] = [
