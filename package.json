@@ -14,9 +14,11 @@
 		"docs-dist": "copy dist\\xutils.min.js ..\\xthukuh.github.io\\xutils",
 		"docs-json": "npx typedoc lib/index.ts --json ../xthukuh.github.io/xutils/typedocs.json",
 		"docs": "npm run docs-clean && npm run docs-dist && npm run docs-json",
+		
 		"docs-prep": "node -e \"require('fs-extra').ensureDirSync('./.docs');\"",
 		"docs-copy": "xparse-ignore --backup=\"C:\\Users\\User\\apps\\react\\xutils\\.docs\" --to=\"C:\\Users\\User\\apps\\react\\xthukuh.github.io\\xutils-docs\"",
 		"docs-build": "npm run docs-prep && npx typedoc --out ./.docs lib/index.ts",
+		
 		"": ""
 	},
 	"keywords": [
