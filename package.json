@@ -1,35 +1,43 @@
 {
-	"name": "xutils",
+	"name": "mxutils",
+	"package-name": "mxutils",
 	"version": "1.0.0",
-	"description": "Assorted javascript utilities.",
-	"main": "dist/xutils.min.js",
+	"description": "Thuku's assorted general purpose typescript/javascript library.",
+	"author": "Thuku",
+	"keywords": [
+		"thuku",
+		"xthukuh",
+		"assorted",
+		"general",
+		"purpose",
+		"typescript",
+		"javascript",
+		"library",
+		"utils",
+		"utilities"
+	],
+	"license": "ISC",
+	"homepage": "https://github.com/xthukuh/mxutils#readme",
+	"bugs": {
+		"url": "https://github.com/xthukuh/mxutils/issues"
+	},
+	"main": "dist/mxutils.min.js",
+	"module": "dist/mxutils.min.js",
 	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"prebuild": "rimraf ./dist",
 		"build": "npm run prebuild && npx webpack --env=mode=production",
 		"prepublish": "npm run build",
 		"dev": "npx ts-node ./test/index.ts",
-		"test": "jest",
-		"docs-clean": "rimraf ../xthukuh.github.io/xutils/docs.json && rimraf ../xthukuh.github.io/xutils/xutils.min.js",
-		"docs-dist": "copy dist\\xutils.min.js ..\\xthukuh.github.io\\xutils",
-		"docs-json": "npx typedoc lib/index.ts --json ../xthukuh.github.io/xutils/typedocs.json",
-		"docs": "npm run docs-clean && npm run docs-dist && npm run docs-json",
-		
-		"docs-prep": "node -e \"require('fs-extra').ensureDirSync('./.docs');\"",
-		"docs-copy": "xparse-ignore --backup=\"C:\\Users\\User\\apps\\react\\xutils\\.docs\" --to=\"C:\\Users\\User\\apps\\react\\xthukuh.github.io\\xutils-docs\"",
-		"docs-build": "npm run docs-prep && npx typedoc --out ./.docs lib/index.ts",
-		
-		"": ""
+		"test": "jest"
 	},
-	"keywords": [
-		"xthukuh",
-		"xutils",
-		"utils",
-		"typescript",
-		"javascript"
-	],
-	"author": "https://github.com/xthukuh",
-	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/xthukuh/mxutils.git"
+	},
 	"devDependencies": {
 		"@types/eslint": "^8.40.2",
 		"@types/jest": "^29.5.2",
@@ -46,5 +54,8 @@
 	},
 	"dependencies": {
 		"buffer": "^6.0.3"
+	},
+	"engines": {
+		"node": ">=20.15.0"
 	}
 }

@@ -5,7 +5,6 @@ module.exports = env => {
 	let {mode, library} = Object(env);
 	mode = mode === 'production' ? mode : 'development';
 	library = 'string' === typeof library && /^[_a-z0-9]+$/.test(library) ? library : name;
-	const filename = `${library}.min.js`;
 	return {
 		mode,
 		devtool: 'inline-source-map',
@@ -14,11 +13,15 @@ module.exports = env => {
 		},
 		output: {
 			path: path.resolve(__dirname, 'dist'),
-			filename,
-			libraryTarget: 'umd',
-			library,
-			// umdNamedDefine: true,
+			filename: `${name}.min.js`,
+			// libraryTarget: 'umd',
+			// library,
+			library: {
+				name: library,
+				type: 'umd',
+			},
 			globalObject: 'this',
+			// umdNamedDefine: true,
 		},
 		resolve: {
 			extensions: ['.ts', '.js', '.json'],
