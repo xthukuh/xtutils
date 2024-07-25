@@ -36,3 +36,4 @@ yarn-error.log
 *.sqlite*
 *.sqbpro
 /.docs
+*.code-workspace
