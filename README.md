@@ -1,6 +1,7 @@
 # MXUTILS
 
 Thuku's assorted general purpose typescript/javascript library.
+> comming soon: **docs**
 
 _**♠️ By [Thuku](https://github.com/xthukuh)**_
 
@@ -15,31 +16,13 @@ yarn add mxutils
 ```
 
 ## Usage
-```ts
-// typescript
-import {_uid} from 'mxutils';
-import * as mxutils from 'mxutils';
-console.debug(_uid(), mxutils._datetime());
+```mjs
+// import
+import mxutils, {_sayHello} from 'mxutils';
+console.debug('TODAY: %s', mxutils._datetime());
+_sayHello();
 
-// module
+// require
 const mxutils = require('mxutils');
 console.debug(mxutils._datetime());
-```
-
-## Development
-
-```bash
-# clone
-git clone https://github.com/xthukuh/mxutils.git
-
-# node
-npm install
-npm run dev
-npm test
-## npm test -- _number.test.ts ## specific test
-
-# yarn
-yarn install
-yarn dev
-yarn test
 ```
