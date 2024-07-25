@@ -1,4 +1,4 @@
-# MXUTILS
+# xtutils
 
 Thuku's assorted general purpose typescript/javascript library.
 > comming soon: **docs**
@@ -9,20 +9,20 @@ _**♠️ By [Thuku](https://github.com/xthukuh)**_
 
 ```bash
 # node
-npm install mxutils
+npm install xtutils
 
 # yarn
-yarn add mxutils
+yarn add xtutils
 ```
 
 ## Usage
 ```mjs
 // import
-import mxutils, {_sayHello} from 'mxutils';
-console.debug('TODAY: %s', mxutils._datetime());
+import xtutils, {_sayHello} from 'xtutils';
+console.debug('TODAY: %s', xtutils._datetime());
 _sayHello();
 
 // require
-const mxutils = require('mxutils');
-console.debug(mxutils._datetime());
+const xtutils = require('xtutils');
+console.debug(xtutils._datetime());
 ```

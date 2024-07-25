@@ -1,6 +1,6 @@
 {
-	"name": "mxutils",
-	"package-name": "mxutils",
+	"name": "xtutils",
+	"package-name": "xtutils",
 	"version": "1.0.0",
 	"description": "Thuku's assorted general purpose typescript/javascript library.",
 	"author": "Thuku <xthukuh@gmail.com>(https://github.com/xthukuh)",
@@ -17,9 +17,9 @@
 		"utilities"
 	],
 	"license": "ISC",
-	"homepage": "https://github.com/xthukuh/mxutils#readme",
+	"homepage": "https://github.com/xthukuh/xtutils#readme",
 	"bugs": {
-		"url": "https://github.com/xthukuh/mxutils/issues"
+		"url": "https://github.com/xthukuh/xtutils/issues"
 	},
 	"main": "dist/index.js",
 	"module": "dist/index.js",
@@ -37,7 +37,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/xthukuh/mxutils.git"
+		"url": "git+https://github.com/xthukuh/xtutils.git"
 	},
 	"devDependencies": {
 		"@types/eslint": "^8.40.2",
