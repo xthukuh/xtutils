@@ -2,27 +2,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports._animate = exports.ANIMATE_DEFAULT_DURATION = exports.ANIMATE_DEFAULT_EASING = void 0;
 const utils_1 = require("../utils");
-const easings_1 = require("./easings");
+const _easing_functions_1 = require("./_easing_functions");
 const _polyfill_1 = require("./_polyfill");
 /**
  * The default easing function used in animations.
- *
- * @constant {TEasingFunction}
  */
-exports.ANIMATE_DEFAULT_EASING = easings_1.Easings.easeLinear;
+exports.ANIMATE_DEFAULT_EASING = _easing_functions_1.Easing.linear;
 /**
  * The default duration for animations, in milliseconds.
- *
- * @constant {number}
  */
 exports.ANIMATE_DEFAULT_DURATION = 1000;
 /**
  * Animates an object based on the provided options.
  *
- * @param {IAnimateOptions} options - The options to configure the animation.
- * @param {boolean} [_debug=false] - Enables debug mode if true.
- * @returns {IAnimation} The animation control object.
- * @throws {Error} Throws an error if the update callback is not defined in options.
+ * @param options - `IAnimateOptions` config
+ * @param _debug - debug mode _[default: `false`]_
+ * @returns `IAnimation` animation control object
  */
 function _animate(options, _debug = false) {
     let { update: _update, before: _before, after: _after, easing: _easing = exports.ANIMATE_DEFAULT_EASING, duration: _duration = 1000, delay: _delay, delayed: _delayed = false, from: _from, to: _to, timeout: _timeout, autoplay: _autoplay = false, } = Object(options);
@@ -31,14 +26,9 @@ function _animate(options, _debug = false) {
     const update = (0, utils_1._isFunc)(_update) ? _update : undefined;
     const before = (0, utils_1._isFunc)(_before) ? _before : undefined;
     const after = (0, utils_1._isFunc)(_after) ? _after : undefined;
-    if (!update) {
-        let err = 'The update callback is not defined in `_animate` options!';
-        console.error(err, options);
-        throw new Error(err);
-    }
     const easing = (() => {
-        if ('string' === typeof _easing && easings_1.Easings.hasOwnProperty(_easing))
-            _easing = easings_1.Easings[_easing];
+        if ('string' === typeof _easing && _easing_functions_1.Easing.hasOwnProperty(_easing))
+            _easing = _easing_functions_1.Easing[_easing];
         return 'function' === typeof _easing ? _easing : exports.ANIMATE_DEFAULT_EASING;
     })();
     const duration = (0, utils_1._posInt)(_duration, 0) ?? exports.ANIMATE_DEFAULT_DURATION;
@@ -82,13 +72,13 @@ function _animate(options, _debug = false) {
             return;
         prev = time;
         index += 1;
-        let delta = !duration ? 0 : easing.call(context, time, 0, 1, duration);
+        let delta = !duration ? 0 : easing.call(context, time / duration * 1) || 0;
         let pos = 0;
         if (diff) {
-            pos = Math.min(delta * Math.abs(diff), Math.abs(diff));
+            pos = delta * Math.abs(diff);
             pos = from + (pos * (diff < 0 ? -1 : 1));
         }
-        let res = update.call(context, { index, delta, pos, time });
+        let res = 'function' === typeof update ? update.call(context, { index, delta, pos, time }) : undefined;
         if (time >= duration)
             is_done = 1;
         else if (res === false)

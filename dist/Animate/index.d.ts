@@ -1,4 +1,3 @@
-export * from './easings';
-export * from './_polyfill';
-export * from './_types';
 export * from './_animate';
+export * from './_easing_functions';
+export * from './_polyfill';
