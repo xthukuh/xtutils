@@ -1,7 +1,7 @@
 {
 	"name": "xtutils",
 	"package-name": "xtutils",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Thuku's assorted general purpose typescript/javascript library.",
 	"author": "Thuku <xthukuh@gmail.com>(https://github.com/xthukuh)",
 	"keywords": [
