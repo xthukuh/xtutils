@@ -1,0 +1,6 @@
+Age calculator instructions
+- the function receives `start` and `end` date arguments and outputs `{years:number,months:number,days:number,hours:number,minutes:number,seconds:number,milliseconds:number}`
+- the function parses the arguments to date. throws error when one is invalid
+- swap values so `start` date is less than `end` date
+- if both dates have different months
+	- calculate days and time to end of `start`'s month, then add months to end of `start`'s year, then add years to 

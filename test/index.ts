@@ -27,42 +27,87 @@ import {
 	IAnimateOptions,
 	_animate,
 	Easing,
+	_elapsed,
+	_duration,
 } from '../lib';
 
 //tests
 (async(): Promise<any> => {
-	const test_animate = () => {
-		const char_len = 12;
-		const animation = _animate({
-			duration: 500,
-			autoplay: false,
-			from: 0,
-			to: char_len,
-			update({index, delta, pos, time}){
-				const len: number = Math.round(pos)||0;
-				console.log('[+] update:', {index, delta: +delta.toFixed(3), pos: +pos.toFixed(3), time, len, max: char_len});
-				// const lines: string[] = [];
-				// for (let i = 0; i < char_lines.length; i ++){
-				// 	// const char_line: string = len >= char_len ? _pad_text(char_lines[i], len, ' ') : ''.padEnd(len, ' ');
-				// 	const char_line: string = ''.padEnd(len, ' ');
-				// 	lines.push(start_lines[i] + char_line + end_lines[i]);
-				// }
-				// const text: string = lines.join('\n');
-				// Printer.print(text);
-			},
-			after(){
-				console.log('[+] done.');
-				// Printer.print(full);
-				// resolve();
-			},
-			//[easings](https://easings.net/en)
-			// easing: Easing.easeOutBounce,
-			easing: Easing.easeInOutBack,
-			// easing: Easing.easeInOutQuart,
-			// easing: Easing.easeInOutExpo,
-			// easing: Easing.easeInOutQuint,
-		} as IAnimateOptions);
-		animation.play();
-	};
-	test_animate();
+	let dates = [
+		["1998-02-22","2008-05-19"], // 10Y 2M 27D
+		["1998-02-22 00:00:00","2008-05-19 00:00:00"], // 10Y 2M 27D
+		["1998-02-22T17:30:29.069Z", "2008-05-19T05:00:00.420Z"],
+		// ["2023-11-20T17:30:29.069Z", "2012-01-19T05:00:00.420Z"],
+	].forEach(([dt1, dt2]) => {
+		const elapsed = _elapsed(dt1, dt2);
+		console.log({dt1, dt2, elapsed});
+		// const duration = _duration(dt1, dt2);
+		// console.log({dt1, dt2, elapsed, duration});
+	});
 })();
+
+/*
+function calcAge3(birthday, currentDate){
+	// Validate input dates
+	if (!isValidDate(birthday) || !isValidDate(currentDate)) {
+			// throw new Error("Invalid date format. Please use 'YYYY-MM-DDTHH:mm:ss.sssZ' format.");
+			return null;
+	}
+
+	// Convert string dates to Date objects
+	let start = Date.parse(birthday);
+	let end = Date.parse(currentDate);
+	start = Math.min(start, end);
+	end = Math.max(start, end);
+	start = new Date(start);
+	end = new Date(end);
+
+	// Ensure start date is earlier than end date
+	if (start > end) {
+			throw new Error("Birthday cannot be in the future.");
+	}
+
+	// Calculate the difference
+	const diffTime = end - start;
+	const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+	let years = end.getFullYear() - start.getFullYear();
+	let months = end.getMonth() - start.getMonth();
+	let days = end.getDate() - start.getDate();
+
+	// Adjust for negative values
+	if (days < 0) {
+			months--;
+			days += new Date(end.getFullYear(), end.getMonth(), 0).getDate();
+	}
+	if (months < 0) {
+			years--;
+			months += 12;
+	}
+
+	const hours = end.getHours() - start.getHours();
+	const minutes = end.getMinutes() - start.getMinutes();
+	const seconds = end.getSeconds() - start.getSeconds();
+	const milliseconds = end.getMilliseconds() - start.getMilliseconds();
+
+	return {
+			start: start.toISOString(),
+			end: end.toISOString(),
+			years,
+			months,
+			days,
+			hours,
+			minutes,
+			seconds,
+			milliseconds,
+			total_days: diffDays,
+			total_time: diffTime
+	};
+}
+const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
+const MONTH_MS = 30.44 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const MINUTE_MS = 60 * 1000;
+const SECOND_MS = 1000;
+*/

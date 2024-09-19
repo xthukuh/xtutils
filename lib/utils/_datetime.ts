@@ -425,54 +425,34 @@ const create_duration = (years: number, months: number, days: number, hours: num
 export const _elapsed = (start: any, end: any = undefined, _strict: boolean = false): IDuration => {
 	if (!(start = _date(start, _strict))) throw new TypeError('Invalid elapsed start date value! Pass a valid Date instance, integer timestamp or date string value.');
 	if (!(end = _date(end, _strict))) throw new TypeError('Invalid elapsed end date value! Pass a valid Date instance, integer timestamp or date string value.');
-	if (start > end){
-		const swap = start;
-		start = end;
-		end = swap;
+	if (start > end) [start, end] = [end, start];
+	const d1 = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0);
+	const d2 = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 0, 0, 0, 0);
+	const t1 = start.getHours() * HOUR_MS + start.getMinutes() * MINUTE_MS + start.getSeconds() * SECOND_MS + start.getMilliseconds();
+	let t2 = end.getHours() * HOUR_MS + end.getMinutes() * MINUTE_MS + end.getSeconds() * SECOND_MS + end.getMilliseconds();
+	if (t2 < t1){
+		d2.setDate(d2.getDate() - 1);
+		t2 += DAY_MS;
 	}
-	let years: number = 0;
-	let months: number = 0;
-	let days: number = 0;
-	let hours: number = 0;
-	let minutes: number = 0;
-	let seconds: number = 0;
-	let milliseconds: number = 0
-	const start_time: number = start.getTime();
-	const end_time: number = end.getTime();
-	const total_time: number = end_time - start_time;
-	const total_days: number = Math.floor(total_time / DAY_MS);
-	if ((milliseconds += (end.getMilliseconds() - start.getMilliseconds())) < 0){
-		seconds --;
-		milliseconds += 1000;
+	const hours = Math.floor((t2 - t1) / HOUR_MS);
+	const minutes = Math.floor((t2 - t1 - hours * HOUR_MS) / MINUTE_MS);
+	const seconds = Math.floor((t2 - t1 - hours * HOUR_MS - minutes * MINUTE_MS) / SECOND_MS);
+	const milliseconds = t2 - t1 - hours * HOUR_MS - minutes * MINUTE_MS - seconds * SECOND_MS;
+	let years = d2.getFullYear() - d1.getFullYear();
+	let months = d2.getMonth() - d1.getMonth();
+	let days = d2.getDate() - d1.getDate();
+	if (days < 0) {
+		months--;
+		days += new Date(end.getFullYear(), end.getMonth(), 0).getDate();
 	}
-	if ((seconds += (end.getSeconds() - start.getSeconds())) < 0){
-		minutes --;
-		seconds += 60;
-	}
-	if ((minutes += (end.getMinutes() - start.getMinutes())) < 0){
-		hours --;
-		minutes += 60;
-	}
-	if ((hours += (end.getHours() - start.getHours())) < 0){
-		days --;
-		hours += 24;
-	}
-	const start_year: number = start.getFullYear();
-	let start_month: number = start.getMonth();
-	years = end.getFullYear() - start_year;
-	if ((months = end.getMonth() - start_month) < 0){
-		years --;
+	if (months < 0) {
+		years--;
 		months += 12;
 	}
-	if ((days += (end.getDate() - start.getDate())) < 0){
-		if (end.getMonth() === start.getMonth()) start_month ++;
-		if (months <= 0){
-			years --;
-			months = 11;
-		}
-		else months --;
-		days += new Date(start_year, start_month + 1, 0).getDate();
-	}
+	const start_time = start.getTime();
+	const end_time = end.getTime();
+	const total_time = end_time - start_time;
+	const total_days = Math.floor(total_time / DAY_MS);
 	return create_duration(years, months, days, hours, minutes, seconds, milliseconds, total_days, total_time, start_time, end_time);
 };
 
