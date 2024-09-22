@@ -70,87 +70,123 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 	seconds = Math.floor(t / SECOND_MS);
 	milliseconds = t - seconds * SECOND_MS;
 
-	//========================== approach 3
-	const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+	//========================== approach 4
 	let y1 = d1.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();
 	let y2 = d2.getFullYear(), m2 = d2.getMonth(), dd2 = d2.getDate();
-	if (m1 === m2 && m1 === 1 && dd1 === 29 && dd2 === 28) dd1 = 28;
-	if (!(y1 % 4) && (m1 < 1 || m1 === 1 && dd1 < 19)) days ++;
-	console.log('[1]', {y2, m2, dd2, y1, m1, dd1, days});
-	if (dd1 === new Date(y1, m1 + 1, 0).getDate() || (dd1 + days) === new Date(y1, m1 + 1, 0).getDate()){
-		days = dd2;
-		if (!m2){
-			m2 = 11;
-			y2 --;
+	let skip = false;
+	if (m1 === m2 && m1 === 1){
+		let end1 = new Date(y1, 2, 0).getDate();
+		let end2 = new Date(y2, 2, 0).getDate();
+		if (dd1 === end1 && dd2 < end1){
+			dd1 = 28;
+			dd2 = 28;
+			skip = true;
 		}
-		else m2 --;
 	}
-	else if (dd2 < dd1){
-		let m = 0;
-		if (dd2 === 1){
-			m ++;
-			// m2 ++;
-		}
-		while (dd2 < dd1){
-			m ++;
-			if (!m2){
-				m2 = 11;
-				y2 --;
+	if (!skip){
+		if (dd1 > 1){
+			let d = new Date(y1, m1 + 1, 0).getDate() - dd1;
+			dd1 = 1;
+			if (m1 === 11){
+				m1 = 0;
+				y1 ++;
 			}
-			else m2 --;
-			const carry = m2 === 1 ? new Date(y2, 2, 0).getDate() : MONTH_DAYS[m2];
-			dd2 += carry
-			console.log({dd2, m2, carry});
+			else m1 ++;
+			d2 = new Date(y2, m2, dd2 + d);
+			y2 = d2.getFullYear();
+			m2 = d2.getMonth();
+			dd2 = d2.getDate();
 		}
-		days = dd2 - dd1;
-		const dt = new Date(y2, m2 - m, days);
-		//// days = dd2 = new Date(y1, m1 + 1, 0).getDate() - dd1 + dd2;
-		// if (!m2){
-		// 	m2 = 11;
-		// 	y2 --;
-		// }
-		// else m2 --;
-		console.log({dtm: dt.getMonth(), dty: dt.getFullYear(), dtd: dt.getDate(), m2, y2, days});
-		m2 = dt.getMonth();
-		y2 = dt.getFullYear();
+		days = dd2;
 	}
-	else days = dd2 - dd1;
-	console.log('[2]', {y2, m2, dd2, y1, m1, dd1});
-	d2 = new Date(y2, m2, dd2);
-	m2 = d2.getMonth();
-	y2 = d2.getFullYear();
-	console.log('[3]', {y2, m2, dd2, y1, m1, dd1});
+	if (m2 < m1){
+		m2 += 12;
+		y2 --;
+	}
+	months = m2 - m1;
+	years = y2 - y1;
 
-	// while (dd2 < dd1){
+	//========================== approach 3
+	// const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+	// let y1 = d1.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();
+	// let y2 = d2.getFullYear(), m2 = d2.getMonth(), dd2 = d2.getDate();
+	// if (m1 === m2 && m1 === 1 && dd1 === 29 && dd2 === 28) dd1 = 28;
+	// if (!(y1 % 4) && (m1 < 1 || m1 === 1 && dd1 < 19)) days ++;
+	// console.log('[1]', {y2, m2, dd2, y1, m1, dd1, days});
+	// if (dd1 === new Date(y1, m1 + 1, 0).getDate() || (dd1 + days) === new Date(y1, m1 + 1, 0).getDate()){
+	// 	days = dd2;
 	// 	if (!m2){
 	// 		m2 = 11;
 	// 		y2 --;
 	// 	}
 	// 	else m2 --;
-	// 	let m = m2 === 12 ? 11 : m2 % 12;
-	// 	const carry_days = m2 === 1 ? new Date(y2, 2, 0).getDate() : MONTH_DAYS[m2];
-	// 	dd2 += carry_days;
 	// }
-	// days = dd2 - dd1;
-	console.log('[a]', {years, months, days});
-	if (m2 < m1){
-		// let days1 = new Date(y2, m2 - 1, 0).getDate() + dd2;
-		// let days2 = new Date(y1, m1, 0).getDate() + dd1;
-		// console.log('[before]', {y2, m2});
-		m2 += 12;
-		y2 --;
-		// console.log('[after]', {y1, y2, m2, m1, dd2, dd1, carry_months: 12, days1, days2, d: days1 - days2});
-	}
-	months = m2 - m1;
-	years = y2 - y1;
-	console.log('[b]', {years, months, days});
-	let leaps = 0;
-	if (years) leaps = years >= 4 ? Math.floor(years/4) : years <= (4 - (y1 % 4)) ? 1 : 0;
-	else leaps = !(y1 % 4) || !(y2 % 4) ? 1 : 0;
-	let leap_days = leaps;
-	if (!(y1 % 4) && (m1 > 1 || m1 === 1 && dd1 === 29)) leap_days --;
-	if (!(y2 % 4) && m2 <= 1) leap_days --;
-	console.log(`[+] ${y1}/${m1} - ${y2}/${m2} ~ years: ${years}, leaps: ${leaps}, leap_days: ${leap_days}, days: ${days}`);
+	// else if (dd2 < dd1){
+	// 	let m = 0;
+	// 	if (dd2 === 1){
+	// 		m ++;
+	// 		// m2 ++;
+	// 	}
+	// 	while (dd2 < dd1){
+	// 		m ++;
+	// 		if (!m2){
+	// 			m2 = 11;
+	// 			y2 --;
+	// 		}
+	// 		else m2 --;
+	// 		const carry = m2 === 1 ? new Date(y2, 2, 0).getDate() : MONTH_DAYS[m2];
+	// 		dd2 += carry
+	// 		console.log({dd2, m2, carry});
+	// 	}
+	// 	days = dd2 - dd1;
+	// 	const dt = new Date(y2, m2 - m, days);
+	// 	//// days = dd2 = new Date(y1, m1 + 1, 0).getDate() - dd1 + dd2;
+	// 	// if (!m2){
+	// 	// 	m2 = 11;
+	// 	// 	y2 --;
+	// 	// }
+	// 	// else m2 --;
+	// 	console.log({dtm: dt.getMonth(), dty: dt.getFullYear(), dtd: dt.getDate(), m2, y2, days});
+	// 	m2 = dt.getMonth();
+	// 	y2 = dt.getFullYear();
+	// }
+	// else days = dd2 - dd1;
+	// console.log('[2]', {y2, m2, dd2, y1, m1, dd1});
+	// d2 = new Date(y2, m2, dd2);
+	// m2 = d2.getMonth();
+	// y2 = d2.getFullYear();
+	// console.log('[3]', {y2, m2, dd2, y1, m1, dd1});
+
+	// // while (dd2 < dd1){
+	// // 	if (!m2){
+	// // 		m2 = 11;
+	// // 		y2 --;
+	// // 	}
+	// // 	else m2 --;
+	// // 	let m = m2 === 12 ? 11 : m2 % 12;
+	// // 	const carry_days = m2 === 1 ? new Date(y2, 2, 0).getDate() : MONTH_DAYS[m2];
+	// // 	dd2 += carry_days;
+	// // }
+	// // days = dd2 - dd1;
+	// console.log('[a]', {years, months, days});
+	// if (m2 < m1){
+	// 	// let days1 = new Date(y2, m2 - 1, 0).getDate() + dd2;
+	// 	// let days2 = new Date(y1, m1, 0).getDate() + dd1;
+	// 	// console.log('[before]', {y2, m2});
+	// 	m2 += 12;
+	// 	y2 --;
+	// 	// console.log('[after]', {y1, y2, m2, m1, dd2, dd1, carry_months: 12, days1, days2, d: days1 - days2});
+	// }
+	// months = m2 - m1;
+	// years = y2 - y1;
+	// console.log('[b]', {years, months, days});
+	// let leaps = 0;
+	// if (years) leaps = years >= 4 ? Math.floor(years/4) : years <= (4 - (y1 % 4)) ? 1 : 0;
+	// else leaps = !(y1 % 4) || !(y2 % 4) ? 1 : 0;
+	// let leap_days = leaps;
+	// if (!(y1 % 4) && (m1 > 1 || m1 === 1 && dd1 === 29)) leap_days --;
+	// if (!(y2 % 4) && m2 <= 1) leap_days --;
+	// console.log(`[+] ${y1}/${m1} - ${y2}/${m2} ~ years: ${years}, leaps: ${leaps}, leap_days: ${leap_days}, days: ${days}`);
 
 	// 2004-05-29
 	// 2005-03-01
