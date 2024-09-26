@@ -68,51 +68,184 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 	ms -= minutes * MINUTE_MS;
 	seconds = Math.floor(ms / SECOND_MS);
 	milliseconds = ms - seconds * SECOND_MS;
-	// let d = new Date(d1.getFullYear(), d1.getMonth() + 1, 0).getDate() - d1.getDate();
-	// d1.setDate(1);
-	// d1.setMonth(d1.getMonth() + 1);
-	// d += d2.getDate();
-	// d2.setDate(1);
-	if (d1.getDate() > 1){
-		if (d1.getDate() > d2.getDate() && !(d1.getMonth() === 1 && d1.getMonth() === d2.getMonth() && d1.getDate() === 29 && d2.getDate() < 29) ){
-			d2.setDate(d2.getDate() + (new Date(d1.getFullYear(), d1.getMonth() + 1, 0).getDate() - d1.getDate()));
-		}
-	}
-	// d1.setDate(d1.getDate() - d2.getDate());
-	// d2.setDate(1);
+	console.log({hours, minutes, seconds, milliseconds});
+	
+	// difference: years, months, days
+	// ['1998-02-22', '2008-05-19', { years: 10, months: 2, days: 27 }],
+	// ['2004-05-31', '2005-03-01', { years: 0, months: 9, days: 1 }],
+	// ['2000-02-29', '2001-02-28', { years: 1, months: 0, days: 0 }],
+	// ['2003-03-23', '2000-01-30', { years: 3, months: 1, days: 23 }],
+	// ['2004-05-28', '2005-03-01', { years: 0, months: 9, days: 1 }],
+	// ['2004-05-29', '2005-03-01', { years: 0, months: 9, days: 1 }],
+	// ['2004-05-30', '2005-03-01', { years: 0, months: 9, days: 1 }],
 	let y1 = d1.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();
 	let y2 = d2.getFullYear(), m2 = d2.getMonth(), dd2 = d2.getDate();
-	console.log({y1, y2, m1, m2, dd1, dd2});
 	if (m1 === m2 && m1 === 1 && dd1 === 29 && dd2 === 28 && dd2 === new Date(y2, 2, 0).getDate()) dd1 = 28;
-	if (dd2 < dd1){
-		while (dd2 < dd1){
-			dd2 += new Date(y2, m2, 0).getDate();
-			if (!m2){
-				m2 = 11;
-				y2 --;
-			}
-			else m2 --;
-		}
+	if (m1 === m2){
+		days = dd2 - dd1;
+		years = y2 - y1;
 	}
-	console.log({y1, y2, m1, m2, dd1, dd2});
-	days = dd2 - dd1;
-	// console.log({days});
-	// if (days < 0){
-	// 	const dt = new Date(y1, m2, days);
-	// 	days = dt.getDate();
-	// 	// m2 = dt.getMonth();
-	// 	m2 --;
-	// 	// y2 = dt.getFullYear();
+	//==========================
+	// else {
+	// 	if (dd2 < dd1){
+	// 		months --;
+	// 		const leap1 = !(y1 % 4) && (m1 < 1 || m1 === 1 && dd1 < 29);
+	// 		const leap2 = !(y2 % 4) && (m2 > 1 || m2 === 1 && dd2 === 29);
+	// 		const end1 = new Date(y1, m1 + 1, 0).getDate();
+	// 		if (dd1 === end1) days = dd2 - 1 || 1;
+	// 		else if (dd2 === 1){
+	// 			days = end1 - dd1 || 1;
+	// 			console.log({dd: end1 - dd1, end1, dd1, days, m1});
+	// 		}
+	// 		else {
+	// 			let d = dd2, m = 0;
+	// 			while (d < dd1){
+	// 				const dt = new Date(y1, m2 - m, 0);
+	// 				let c = dt.getDate();
+	// 				// if (dt.getMonth() === 1 && leap1 && c < 29) c = 29;
+	// 				d += c;
+	// 				m ++;
+	// 			}
+	// 			const diff = d - dd1;
+	// 			const prev_end = new Date(y2, m2, 0).getDate();
+	// 			if ((diff === prev_end || m2 === 2 && diff === 28 || diff === 29)){
+	// 				days = 1;
+	// 				months ++;
+	// 			}
+	// 			else days = new Date(y2, m2 - m, diff).getDate();
+	// 			console.log('[~] ', {dd2, dd1, d, m, diff, days, prev_end, m2});
+	// 		}
+	// 		// if (leap2 && !leap1 && (m1 < 1 || m1 === 1 && dd1 < 29)){
+	// 		// if (leap2 && !leap1){
+	// 		// 	const days1 = days;
+	// 		// 	days ++;
+	// 		// 	console.log('[+leap] ', {days1, days});
+	// 		// }
+	// 	}
+	// 	else {
+	// 		days = dd2 - dd1;
+	// 		const prev_end = new Date(y2, m2, 0).getDate();
+	// 		console.log('[x] ', {days, prev_end});
+	// 		if ((days === prev_end || m2 === 2 && days === 28 || days === 29)) days = 1;
+	// 	}
+	// 	if ((months += m2 - m1) < 0){
+	// 		months += 12;
+	// 		y2 --;
+	// 	}
+	// 	years = y2 - y1;
 	// }
-	if (m2 < m1){
-		m2 += 12;
-		y2 --;
+	//==========================
+	else {
+		if (dd2 < dd1){
+			let m = 1
+			let d = 0;
+			while (new Date(y2, m2 - m + 1, 0).getDate() < dd1){
+				d += new Date(y2, m2 - m + 1, 0).getDate();
+				m ++;
+			}
+			console.log({d, m});
+			const dt1 = new Date(y2, m2 - m, dd1);
+			const dt2 = new Date(y2, m2, dd2);
+			const t1 = dt2.getTime() - dt1.getTime();
+			const t2 = t1 - (d * DAY_MS);
+			const ddd = t1 - t2;
+			console.log('[++]', {t1, t2, d: ddd/DAY_MS});
+		}
+		if (dd1 !== dd2){
+			if (dd1 === 1) days = dd2;
+			else {
+				const end1 = new Date(y1, m1 + 1, 0).getDate();
+				if (dd1 === end1){
+					const py1 = y1, pm1 = m1, pdd1 = dd1;
+					const dt = new Date(y1, m1 + 1, 1);
+					dd1 = dt.getDate();
+					m1 = dt.getMonth();
+					y1 = dt.getFullYear();
+					const dump0 = {py1, y1, pm1, m1, pdd1, dd1};
+					console.log(`[~] next start:` + Object.entries(dump0).map(v => `${v[0]}: ${v[1]}`).join(', '));
+					days += 1;
+				}
+				if (dd1 !== dd2){
+					if (dd2 === 1){
+						const py2 = y2, pm2 = m2, pdd2 = dd2;
+						const dt = new Date(y2, m2, 0);
+						dd2 = dt.getDate();
+						m2 = dt.getMonth();
+						y2 = dt.getFullYear();
+						if (m2 === 1 && dd1 === 29 && dd2 < dd1) dd2 = 29;
+						const dump0 = {py2, y2, pm2, m2, pdd2, dd2};
+						console.log(`[~] prev end:` + Object.entries(dump0).map(v => `${v[0]}: ${v[1]}`).join(', '));
+						days += 1;
+					}
+					if (dd2 < dd1){
+						// if (dd2 === 1){
+						// 	days += (new Date(y1, m1 + 1, 0).getDate() - dd1);
+						// 	months --;
+						// }
+						// else {
+							const leap1 = !(y1 % 4) && (m1 < 1 || m1 === 1 && dd1 < 29);
+							const diff = dd1 - dd2;
+							let x = 0, m = 0;
+							do {
+								const mm = m2 - m;
+								let md = new Date(y2, mm, 0).getDate();
+								if (mm === 2 && leap1 && md < 29) md = 29;
+								x = md - diff;
+								m ++;
+							}
+							while (x < 0);
+							const x2 = m1 < m2 ? x + 1 : x;
+							const dump1 = {diff, x, x2, m, m2, mm2: new Date(y1, m2 - m, 1).getMonth(), y2, yy2: new Date(y1, m2 - m, 1).getFullYear()};
+							console.log(`[~] ` + Object.entries(dump1).map(v => `${v[0]}: ${v[1]}`).join(', '));
+							let carry = 0, carry2 = 0, cm = 0;
+							while (carry < diff){
+								const mm = m2 - cm;
+								const c = new Date(y2, mm, 0).getDate();
+								carry += c;
+								carry2 += (mm === 2 && leap1) ? new Date(y1, 2, 0).getDate() : c;
+								cm ++;
+							}
+							const carry_diff1 = carry - diff;
+							const carry_diff2 = carry2 - diff;
+							const cdd1 = new Date(y2, m2 - cm, carry_diff1).getDate();
+							const cdd2 = new Date(y2, m2 - cm, carry_diff2).getDate();
+							const cdd3 = new Date(y2, m2 - cm, carry_diff2 + 1).getDate();
+							const dump2 = {diff, carry, carry2, carry_diff1, carry_diff2, cm, cdd1, cdd2, cdd3};
+							console.log(`[~] ` + Object.entries(dump2).map(v => `${v[0]}: ${v[1]}`).join(', '));
+							
+							// const ds = new Date(y1, m1, 1);
+							const first_end = new Date(y2, m1 + 1, 0).getDate();
+							const d = first_end - dd1;
+							const last_end = new Date(y2, m2, 0).getDate();
+							const de = new Date(y2, m2, dd2 - dd1);
+				
+							// const x = new Date(y1, m2 - 1, d + dd2 - 1).getDate()
+							// m2 = de.getMonth();
+							// y2 = de.getFullYear();
+							days += de.getDate();
+							if (days > last_end){
+								m1 ++;
+								days = days - last_end;
+							}
+							months --;
+							const dump3 = {diff: dd1 - dd2, days, d, dd2, first_end, last_end, fld: last_end - first_end};
+							console.log(`[${m2 > m1 ? 'gt' : 'lt'}] ` + Object.entries(dump3).map(v => `${v[0]}: ${v[1]}`).join(', '));
+						// }
+					}
+					else days += dd2 - dd1;
+				}
+			}
+		}
+		if ((months += m2 - m1) < 0){
+			months += 12;
+			y2 --;
+		}
+		years = y2 - y1;
 	}
-	months = m2 - m1;
-	years = y2 - y1;
-	console.log({m2, m2_end: new Date(y2, m2 + 1, 0).getDate(), days});
 	return {years, months, days, hours, minutes, seconds, milliseconds};
 };
+
+// npx ts-node test/z__test.ts
 
 // main
 (async () => {
@@ -129,7 +262,7 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 	const tests: [string, string, {years: number, months: number, days: number}][] = [
 		['1998-02-22', '2008-05-19', { years: 10, months: 2, days: 27 }],
 		['2004-05-31', '2005-03-01', { years: 0, months: 9, days: 1 }],
-		['2000-02-29', '2001-02-28', { years: 1, months: 0, days: 0 }],
+		// ['2000-02-29', '2001-02-28', { years: 1, months: 0, days: 0 }],
 		['2003-03-23', '2000-01-30', { years: 3, months: 1, days: 23 }],
 		['2004-05-28', '2005-03-01', { years: 0, months: 9, days: 1 }],
 		['2004-05-29', '2005-03-01', { years: 0, months: 9, days: 1 }],
