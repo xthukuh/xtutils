@@ -85,18 +85,6 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 		const log = `${tag}[${pass ? 'PASS' : 'FAIL'}] {${buffer.join(', ')}}`;
 		console.log(...[log].concat(extra ? [extra] : []));
 	};
-	// ['1998-02-22', '2008-05-19', { years: 10, months: 2, days: 27 }],
-	// ['2004-05-31', '2005-03-01', { years: 0, months: 9, days: 1 }],
-	// ['2000-02-29', '2001-02-28', { years: 1, months: 0, days: 0 }],
-	// ['2003-03-23', '2000-01-30', { years: 3, months: 1, days: 23 }],
-	// ['2004-05-28', '2005-03-01', { years: 0, months: 9, days: 1 }],
-	// ['2004-05-29', '2005-03-01', { years: 0, months: 9, days: 1 }],
-	// ['2004-05-30', '2005-03-01', { years: 0, months: 9, days: 1 }],
-	// ---------------------------------------------------------------
-	// Jan Feb   Mar Apr May Jun Jul Aug Sep Oct Nov Dec
-	// 0   1     2   3   4   5   6   7   8   9   10  11
-	// 31  28/29 31  30  31  30  31  31  30  31  30  31
-	// ---------------------------------------------------------------
 	let y1 = d1.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();
 	let y2 = d2.getFullYear(), m2 = d2.getMonth(), dd2 = d2.getDate();
 	console.log('[i] ', {y1, m1, dd1});
@@ -120,27 +108,24 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 				_dump('[m2 > m1](dd2 > dd1) ---', {days, months, years});
 			}
 			else if (dd2 < dd1){
+				const e1 = new Date(y1, m1, 0).getDate();
+				const e2 = new Date(y2, m2, 0).getDate();
+				let d = 0;
 				let dp = Math.floor((new Date(y1, m1 + 1, 1).getTime() - d1.getTime())/DAY_MS);
-				let d = Math.floor((new Date(y2, m1 + 1, 1).getTime() - new Date(y2, m1, dd1).getTime())/DAY_MS);
+				if (dd1 > e1 && dd1 > e2) d = 1;
+				else if (dd1 <= e1) d = (e1 - dd1) || 1;
+				else d = (e2 - dd1) || 1;
 				const dx = dd2 > 1 ? dd2 - 1 : 0;
-				console.log('#[m2 > m1](dd2 < dd1)[0]', {dp, d, dx, ddx: d + dx});
+				console.log('@[m2 > m1](dd2 < dd1)[0]', {hh: dd1 > e2, e1, e2, dp, d, dx, ddx: d + dx});
 				d = dx + d;
-				if ((m1 < 1 || m1 === 1 && dd1 < 28) && !(y1 % 4)){
-					if (m2 > 1 || m2 === 1 && dd2 === 29){
-						const n = !(y2 % 4) ? 0 : -1;
-						d += n;
-						console.log('##[m2 > m1](dd2 < dd1)[1]', {d, n});
-					}
-				}
-				else if ((m2 > 1 || m2 === 1 && dd2 === 29) && !(y2 % 4)) d ++;
-				console.log('###[m2 > m1](dd2 < dd1)[1]', {d});
+				console.log('@@@[m2 > m1](dd2 < dd1)[1]', {d});
 				days = d;
 				if ((months = m2 - new Date(y1, m1 + 1, 1).getMonth()) < 0){
 					y2 --;
 					months += 12;
 				}
 				years = y2 - y1;
-				_dump('[m2 > m1](dd2 < dd1) ---', {days, months, years});
+				_dump('[m2 < m1](dd2 > dd1) ---', {days, months, years});
 			}
 			else {
 				days = 0;
@@ -173,14 +158,6 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 				const dx = dd2 > 1 ? dd2 - 1 : 0;
 				console.log('@[m2 < m1](dd2 < dd1)[0]', {hh: dd1 > e2, e1, e2, dp, d, dx, ddx: d + dx});
 				d = dx + d;
-				if ((m1 < 1 || m1 === 1 && dd1 < 28) && !(y1 % 4)){
-					if (m2 > 1 || m2 === 1 && dd2 === 29){
-						const n = !(y2 % 4) ? 0 : -1;
-						d += n;
-						console.log('@@[m2 < m1](dd2 < dd1)[1]', {d, n});
-					}
-				}
-				else if ((m2 > 1 || m2 === 1 && dd2 === 29) && !(y2 % 4)) d ++;
 				console.log('@@@[m2 < m1](dd2 < dd1)[1]', {d});
 				days = d;
 				if ((months = m2 - new Date(y1, m1 + 1, 1).getMonth()) < 0){
@@ -205,7 +182,6 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 				_dump('[m2 === m1](dd2 >= dd1) ---', {days, months, years});
 			}
 			else {
-				// 1, 10 = 10 - 1 = 9;
 				let d = new Date(y1, m1 + 1, 0).getDate() - dd1;
 				let dd = 31 + dd2 - dd1;
 				console.debug('[m2 === m1](dd2 < dd1)[0]',{d, dd, mm: 11, days: d + dd2});
@@ -222,121 +198,6 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 		days = dd2 - dd1;
 		_dump('[y1 === y2] ---', {days, months, years});
 	}
-	/*
-	// -------------------------------------------------------------------------------------------------------
-	if (m1 === m2){
-		days = dd2 - dd1;
-		years = y2 - y1;
-	}
-	else {
-		if (dd2 < dd1){
-			let m = 1
-			let d = 0;
-			while (new Date(y2, m2 - m + 1, 0).getDate() < dd1){
-				d += new Date(y2, m2 - m + 1, 0).getDate();
-				m ++;
-			}
-			console.log({d, m});
-			const dt1 = new Date(y2, m2 - m, dd1);
-			const dt2 = new Date(y2, m2, dd2);
-			const t1 = dt2.getTime() - dt1.getTime();
-			const t2 = t1 - (d * DAY_MS);
-			const ddd = t1 - t2;
-			console.log('[++]', {t1, t2, d: ddd/DAY_MS});
-		}
-		if (dd1 !== dd2){
-			if (dd1 === 1) days = dd2;
-			else {
-				const end1 = new Date(y1, m1 + 1, 0).getDate();
-				if (dd1 === end1){
-					const py1 = y1, pm1 = m1, pdd1 = dd1;
-					const dt = new Date(y1, m1 + 1, 1);
-					dd1 = dt.getDate();
-					m1 = dt.getMonth();
-					y1 = dt.getFullYear();
-					const dump0 = {py1, y1, pm1, m1, pdd1, dd1};
-					console.log(`[~] next start:` + Object.entries(dump0).map(v => `${v[0]}: ${v[1]}`).join(', '));
-					days += 1;
-				}
-				if (dd1 !== dd2){
-					if (dd2 === 1){
-						const py2 = y2, pm2 = m2, pdd2 = dd2;
-						const dt = new Date(y2, m2, 0);
-						dd2 = dt.getDate();
-						m2 = dt.getMonth();
-						y2 = dt.getFullYear();
-						if (m2 === 1 && dd1 === 29 && dd2 < dd1) dd2 = 29;
-						const dump0 = {py2, y2, pm2, m2, pdd2, dd2};
-						console.log(`[~] prev end:` + Object.entries(dump0).map(v => `${v[0]}: ${v[1]}`).join(', '));
-						days += 1;
-					}
-					if (dd2 < dd1){
-						// if (dd2 === 1){
-						// 	days += (new Date(y1, m1 + 1, 0).getDate() - dd1);
-						// 	months --;
-						// }
-						// else {
-							const leap1 = !(y1 % 4) && (m1 < 1 || m1 === 1 && dd1 < 29);
-							const diff = dd1 - dd2;
-							let x = 0, m = 0;
-							do {
-								const mm = m2 - m;
-								let md = new Date(y2, mm, 0).getDate();
-								if (mm === 2 && leap1 && md < 29) md = 29;
-								x = md - diff;
-								m ++;
-							}
-							while (x < 0);
-							const x2 = m1 < m2 ? x + 1 : x;
-							const dump1 = {diff, x, x2, m, m2, mm2: new Date(y1, m2 - m, 1).getMonth(), y2, yy2: new Date(y1, m2 - m, 1).getFullYear()};
-							console.log(`[~] ` + Object.entries(dump1).map(v => `${v[0]}: ${v[1]}`).join(', '));
-							let carry = 0, carry2 = 0, cm = 0;
-							while (carry < diff){
-								const mm = m2 - cm;
-								const c = new Date(y2, mm, 0).getDate();
-								carry += c;
-								carry2 += (mm === 2 && leap1) ? new Date(y1, 2, 0).getDate() : c;
-								cm ++;
-							}
-							const carry_diff1 = carry - diff;
-							const carry_diff2 = carry2 - diff;
-							const cdd1 = new Date(y2, m2 - cm, carry_diff1).getDate();
-							const cdd2 = new Date(y2, m2 - cm, carry_diff2).getDate();
-							const cdd3 = new Date(y2, m2 - cm, carry_diff2 + 1).getDate();
-							const dump2 = {diff, carry, carry2, carry_diff1, carry_diff2, cm, cdd1, cdd2, cdd3};
-							console.log(`[~] ` + Object.entries(dump2).map(v => `${v[0]}: ${v[1]}`).join(', '));
-							
-							// const ds = new Date(y1, m1, 1);
-							const first_end = new Date(y2, m1 + 1, 0).getDate();
-							const d = first_end - dd1;
-							const last_end = new Date(y2, m2, 0).getDate();
-							const de = new Date(y2, m2, dd2 - dd1);
-				
-							// const x = new Date(y1, m2 - 1, d + dd2 - 1).getDate()
-							// m2 = de.getMonth();
-							// y2 = de.getFullYear();
-							days += de.getDate();
-							if (days > last_end){
-								m1 ++;
-								days = days - last_end;
-							}
-							months --;
-							const dump3 = {diff: dd1 - dd2, days, d, dd2, first_end, last_end, fld: last_end - first_end};
-							console.log(`[${m2 > m1 ? 'gt' : 'lt'}] ` + Object.entries(dump3).map(v => `${v[0]}: ${v[1]}`).join(', '));
-						// }
-					}
-					else days += dd2 - dd1;
-				}
-			}
-		}
-		if ((months += m2 - m1) < 0){
-			months += 12;
-			y2 --;
-		}
-		years = y2 - y1;
-	}
-	// -------------------------------------------------------------------------------------------------------
-	*/
 	return {years, months, days, hours, minutes, seconds, milliseconds};
 };
 
