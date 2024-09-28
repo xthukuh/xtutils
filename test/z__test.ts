@@ -85,8 +85,8 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 		const log = `${tag}[${pass ? 'PASS' : 'FAIL'}] {${buffer.join(', ')}}`;
 		console.log(...[log].concat(extra ? [extra] : []));
 	};
-	let y1 = d1.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();
-	let y2 = d2.getFullYear(), m2 = d2.getMonth(), dd2 = d2.getDate();
+	let y1 = start.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();
+	let y2 = end.getFullYear(), m2 = d2.getMonth(), dd2 = d2.getDate();
 	console.log('[i] ', {y1, m1, dd1});
 	console.log('[i] ', {y2, m2, dd2});
 	if (m1 === m2 && m1 === 1 && dd1 === 29 && dd2 === 28 && dd2 === new Date(y2, 2, 0).getDate()){
@@ -218,13 +218,13 @@ const _elapsed = (_start: any, _end: any, expects?: {years: number, months: numb
 	const tests: [string, string, {years: number, months: number, days: number}][] = [
 		['1998-02-22', '2008-05-19', { years: 10, months: 2, days: 27 }],
 		['2004-05-31', '2005-03-01', { years: 0, months: 9, days: 1 }],
-		// ['2000-02-29', '2001-02-28', { years: 1, months: 0, days: 0 }],
+		['2000-02-29', '2001-02-28', { years: 1, months: 0, days: 0 }],
 		['2003-03-23', '2000-01-30', { years: 3, months: 1, days: 23 }],
 		['2004-05-28', '2005-03-01', { years: 0, months: 9, days: 1 }],
 		['2004-05-29', '2005-03-01', { years: 0, months: 9, days: 1 }],
 		['2004-05-30', '2005-03-01', { years: 0, months: 9, days: 1 }],
-		// ['0005-03-01', '2004-05-31', { years: 1999, months: 2, days: 30 }],
-		// ['0005-03-01', '8004-05-31', { years: 7999, months: 2, days: 30 }],
+		['0005-03-01', '2004-05-31', { years: 1999, months: 2, days: 30 }],
+		['0005-03-01', '8004-05-31', { years: 7999, months: 2, days: 30 }],
 	];
 	tests.forEach(([start, end, expects]) => {
 		const elapsed = _elapsed(start, end, expects);
