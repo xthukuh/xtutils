@@ -4,7 +4,6 @@
      * 
      * @param {Date} start - date time
      * @param {Date} end - date time
-     * @param {Boolean} calc_time - calculate time difference (hours, minutes, seconds, milliseconds)
      * @throws {TypeError} on invalid date argument
      * @returns {{
      *   start: Date,
@@ -21,13 +20,25 @@
      *   toString: (()=>string),
      * }}
      */
-    function elapsedTime(start, end, calc_time=false){
+    function elapsedTime(start, end){
         
         // parse arguments
         const _parse_date = val => { // {Date|undefined}
             if (val instanceof Date) return !isNaN(val = val.getTime()) ? new Date(val) : undefined;
-            else if ('string' === typeof val) return !isNaN(val = Date.parse(val = val.trim())) ? new Date(val) : undefined;
-            return Number.isInteger(val) ? new Date(val) : undefined;
+            if (Number.isInteger(val)) return !isNaN((val = new Date(val)).getTime()) ? val : undefined;
+            if (!/\d/.test((val = String(val)).trim())) return undefined;
+            // parse text + timezone hack
+            const time_match = val.match(/(^|\s)(\d{1,2}):(\d{2})(:\d{2}(\.\d{1,3})?)?/);
+            let time_text = '00:00:00';
+            if (time_match){
+                if (!(val = val.replace(time_match[0], '').trim())) val = '1970-01-01';
+                time_text = time_match[0].trim().split(':').concat('0').slice(0, 3).map(v => v.indexOf('.') < 0 ? v.padStart(2, '0') : v.split('.').map((s, i) => !i ? s.padStart(2, '0') : s).join('.')).join(':');
+            }
+            if (isNaN(val = Date.parse(val))) return undefined;
+            let date = new Date(val), year = date.getFullYear();
+            date = new Date(String(year < 1970 ? 1970 : year) + '-' + [date.getMonth() + 1, date.getDate()].map(v => String(v).padStart(2, '0')).join('-') + ' ' + time_text);
+            date.setFullYear(year);
+            return date;
         };
         if (!(start = _parse_date(start))) throw new TypeError('Invalid start date argument value.');
         if (!(end = _parse_date(end))) throw new TypeError('Invalid end date argument value.');
@@ -44,13 +55,15 @@
         const total_time = end.getTime() - start.getTime();
         const total_days = Math.floor(total_time / DAY_MS);
         if (end > start){
-            const d1 = !calc_time ? start : new Date(start.getFullYear(), start.getMonth(), start.getDate());
-	        const d2 = !calc_time ? end : new Date(end.getFullYear(), end.getMonth(), end.getDate());
-
+            const d1 = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            if (d1.getFullYear() !== start.getFullYear()) d1.setFullYear(start.getFullYear());
+	        const d2 = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+            if (d2.getFullYear() !== end.getFullYear()) d2.setFullYear(end.getFullYear());
+            
             // difference: hours, minutes, seconds, milliseconds
-            let ms = !calc_time ? 0 : (end.getTime() - start.getTime()) - (d2.getTime() - d1.getTime());
+            let ms = (end.getTime() - start.getTime()) - (d2.getTime() - d1.getTime());
             if (ms < 0){
-                ms += DAY_MS;
+                ms = Math.abs(ms);
                 d2.setDate(d2.getDate() - 1);
             }
             hours = Math.floor(ms / HOUR_MS);
@@ -61,8 +74,8 @@
             milliseconds = ms - seconds * SECOND_MS;
 
             // difference: years, months, days
-            let y1 = start.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();
-	        let y2 = end.getFullYear(), m2 = d2.getMonth(), dd2 = d2.getDate();
+            let y1 = d1.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();
+	        let y2 = d2.getFullYear(), m2 = d2.getMonth(), dd2 = d2.getDate();
             if (m1 === m2 && m1 === 1 && dd1 === 29 && dd2 === 28 && dd2 === new Date(y2, 2, 0).getDate()) dd1 = 28; //Feb end adjust
             if (y2 > y1){
                 if (m2 > m1){
@@ -195,4 +208,5 @@
     // [pass] 0 years, 9 months and 1 day
     // [pass] 1999 years, 2 months and 30 days
     // [pass] 7999 years, 2 months and 30 days
-})(); //node test/z__test2.xx.js
+})();
+//node test/z__test2.xx.js
