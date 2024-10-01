@@ -27,10 +27,21 @@ export const _date = (value: any, _strict: boolean = true): Date|undefined => {
 	if (value instanceof Date) return _parse(value.getTime());
 	if ('number' === typeof value) return _parse(new Date(value).getTime());
 	try {
-		let text: string = String(value).trim();
-		if (!text || /\[object \w+\]/.test(text)) return undefined;
-		if (/^[+-]?\d+$/.test(text)) return _parse(parseInt(text));
-		return _parse(Date.parse(text));
+		let val: any = String(value).trim();
+		if (!val || /\[object \w+\]/.test(val)) return undefined;
+		if (/^[+-]?\d+$/.test(val)) return _parse(parseInt(val));
+		if (!/\d/.test(val)) return undefined;
+		const time_match = val.match(/(^|\s)(\d{1,2}):(\d{2})(:\d{2}(\.\d{1,3})?)?/);
+		let time_text: string = '00:00:00';
+		if (time_match){
+			if (!(val = val.replace(time_match[0], '').trim())) val = '1970-01-01';
+			time_text = time_match[0].trim().split(':').concat('0').slice(0, 3).map((v: string) => v.indexOf('.') < 0 ? v.padStart(2, '0') : v.split('.').map((s, i) => !i ? s.padStart(2, '0') : s).join('.')).join(':');
+		}
+		if (isNaN(val = Date.parse(val))) return undefined;
+		let date: Date = new Date(val), year = date.getFullYear();
+		date = new Date(String(year < 1970 ? 1970 : year) + '-' + [date.getMonth() + 1, date.getDate()].map(v => String(v).padStart(2, '0')).join('-') + ' ' + time_text);
+		date.setFullYear(year);
+		return date;
 	}
 	catch (e){
 		console.warn('[_date] exception:', e);
@@ -426,34 +437,115 @@ export const _elapsed = (start: any, end: any = undefined, _strict: boolean = fa
 	if (!(start = _date(start, _strict))) throw new TypeError('Invalid elapsed start date value! Pass a valid Date instance, integer timestamp or date string value.');
 	if (!(end = _date(end, _strict))) throw new TypeError('Invalid elapsed end date value! Pass a valid Date instance, integer timestamp or date string value.');
 	if (start > end) [start, end] = [end, start];
-	const d1 = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0);
-	const d2 = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 0, 0, 0, 0);
-	const t1 = start.getHours() * HOUR_MS + start.getMinutes() * MINUTE_MS + start.getSeconds() * SECOND_MS + start.getMilliseconds();
-	let t2 = end.getHours() * HOUR_MS + end.getMinutes() * MINUTE_MS + end.getSeconds() * SECOND_MS + end.getMilliseconds();
-	if (t2 < t1){
-		d2.setDate(d2.getDate() - 1);
-		t2 += DAY_MS;
-	}
-	const hours = Math.floor((t2 - t1) / HOUR_MS);
-	const minutes = Math.floor((t2 - t1 - hours * HOUR_MS) / MINUTE_MS);
-	const seconds = Math.floor((t2 - t1 - hours * HOUR_MS - minutes * MINUTE_MS) / SECOND_MS);
-	const milliseconds = t2 - t1 - hours * HOUR_MS - minutes * MINUTE_MS - seconds * SECOND_MS;
-	let years = d2.getFullYear() - d1.getFullYear();
-	let months = d2.getMonth() - d1.getMonth();
-	let days = d2.getDate() - d1.getDate();
-	if (days < 0) {
-		months--;
-		days += new Date(end.getFullYear(), end.getMonth(), 0).getDate();
-	}
-	if (months < 0) {
-		years--;
-		months += 12;
-	}
-	const start_time = start.getTime();
-	const end_time = end.getTime();
-	const total_time = end_time - start_time;
+	// calc time difference
+	const DAY_MS = 24 * 60 * 60 * 1000;
+	const HOUR_MS = 60 * 60 * 1000;
+	const MINUTE_MS = 60 * 1000;
+	const SECOND_MS = 1000;
+	let years = 0, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0, milliseconds = 0;
+	const total_time = end.getTime() - start.getTime();
 	const total_days = Math.floor(total_time / DAY_MS);
-	return create_duration(years, months, days, hours, minutes, seconds, milliseconds, total_days, total_time, start_time, end_time);
+	if (end > start){
+		const d1 = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+		if (d1.getFullYear() !== start.getFullYear()) d1.setFullYear(start.getFullYear());
+		const d2 = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+		if (d2.getFullYear() !== end.getFullYear()) d2.setFullYear(end.getFullYear());
+		
+		// difference: hours, minutes, seconds, milliseconds
+		let ms = (end.getTime() - start.getTime()) - (d2.getTime() - d1.getTime());
+		if (ms < 0){
+				ms = Math.abs(ms);
+				d2.setDate(d2.getDate() - 1);
+		}
+		hours = Math.floor(ms / HOUR_MS);
+		ms -= hours * HOUR_MS;
+		minutes = Math.floor(ms / MINUTE_MS);
+		ms -= minutes * MINUTE_MS;
+		seconds = Math.floor(ms / SECOND_MS);
+		milliseconds = ms - seconds * SECOND_MS;
+
+		// difference: years, months, days
+		let y1 = d1.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();
+		let y2 = d2.getFullYear(), m2 = d2.getMonth(), dd2 = d2.getDate();
+		if (m1 === m2 && m1 === 1 && dd1 === 29 && dd2 === 28 && dd2 === new Date(y2, 2, 0).getDate()) dd1 = 28; //Feb end adjust
+		if (y2 > y1){
+			if (m2 > m1){
+				if (dd1 === 1){
+					days = dd2 - 1;
+					months = m2 - m1;
+					years = y2 - y1;
+				}
+				else if (dd2 > dd1){
+					days = dd2 - dd1;
+					months = m2 - m1;
+					years = y2 - y1;
+				}
+				else if (dd2 < dd1){
+					let d = 0;
+					const end1 = new Date(y1, m1, 0).getDate();
+					const end2 = new Date(y2, m2, 0).getDate();
+					if (dd1 > end1 && dd1 > end2) d = 1;
+					else if (dd1 <= end1) d = (end1 - dd1) || 1;
+					else d = (end2 - dd1) || 1;
+					days = d + (dd2 > 1 ? dd2 - 1 : 0);
+					if ((months = m2 - new Date(y1, m1 + 1, 1).getMonth()) < 0){
+						months += 12;
+						y2 --;
+					}
+					years = y2 - y1;
+				}
+				else {
+					days = 0;
+					months = m2 - m1;
+					years = y2 - y1;
+				}
+			}
+			else if (m2 < m1){
+				if (dd1 === 1){
+					days = dd2 - 1;
+					months = 12 - m1 + m2;
+					years = y2 - (y1 + 1);
+				}
+				else if (dd2 > dd1){
+					days = dd2 - dd1;
+					months = 12 - m1 + m2;
+					years = y2 - (y1 + 1);
+				}
+				else if (dd2 < dd1){
+					let d = 0;
+					const end1 = new Date(y1, m1, 0).getDate();
+					const end2 = new Date(y2, m2, 0).getDate();
+					if (dd1 > end1 && dd1 > end2) d = 1;
+					else if (dd1 > end2) d = (end1 - dd1) || 1;
+					else d = (end2 - dd1) || 1;
+					days = d + (dd2 > 1 ? dd2 - 1 : 0);
+					if ((months = m2 - new Date(y1, m1 + 1, 1).getMonth()) < 0){
+						y2 --;
+						months += 12;
+					}
+					years = y2 - y1;
+				}
+				else {
+					months = 12 - m1 + m2;
+					years = y2 - (y1 + 1);
+				}
+			}
+			else if (dd2 >= dd1){
+				days = dd2 - dd1;
+				years = y2 - y1;
+			}
+			else {
+				days = (new Date(y1, m1 + 1, 0).getDate() - dd1) + dd2;
+				months = 12 - new Date(y1, m1 + 1, 1).getMonth() + m2;
+				years = y2 - (y1 + 1);
+			}
+		}
+		else {
+			days = dd2 - dd1;
+			months = m2 - m1;
+		}
+	}
+	return create_duration(years, months, days, hours, minutes, seconds, milliseconds, total_days, total_time, start.getTime(), end.getTime());
 };
 
 /**
