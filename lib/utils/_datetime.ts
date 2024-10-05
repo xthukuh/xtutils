@@ -11,36 +11,84 @@
 export const _isDate = (value: any): boolean => value instanceof Date && !isNaN(value.getTime());
 
 /**
+ * Parse ISO formatted date value to milliseconds timestamp
+ * - borrowed from https://github.com/jquense/yup/blob/1ee9b21c994b4293f3ab338119dc17ab2f4e284c/src/util/parseIsoDate.ts
+ * 
+ * @param value - ISO date `string` (i.e. `'2022-12-19T13:12:42.000+0000'`/`'2022-12-19T13:12:42.000Z'` => `1671455562000`)
+ * @returns `number` milliseconds timestamp | `undefined` when invalid
+ */
+export const _parseIso = (value: string): number|undefined => {
+	const regex  = /^(\d{4}|[+-]\d{6})(?:-?(\d{2})(?:-?(\d{2}))?)?(?:[ T]?(\d{2}):?(\d{2})(?::?(\d{2})(?:[,.](\d{1,}))?)?(?:(Z)|([+-])(\d{2})(?::?(\d{2}))?)?)?$/;
+	//                1 YYYY                2 MM        3 DD              4 HH     5 mm        6 ss           7 msec         8 Z 9 ±   10 tzHH    11 tzmm
+	let struct: any, timestamp: number = NaN;
+	try {
+		value = String(value);
+	}
+	catch (e){
+		value = '';
+	}
+	if (struct = regex.exec(value)){
+		for (const k of [1, 4, 5, 6, 7, 10, 11]) struct[k] = +struct[k] || 0; //allow undefined days and months
+		struct[2] = (+struct[2]||1) - 1;
+		struct[3] = +struct[3]||1; //allow arbitrary sub-second precision beyond milliseconds
+		struct[7] = struct[7] ? String(struct[7]).substring(0, 3) : 0; //timestamps without timezone identifiers should be considered local time
+		if ((struct[8] === undefined || struct[8] === '') && (struct[9] === undefined || struct[9] === '')){
+			timestamp = +new Date(struct[1], struct[2], struct[3], struct[4], struct[5], struct[6], struct[7]);
+		}
+		else {
+			let min_offset = 0;
+			if (struct[8] !== 'Z' && struct[9] !== undefined){
+				min_offset = struct[10] * 60 + struct[11];
+				if (struct[9] === '+') min_offset = 0 - min_offset;
+			}
+			timestamp = Date.UTC(struct[1], struct[2], struct[3], struct[4], struct[5] + min_offset, struct[6], struct[7]);
+		}
+	}
+	else timestamp = Date.parse ? Date.parse(value) : NaN;
+	return !isNaN(timestamp) ? timestamp : undefined;
+};
+
+/**
  * Parse `Date` value ~ accepts valid `Date` instance, timestamp integer, datetime string (see `_strict` param docs)
+ * - when `_strict === false`: `undefined` value returns `new Date()` and `null|false|true|0` = `new Date(null|false|true|0)`
+ * - when `_strict === false`: `null|false|true|0` returns `new Date(value)`
+ * - when `_strict === false`: `'now'|'today'|'tomorrow'|'yesterday'` return date equivalent
+ * 
  * - supports valid `Date` instance, `integer|string` timestamp in milliseconds and other `string` date texts
  * - when strict parsing, value must be a valid date value with more than `1` timestamp milliseconds
  * - when strict parsing is disabled, result for `undefined` = `new Date()` and `null|false|true|0` = `new Date(null|false|true|0)`
  * 
- * @param value - parse date value
+ * @param value - parse date value (accepts `'now'|'today'|'tomorrow'|'yesterday'` as special values)
  * @param _strict - enable strict parsing (default: `true`)
  * @returns `Date` instance | `undefined` when invalid
  */
 export const _date = (value: any, _strict: boolean = true): Date|undefined => {
 	if (value === undefined) return _strict ? undefined : new Date();
-	const _parse = (val: any): Date|undefined => !isNaN(val) && (val > 1 || !_strict) ? new Date(val) : undefined;
+	const _parse = (val: any): Date|undefined => !isNaN(val) && (val || !_strict) ? new Date(val) : undefined;
 	if ([null, false, true, 0].includes(value)) return _parse(value);
 	if (value instanceof Date) return _parse(value.getTime());
 	if ('number' === typeof value) return _parse(new Date(value).getTime());
 	try {
-		let val: any = String(value).trim();
-		if (!val || /\[object \w+\]/.test(val)) return undefined;
-		if (/^[+-]?\d+$/.test(val)) return _parse(parseInt(val));
-		if (!/\d/.test(val)) return undefined;
-		const time_match = val.match(/(^|\s)(\d{1,2}):(\d{2})(:\d{2}(\.\d{1,3})?)?/);
-		let time_text: string = '00:00:00';
-		if (time_match){
-			if (!(val = val.replace(time_match[0], '').trim())) val = '1970-01-01';
-			time_text = time_match[0].trim().split(':').concat('0').slice(0, 3).map((v: string) => v.indexOf('.') < 0 ? v.padStart(2, '0') : v.split('.').map((s, i) => !i ? s.padStart(2, '0') : s).join('.')).join(':');
+		let text: string = String(value).trim();
+		if (!text || /\[object \w+\]/.test(text)) return undefined;
+		if (/^[+-]?\d+$/.test(text)) return _parse(parseInt(text));
+		// return _parse(Date.parse(text));
+		let date = _parse(Date.parse(text));
+		if (!date){
+			if (!_strict && /^(now|today|tomorrow|yesterday)$/i.test(text)){
+				const date = new Date();
+				if (text.toLowerCase() === 'now') return date;
+				if (text.toLowerCase() === 'today') return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+				if (text.toLowerCase() === 'tomorrow') return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+				if (text.toLowerCase() === 'yesterday') return new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
+			}
+			return undefined;
 		}
-		if (isNaN(val = Date.parse(val))) return undefined;
-		let date: Date = new Date(val), year = date.getFullYear();
-		date = new Date(String(year < 1970 ? 1970 : year) + '-' + [date.getMonth() + 1, date.getDate()].map(v => String(v).padStart(2, '0')).join('-') + ' ' + time_text);
-		date.setFullYear(year);
+		if (/^\d{4}-\d{2}-\d{2}$/.test(text)){
+			const date2 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+			if (date2.getFullYear() !== date.getFullYear()) date2.setFullYear(date.getFullYear());
+			return date2;
+		}
 		return date;
 	}
 	catch (e){
@@ -82,6 +130,7 @@ export const DAY_NAMES: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 
  */
 export const _dayName = (index: any): string => {
 	index = !isNaN(index = parseInt(index)) ? index : 0;
+	if (index < 0) index = 7 - (Math.abs(index) % DAY_NAMES.length);
 	return DAY_NAMES[Math.abs(index % DAY_NAMES.length)];
 };
 
@@ -99,6 +148,7 @@ export const MONTH_NAMES: string[] = ['January', 'February', 'March', 'April', '
  */
 export const _monthName = (index: any): string => {
 	index = !isNaN(index = parseInt(index)) ? index : 0;
+	if (index < 0) index = 12 - (Math.abs(index) % MONTH_NAMES.length);
 	return MONTH_NAMES[Math.abs(index % MONTH_NAMES.length)];
 };
 
@@ -177,7 +227,33 @@ export const _yearStart = (value?: any, _strict: boolean = false): Date => {
  */
 export const _yearEnd = (value?: any, _strict: boolean = false): Date => {
 	const date: Date = _date(value, _strict) ?? new Date();
-	return new Date(date.getFullYear(), 11, 0, 23, 59, 59, 999);
+	return new Date(date.getFullYear(), 12, 0, 23, 59, 59, 999);
+};
+
+/**
+ * Parse `Date` value where only date part is considered (e.g. `'2023-05-27 22:11:57' => '1970-01-01 00:00:00'`)
+ * - see `_date()` parsing docs
+ * 
+ * @param value - parse date value ~ **_(defaults to `new Date()` when invalid)_**
+ * @param _strict - enable strict datetime parsing (default: `false`) ~ see `_date()`
+ * @returns `Date`
+ */
+export const _dateOnly = (value?: any, _strict: boolean = false): Date => {
+	const date: Date = _date(value, _strict) ?? new Date();
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
+
+/**
+ * Parse `Date` value to day's time in milliseconds since midnight (e.g. `'2023-05-27 22:11:57' => 79917000`)
+ * - see `_date()` parsing docs
+ * 
+ * @param value - parse date value ~ **_(defaults to `new Date()` when invalid)_**
+ * @param _strict - enable strict datetime parsing (default: `false`) ~ see `_date()`
+ * @returns `number`
+ */
+export const _dayTime = (value?: any, _strict: boolean = false): number => {
+	const date: Date = _date(value, _strict) ?? new Date();
+	return date.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 };
 
 /**
@@ -191,17 +267,11 @@ export const _yearEnd = (value?: any, _strict: boolean = false): Date => {
 export const _datetime = (value?: any, _strict: boolean = false): string => {
 	const date: Date|undefined = _date(value, _strict);
 	if (!date) return '';
-	const values: number[] = [
-		date.getFullYear(), //yyyy
-		date.getMonth() + 1, //MM
-		date.getDate(), //dd
-		date.getHours(), //HH
-		date.getMinutes(), //mm
-		date.getSeconds(), //ss
-	];
-	const padded: string[] = [];
-	for (const val of values) padded.push((val + '').padStart(2, '0')); //pad ~ `'1' => '01'`
-	return padded.splice(0, 3).join('-') + ' ' + padded.join(':'); //timestamp
+	return String(date.getFullYear()).padStart(4, '0')
+	+ '-'
+	+ [date.getMonth() + 1, date.getDate()].map(v => String(v).padStart(2, '0')).join('-')
+	+ ' '
+	+ [date.getHours(), date.getMinutes(), date.getSeconds()].map(v => String(v).padStart(2, '0')).join(':');
 };
 
 /**
@@ -222,45 +292,7 @@ export const _datestr = (value?: any, _strict: boolean = false): string => _date
  * @param _strict - enable strict datetime parsing (default: `false`) ~ see `_date()`
  * @returns `string` ~ `'HH:mm:ss'` | empty `''` when invalid
  */
-export const _timestr = (value?: any, _strict: boolean = false): string => _datetime(value, _strict).substring(11, 19);
-
-/**
- * Parse ISO formatted date value to milliseconds timestamp
- * - borrowed from https://github.com/jquense/yup/blob/1ee9b21c994b4293f3ab338119dc17ab2f4e284c/src/util/parseIsoDate.ts
- * 
- * @param value - ISO date `string` (i.e. `'2022-12-19T13:12:42.000+0000'`/`'2022-12-19T13:12:42.000Z'` => `1671455562000`)
- * @returns `number` milliseconds timestamp | `undefined` when invalid
- */
-export const _parseIso = (value: string): number|undefined => {
-	const regex  = /^(\d{4}|[+-]\d{6})(?:-?(\d{2})(?:-?(\d{2}))?)?(?:[ T]?(\d{2}):?(\d{2})(?::?(\d{2})(?:[,.](\d{1,}))?)?(?:(Z)|([+-])(\d{2})(?::?(\d{2}))?)?)?$/;
-	//                1 YYYY                2 MM        3 DD              4 HH     5 mm        6 ss           7 msec         8 Z 9 ±   10 tzHH    11 tzmm
-	let struct: any, timestamp: number = NaN;
-	try {
-		value = String(value);
-	}
-	catch (e){
-		value = '';
-	}
-	if (struct = regex.exec(value)){
-		for (const k of [1, 4, 5, 6, 7, 10, 11]) struct[k] = +struct[k] || 0; //allow undefined days and months
-		struct[2] = (+struct[2]||1) - 1;
-		struct[3] = +struct[3]||1; //allow arbitrary sub-second precision beyond milliseconds
-		struct[7] = struct[7] ? String(struct[7]).substring(0, 3) : 0; //timestamps without timezone identifiers should be considered local time
-		if ((struct[8] === undefined || struct[8] === '') && (struct[9] === undefined || struct[9] === '')){
-			timestamp = +new Date(struct[1], struct[2], struct[3], struct[4], struct[5], struct[6], struct[7]);
-		}
-		else {
-			let min_offset = 0;
-			if (struct[8] !== 'Z' && struct[9] !== undefined){
-				min_offset = struct[10] * 60 + struct[11];
-				if (struct[9] === '+') min_offset = 0 - min_offset;
-			}
-			timestamp = Date.UTC(struct[1], struct[2], struct[3], struct[4], struct[5] + min_offset, struct[6], struct[7]);
-		}
-	}
-	else timestamp = Date.parse ? Date.parse(value) : NaN;
-	return !isNaN(timestamp) ? timestamp : undefined;
-};
+export const _timestr = (value?: any, _strict: boolean = false): string => _datetime(value, _strict).substring(11, 19)
 
 /**
  * Year unit milliseconds ~ close estimate `365.25` days
@@ -425,7 +457,7 @@ const create_duration = (years: number, months: number, days: number, hours: num
 
 /**
  * Get elapsed duration between two dates/timestamps ~ extra accuracy considering leap years
- * - start and end values are reordered automatically (start = min, end = max)
+ * - start and end values are reordered automatically (i.e. `start <= end`)
  * 
  * @param start - start date/timestamp
  * @param end - end date/timestamp (default: `undefined`)
@@ -434,9 +466,14 @@ const create_duration = (years: number, months: number, days: number, hours: num
  * @returns `IDuration`
  */
 export const _elapsed = (start: any, end: any = undefined, _strict: boolean = false): IDuration => {
-	if (!(start = _date(start, _strict))) throw new TypeError('Invalid elapsed start date value! Pass a valid Date instance, integer timestamp or date string value.');
-	if (!(end = _date(end, _strict))) throw new TypeError('Invalid elapsed end date value! Pass a valid Date instance, integer timestamp or date string value.');
+	
+	// parse date arguments
+	if (!(start = _date(start, _strict))) throw new TypeError('Invalid elapsed start date value.');
+	if (!(end = _date(end, _strict))) throw new TypeError('Invalid elapsed end date value.');
+	
+	// ensure start date is earlier than end date
 	if (start > end) [start, end] = [end, start];
+
 	// calc time difference
 	const DAY_MS = 24 * 60 * 60 * 1000;
 	const HOUR_MS = 60 * 60 * 1000;
@@ -453,16 +490,18 @@ export const _elapsed = (start: any, end: any = undefined, _strict: boolean = fa
 		
 		// difference: hours, minutes, seconds, milliseconds
 		let ms = (end.getTime() - start.getTime()) - (d2.getTime() - d1.getTime());
-		if (ms < 0){
+		if (ms){
+			if (ms < 0){
 				ms = Math.abs(ms);
 				d2.setDate(d2.getDate() - 1);
+			}
+			hours = Math.floor(ms / HOUR_MS);
+			ms -= hours * HOUR_MS;
+			minutes = Math.floor(ms / MINUTE_MS);
+			ms -= minutes * MINUTE_MS;
+			seconds = Math.floor(ms / SECOND_MS);
+			milliseconds = ms - seconds * SECOND_MS;
 		}
-		hours = Math.floor(ms / HOUR_MS);
-		ms -= hours * HOUR_MS;
-		minutes = Math.floor(ms / MINUTE_MS);
-		ms -= minutes * MINUTE_MS;
-		seconds = Math.floor(ms / SECOND_MS);
-		milliseconds = ms - seconds * SECOND_MS;
 
 		// difference: years, months, days
 		let y1 = d1.getFullYear(), m1 = d1.getMonth(), dd1 = d1.getDate();

@@ -6,12 +6,24 @@
  */
 export declare const _isDate: (value: any) => boolean;
 /**
+ * Parse ISO formatted date value to milliseconds timestamp
+ * - borrowed from https://github.com/jquense/yup/blob/1ee9b21c994b4293f3ab338119dc17ab2f4e284c/src/util/parseIsoDate.ts
+ *
+ * @param value - ISO date `string` (i.e. `'2022-12-19T13:12:42.000+0000'`/`'2022-12-19T13:12:42.000Z'` => `1671455562000`)
+ * @returns `number` milliseconds timestamp | `undefined` when invalid
+ */
+export declare const _parseIso: (value: string) => number | undefined;
+/**
  * Parse `Date` value ~ accepts valid `Date` instance, timestamp integer, datetime string (see `_strict` param docs)
+ * - when `_strict === false`: `undefined` value returns `new Date()` and `null|false|true|0` = `new Date(null|false|true|0)`
+ * - when `_strict === false`: `null|false|true|0` returns `new Date(value)`
+ * - when `_strict === false`: `'now'|'today'|'tomorrow'|'yesterday'` return date equivalent
+ *
  * - supports valid `Date` instance, `integer|string` timestamp in milliseconds and other `string` date texts
  * - when strict parsing, value must be a valid date value with more than `1` timestamp milliseconds
  * - when strict parsing is disabled, result for `undefined` = `new Date()` and `null|false|true|0` = `new Date(null|false|true|0)`
  *
- * @param value - parse date value
+ * @param value - parse date value (accepts `'now'|'today'|'tomorrow'|'yesterday'` as special values)
  * @param _strict - enable strict parsing (default: `true`)
  * @returns `Date` instance | `undefined` when invalid
  */
@@ -106,6 +118,24 @@ export declare const _yearStart: (value?: any, _strict?: boolean) => Date;
  */
 export declare const _yearEnd: (value?: any, _strict?: boolean) => Date;
 /**
+ * Parse `Date` value where only date part is considered (e.g. `'2023-05-27 22:11:57' => '1970-01-01 00:00:00'`)
+ * - see `_date()` parsing docs
+ *
+ * @param value - parse date value ~ **_(defaults to `new Date()` when invalid)_**
+ * @param _strict - enable strict datetime parsing (default: `false`) ~ see `_date()`
+ * @returns `Date`
+ */
+export declare const _dateOnly: (value?: any, _strict?: boolean) => Date;
+/**
+ * Parse `Date` value to day's time in milliseconds since midnight (e.g. `'2023-05-27 22:11:57' => 79917000`)
+ * - see `_date()` parsing docs
+ *
+ * @param value - parse date value ~ **_(defaults to `new Date()` when invalid)_**
+ * @param _strict - enable strict datetime parsing (default: `false`) ~ see `_date()`
+ * @returns `number`
+ */
+export declare const _dayTime: (value?: any, _strict?: boolean) => number;
+/**
  * Parse `Date` value to `YYYY-MM-DD HH:mm:ss` format (e.g. `'2023-05-27 22:11:57'`)
  * - see `_date()` parsing docs
  *
@@ -132,14 +162,6 @@ export declare const _datestr: (value?: any, _strict?: boolean) => string;
  * @returns `string` ~ `'HH:mm:ss'` | empty `''` when invalid
  */
 export declare const _timestr: (value?: any, _strict?: boolean) => string;
-/**
- * Parse ISO formatted date value to milliseconds timestamp
- * - borrowed from https://github.com/jquense/yup/blob/1ee9b21c994b4293f3ab338119dc17ab2f4e284c/src/util/parseIsoDate.ts
- *
- * @param value - ISO date `string` (i.e. `'2022-12-19T13:12:42.000+0000'`/`'2022-12-19T13:12:42.000Z'` => `1671455562000`)
- * @returns `number` milliseconds timestamp | `undefined` when invalid
- */
-export declare const _parseIso: (value: string) => number | undefined;
 /**
  * Year unit milliseconds ~ close estimate `365.25` days
  * - `365.25 * 24 * 60 * 60 * 1000` = `31557600000` ms
@@ -232,7 +254,7 @@ export interface IDuration {
 }
 /**
  * Get elapsed duration between two dates/timestamps ~ extra accuracy considering leap years
- * - start and end values are reordered automatically (start = min, end = max)
+ * - start and end values are reordered automatically (i.e. `start <= end`)
  *
  * @param start - start date/timestamp
  * @param end - end date/timestamp (default: `undefined`)
