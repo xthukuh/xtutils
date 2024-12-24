@@ -6,6 +6,7 @@
  * @returns `string`
  */
 export const _rc4 = (text: any, key?: string): string => {
+	//FIXME: use buffer to handle binary data
 	if (!(text = String(text ?? ''))) return '';
 	key = String(key ?? 'alohomora');
 	const S: any[] = [], K: any[] = [];

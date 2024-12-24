@@ -779,6 +779,7 @@ export const _sort = <T = any>(
  * @returns `string` transformed text where template values are replaced with resolved context values (see examples)
  */
 export const _trans = (template: string, context: {[name: string]: any}, _default: string = 'NULL', _format?: (value:string,path:string,name:string)=>any): string => {
+	//FIXME: refactor implementation
 	const pattern: RegExp = /\{([_0-9a-zA-Z]+)((\.[_0-9a-zA-Z]+)*)\}/g;
 	const value: string = _str(template);
 	if (!value.trim()) return value; //-- ignores blank
