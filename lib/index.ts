@@ -9,3 +9,4 @@ export * from './Exception';
 export * from './Tasks';
 export * from './file';
 export * from './AlphaNum';
+export * from './Color';
