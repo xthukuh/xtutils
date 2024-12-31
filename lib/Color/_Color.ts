@@ -11,6 +11,12 @@ import { ColorNames } from './_ColorNames';
 const ColorValueName = Object.fromEntries(Object.entries(ColorNames).map(([key, value]) => [value, key]));
 
 /**
+ * Color value type
+ */
+export type TColorValue = [number,number,number,number];
+
+
+/**
  * Clamp a number between min and max
  * 
  * @param num - number to clamp
@@ -18,7 +24,11 @@ const ColorValueName = Object.fromEntries(Object.entries(ColorNames).map(([key, 
  * @param max - maximum value
  * @returns `number`
  */
-const clamp = (num: number, min: number, max: number): number => Math.min(Math.max(min, num), max);
+const clamp = (num: number, min: number, max: number): number => {
+	let res: number = Math.min(Math.max(min, num), max);
+	if (min === 0 && max === 1) res = Number(res.toFixed(2));
+	return res;
+};
 
 /**
  * Convert a number to a hex string
@@ -34,7 +44,7 @@ const hex_double = (num: number): string => Math.round(num).toString(16).toUpper
  * @param val - parse value
  * @returns `number` or `0`
  */
-const parse_int = (val: any, _default: number = 0): number => parseInt(val) || _default;
+const parse_int = (val: any, base?: number, _default: number = 0): number => parseInt(val, base) || _default;
 
 /**
  * Parse float value
@@ -48,14 +58,14 @@ const parse_float = (val: any, _default: number = 0): number => parseFloat(val) 
  * Get color array value arguments
  * 
  * @param args - parse arguments
- * @returns `[number,number,number,number]` or `null`
+ * @returns `TColorValue` or `null`
  */
-const parse_args = (args: any[], max: number): [number,number,number,number]|null => {
+const parse_args = (args: any[], max: number): TColorValue|null => {
 	const items: any[] = (Array.isArray(args) ? _values(args, false, false, -1) : [])
-	.map((val, i) => i < 3 ? parse_int(val, NaN) : parse_float(val, NaN));
+	.map((val, i) => i < 3 ? parse_int(val, undefined, NaN) : parse_float(val, NaN));
 	if (items.filter(v => isNaN(v)).length) return null;
 	if (items.length < 3) return null;
-	const res: [number,number,number,number] = items.slice(0, 4).map((val, i) => {
+	const res: TColorValue = items.slice(0, 4).map((val, i) => {
 		if (i < 3) return max === 360 && i ? clamp(val, 0, 100) : clamp(val, 0, max);
 		return clamp(val, 0, 1);
 	}) as any;
@@ -69,19 +79,22 @@ const parse_args = (args: any[], max: number): [number,number,number,number]|nul
  * @param str - parse string
  * @returns `[R,G,B,A]` or `null`
  */
-const get_rgb = (str: string): [number,number,number,number]|null => {
+const get_rgb = (str: string): TColorValue|null => {
 	if (!(str = _str(str, true))) return null;
 	const abbr = /^#([a-f0-9]{3,4})$/i;
-	const hex = /^#([a-f0-9]{6})([a-f0-9]{2})?$/i;
+	const hex = /^#([a-f0-9]{3,6})([a-f0-9]{2})?$/i;
 	const rgba = /^rgba?\(\s*([+-]?\d+)(?=[\s,])\s*(?:,\s*)?([+-]?\d+)(?=[\s,])\s*(?:,\s*)?([+-]?\d+)\s*(?:[,|\/]\s*([+-]?[\d\.]+)(%?)\s*)?\)$/i;
 	const per = /^rgba?\(\s*([+-]?[\d\.]+)\%\s*,?\s*([+-]?[\d\.]+)\%\s*,?\s*([+-]?[\d\.]+)\%\s*(?:[,|\/]\s*([+-]?[\d\.]+)(%?)\s*)?\)$/i;
 	const keyword = /^(\w+)$/;
-	let rgb: [number,number,number,number] = [0, 0, 0, 1];
+	let rgb: TColorValue = [0, 0, 0, 1];
 	let match: RegExpMatchArray|null|string;
 	let hexAlpha: string;
 	if (match = str.match(hex)) {
 		hexAlpha = match[2];
 		match = match[1];
+		if (match.length === 3){
+			match = match.split('').map((char: string) => char + char).join('');
+		}
 		for (let i = 0; i < 3; i ++) {
 			// https://jsperf.com/slice-vs-substr-vs-substring-methods-long-string/19
 			const i2 = i * 2;
@@ -99,14 +112,14 @@ const get_rgb = (str: string): [number,number,number,number]|null => {
 		for (let i = 0; i < 3; i ++) rgb[i] = parse_int(match[i + 1], 0);
 		if (match[4]) {
 			if (match[5]) rgb[3] = parse_float(match[4]) * 0.01;
-			else rgb[3] = parse_float(match[4]);
+			else rgb[3] = parse_float(match[4], 1);
 		}
 	}
 	else if (match = str.match(per)) {
 		for (let i = 0; i < 3; i ++) rgb[i] = Math.round(parse_float(match[i + 1]) * 2.55);
 		if (match[4]) {
 			if (match[5]) rgb[3] = parse_float(match[4]) * 0.01;
-			else rgb[3] = parse_float(match[4]);
+			else rgb[3] = parse_float(match[4], 1);
 		}
 	}
 	else if (match = str.match(keyword)) {
@@ -131,12 +144,12 @@ const get_rgb = (str: string): [number,number,number,number]|null => {
  * @param str - parse string
  * @returns `[H,S,L,A]` or `null`
  */
-const get_hsl = (str: string): [number,number,number,number]|null => {
+const get_hsl = (str: string): TColorValue|null => {
 	if (!(str = _str(str, true))) return null;
 	const hsl = /^hsla?\(\s*([+-]?(?:\d{0,3}\.)?\d+)(?:deg)?\s*,?\s*([+-]?[\d\.]+)%\s*,?\s*([+-]?[\d\.]+)%\s*(?:[,|\/]\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*)?\)$/i;
 	const match: RegExpMatchArray|null = str.match(hsl);
 	if (!match) return null;
-	const alpha = parse_float(match[4]);
+	const alpha = parse_float(match[4], 1);
 	const h = ((parse_float(match[1]) % 360) + 360) % 360;
 	const s = clamp(parse_float(match[2]), 0, 100);
 	const l = clamp(parse_float(match[3]), 0, 100);
@@ -150,12 +163,12 @@ const get_hsl = (str: string): [number,number,number,number]|null => {
  * @param str - parse string
  * @returns `[H,W,B,A]` or `null`
  */
-const get_hwb = (str: string): [number,number,number,number]|null => {
+const get_hwb = (str: string): TColorValue|null => {
 	if (!(str = _str(str, true))) return null;
 	const hwb = /^hwb\(\s*([+-]?\d{0,3}(?:\.\d+)?)(?:deg)?\s*,\s*([+-]?[\d\.]+)%\s*,\s*([+-]?[\d\.]+)%\s*(?:,\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*)?\)$/i;
 	const match: RegExpMatchArray|null = str.match(hwb);
 	if (!match) return null;
-	const alpha = parse_float(match[4]);
+	const alpha = parse_float(match[4], 1);
 	const h = ((parse_float(match[1]) % 360) + 360) % 360;
 	const w = clamp(parse_float(match[2]), 0, 100);
 	const b = clamp(parse_float(match[3]), 0, 100);
@@ -164,11 +177,16 @@ const get_hwb = (str: string): [number,number,number,number]|null => {
 };
 
 /**
+ * Color model type
+ */
+type TColorFormat = 'rgb'|'hsl'|'hwb';
+
+/**
  * Color model interface
  */
-export interface IColorModel {
-	model: string;
-	value: [number,number,number,number];
+interface IColorModel {
+	format: TColorFormat;
+	value: TColorValue;
 }
 
 /**
@@ -180,23 +198,23 @@ export interface IColorModel {
 const color_get = (str: string): IColorModel|null => {
 	if (!(str = _str(str, true))) return null;
 	const prefix: string = str.slice(0, 3).toLowerCase();
-	let value: [number,number,number,number]|null;
-	let model: string;
+	let value: TColorValue|null;
+	let format: TColorFormat;
 	switch (prefix) {
 		case 'hsl':
 			value = get_hsl(str);
-			model = 'hsl';
+			format = 'hsl';
 			break;
 		case 'hwb':
 			value = get_hwb(str);
-			model = 'hwb';
+			format = 'hwb';
 			break;
 		default:
 			value = get_rgb(str);
-			model = 'rgb';
+			format = 'rgb';
 			break;
 	}
-	return value ? {model, value} : null;
+	return value ? {format, value} : null;
 };
 
 /**
@@ -318,4 +336,147 @@ const to_keyword = (...args: any[]): string => {
 	return ColorValueName[rgba.slice(0, 3) as any] || '';
 };
 
-// TODO: implement @class Color, tests
+
+/**
+ * Color to converter interface
+ */
+export interface IColorTo {
+	hex: () => string;
+	rgb: () => string;
+	rgba: () => string;
+	rgb_percent: () => string;
+	hsl: () => string;
+	hsla: () => string;
+	hwb: () => string;
+	hwba: () => string;
+	keyword: () => string;
+}
+
+/**
+ * Color class interface
+ */
+export interface IColor {
+	value: TColorValue;
+	format: TColorFormat;
+	to: IColorTo;
+	toString: () => string;
+}
+
+/**
+ * Color parse from interface
+ */
+export interface IColorFrom {
+	rgb: (str: string) => IColor;
+	hsl: (str: string) => IColor;
+	hwb: (str: string) => IColor;
+	value: (value: TColorValue) => IColor;
+}
+
+/**
+ * `Color` props symbol
+ */
+const _props = Symbol('Color.props');
+
+/**
+ * @class Color parser and converter
+ */
+export class Color implements IColor
+{
+	/**
+	 * Color parser props
+	 */
+	[_props]: {
+		value: TColorValue;
+		format: TColorFormat;
+	} = {} as any;
+
+	/**
+	 * Parsed color array value
+	 */
+	get value(): TColorValue
+	{
+		return this[_props].value;
+	}
+
+	/**
+	 * Parsed color format
+	 */
+	get format(): TColorFormat
+	{
+		return this[_props].format;
+	}
+
+	/**
+	 * Create new color parser instance
+	 * 
+	 * @param value - parse value 
+	 * @param format - parse format
+	 * @returns `IColor` ~ `Color` instance
+	 * @throws `TypeError`
+	 */
+	constructor(value: any, format: TColorFormat = 'rgb') {
+		if ('string' === typeof value) {
+			const color = color_get(value);
+			if (!color) throw new TypeError('Invalid color value format.');
+			this[_props].value = color.value;
+			this[_props].format = color.format;
+			return;
+		}
+		if (!(Array.isArray(value) && value.length === 4 && value.every(v => typeof v === 'number'))) throw new TypeError('Invalid color value format.');
+		this[_props].value = value as TColorValue;
+		this[_props].format = format;
+	}
+
+	/**
+	 * Color to converter
+	 */
+	get to(): IColorTo
+	{
+		return {
+			hex: (): string => to_hex(...this.value),
+			rgb: (): string => to_rgb(...this.value),
+			rgba: (): string => to_rgba(...this.value),
+			rgb_percent: (): string => to_rgb_percent(...this.value),
+			hsl: (): string => to_hsl(...this.value),
+			hsla: (): string => to_hsla(...this.value),
+			hwb: (): string => to_hwb(...this.value),
+			hwba: (): string => to_hwba(...this.value),
+			keyword: (): string => to_keyword(...this.value),
+		};
+	}
+
+	/**
+	 * Convert color to `string` (RGB)
+	 */
+	toString(): string
+	{
+		return this.to.rgb();
+	}
+
+	/**
+	 * Parse color value from
+	 */
+	static get from(): IColorFrom
+	{
+		return {
+			rgb: (str: string) => new Color(get_rgb(str), 'rgb'),
+			hsl: (str: string) => new Color(get_hsl(str), 'hsl'),
+			hwb: (str: string) => new Color(get_hwb(str), 'hwb'),
+			value: (value: TColorValue) => new Color(value),
+		};
+	}
+
+	/**
+	 * Parse color value
+	 * 
+	 * @param value - parse value 
+	 * @param format - parse format (default: `rgb`)
+	 * @returns `IColor` ~ `Color` instance
+	 * @throws `TypeError`
+	 */
+	static parse(value: any, format: TColorFormat = 'rgb'): IColor
+	{
+		return new Color(value, format);
+	}
+}
+
