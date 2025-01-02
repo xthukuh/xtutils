@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * RC4 encrypt/decrypt text value
  *
@@ -5,4 +6,4 @@
  * @param key - cypher key (default: `'alohomora'`)
  * @returns `string`
  */
-export declare const _rc4: (text: any, key?: string) => string;
+export declare function _rc4(input: any, pass?: string): Buffer | string;

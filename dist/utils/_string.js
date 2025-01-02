@@ -32,7 +32,7 @@ const _uuid = (length, template) => {
         let buffer = '';
         while (buffer.length < len)
             buffer += (0, exports._xuid)();
-        return buffer.substring(0, len);
+        return buffer.substring(buffer.length - len);
     };
     let uuid = '';
     if ('string' === typeof template && (template = template.trim())) {
@@ -677,6 +677,7 @@ const _textMaxLength = (value, max = 1000, mode = 0) => {
 };
 exports._textMaxLength = _textMaxLength;
 /**
+ * @deprecated use `_rc4` instead
  * Custom text encrypt/decrypt cypher ~ `v20231027232850`
  *
  * @param value - text value ~ `string`

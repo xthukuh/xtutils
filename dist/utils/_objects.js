@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._tree = exports._selectKeys = exports._chunks = exports._propsObj = exports.FailError = exports._mapValues = exports._arrayList = exports._trans = exports._sort = exports._dumpVal = exports._values = exports._isArray = exports._isObject = exports._iterable = exports._empty = exports._valueOf = exports._dotGet = exports._bool = exports._validDotPath = exports._dotInflate = exports._dotFlat = exports._minMax = exports._isFunc = exports._isClass = exports._getProp = exports._hasAnyProps = exports._hasProps = exports._hasProp = exports._getAllProperties = exports._getAllPropertyDescriptors = void 0;
+exports._tree = exports._selectKeys = exports._chunks = exports._propsObj = exports.FailError = exports._mapValues = exports._arrayList = exports._trans = exports._sort = exports._dumpVal = exports._flatten = exports._values = exports._isArray = exports._isObject = exports._iterable = exports._empty = exports._valueOf = exports._dotGet = exports._bool = exports._validDotPath = exports._dotInflate = exports._dotFlat = exports._minMax = exports._isFunc = exports._isClass = exports._getProp = exports._hasAnyProps = exports._hasProps = exports._hasProp = exports._getAllProperties = exports._getAllPropertyDescriptors = void 0;
+const Buffer_1 = require("../Buffer");
 const _json_1 = require("./_json");
 const _number_1 = require("./_number");
 const _string_1 = require("./_string");
-const _3rd_party_1 = require("../3rd-party");
 /**
  * Get all property descriptors
  * - API ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
@@ -484,7 +484,7 @@ const _empty = (value, trim = false) => {
         return true; //default empty
     if (['function', 'boolean', 'number'].includes(typeof value))
         return false; //function/boolean/number - ignore
-    if ('string' === typeof value || (0, _3rd_party_1._isBuffer)(value))
+    if ('string' === typeof value || (0, Buffer_1._isBuffer)(value))
         return !(0, _string_1._str)(value, trim).length; //string/Buffer - !length
     if ('object' !== typeof value)
         return false; //non object - ignore
@@ -566,7 +566,7 @@ const _values = (value, entries = false, object = false, flatten) => {
     let items = value === undefined ? [] : entries ? [['0', value]] : [value];
     if (value && 'object' === typeof value && 'function' !== typeof value) {
         if (Object(value[Symbol.iterator]) === value[Symbol.iterator]) {
-            const has_entries = (items = [...value]).length && items.findIndex(v => !(Array.isArray(v) && v.length === 2 && Object.keys(v) + '' === '0,1')) < 0;
+            const has_entries = (items = [...value]).length && items.findIndex(v => !(Array.isArray(v) && v.length === 2 && Object.keys(v) + '' === '0,1' && ['string', 'number'].includes(typeof v[0]))) < 0;
             if (entries)
                 items = has_entries ? items : Object.entries(items);
             else if (has_entries) {
@@ -600,9 +600,18 @@ const _values = (value, entries = false, object = false, flatten) => {
             depth = undefined;
         items = items.flat(depth);
     }
-    return items;
+    return Object.values(items);
 };
 exports._values = _values;
+/**
+ * Flatten object array values
+ *
+ * @param value - parse array value
+ * @param depth - flatten depth (default: `-1`) ~ `Array.flat` depth (alias: `-1` => `Array.flat(Infinity)`, `true|null` => `Array.flat()`)
+ * @returns `any[]` - flattened values
+ */
+const _flatten = (value, depth) => (0, exports._values)(value, false, false, depth === undefined ? -1 : depth);
+exports._flatten = _flatten;
 /**
  * Get dump value with limit max string length
  *
@@ -807,6 +816,7 @@ exports._sort = _sort;
  * @returns `string` transformed text where template values are replaced with resolved context values (see examples)
  */
 const _trans = (template, context, _default = 'NULL', _format) => {
+    // TODO - not urgent: refactor implementation
     const pattern = /\{([_0-9a-zA-Z]+)((\.[_0-9a-zA-Z]+)*)\}/g;
     const value = (0, _string_1._str)(template);
     if (!value.trim())

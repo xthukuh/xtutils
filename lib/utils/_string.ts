@@ -1,4 +1,3 @@
-import { bool } from '../types';
 import { _jsonStringify } from './_json';
 
 /**
@@ -30,7 +29,7 @@ export const _uuid = (length?: number, template?: string): string => {
 	const _get_uuid = () => {
 		let buffer = '';
 		while (buffer.length < len) buffer += _xuid();
-		return buffer.substring(0, len);
+		return buffer.substring(buffer.length - len);
 	};
 	let uuid: string = '';
 	if ('string' === typeof template && (template = template.trim())){
@@ -216,7 +215,7 @@ export const _rtrim = (value: any, chars: string = ' \r\n\t\f\v\x00'): string =>
  * @param keepCase  Disable lowercasing uncapitalized characters
  * @returns Title Case `string`
  */
-export const _toTitleCase = (value: any, keepCase: bool = false): string => _str(value)
+export const _toTitleCase = (value: any, keepCase: boolean|1|0 = false): string => _str(value)
 .replace(/\w\S*/g, match => match[0].toUpperCase()
 + (keepCase ? match.substring(1) : match.substring(1).toLowerCase()));
 
@@ -227,7 +226,7 @@ export const _toTitleCase = (value: any, keepCase: bool = false): string => _str
  * @param keepCase  Disable lowercasing uncapitalized characters
  * @returns Sentence case `string`
  */
-export const _toSentenceCase = (value: any, keepCase: bool = false): string => {
+export const _toSentenceCase = (value: any, keepCase: boolean|1|0 = false): string => {
 	let buffer: string = '';
 	for (let val of _str(value).split(/((?:\.|\?|!)\s*)/)){
 		if (val.length){
@@ -630,6 +629,7 @@ export const _textMaxLength = (value: any, max: number = 1000, mode: 0|1|2 = 0):
 };
 
 /**
+ * @deprecated use `_rc4` instead
  * Custom text encrypt/decrypt cypher ~ `v20231027232850`
  * 
  * @param value - text value ~ `string`

@@ -1,8 +1,7 @@
-import { bool } from '../types';
+import { _isBuffer } from '../Buffer';
 import { _jsonCopy, _jsonParse, _jsonStringify } from './_json';
 import { _int, _num, _posInt } from './_number';
-import { _errorText, _str, _string, _stringable, _textMaxLength, _wrapLines } from './_string';
-import { _isBuffer } from '../3rd-party';
+import { _errorText, _str, _stringable, _textMaxLength, _wrapLines } from './_string';
 
 /**
  * Get all property descriptors
@@ -76,7 +75,7 @@ export const _getAllProperties = (value: any, statics: boolean = false): (string
  * @param own  [default: `false`] As own property
  * @returns `boolean`
  */
-export const _hasProp = (value: any, prop: any, own: bool = false): boolean => {
+export const _hasProp = (value: any, prop: any, own: boolean|1|0 = false): boolean => {
 	if (!('object' === typeof value && !!value)) return false;
 	return Object.prototype.hasOwnProperty.call(value, prop) || (own ? false : prop in value);
 };
@@ -152,7 +151,7 @@ export interface IProperty {
  * @param own - whether property is value's own ~ `value.hasOwnProperty`
  * @returns `IProperty` ~ `{exists:boolean; name:string; value:any;}`
  */
-export const _getProp = (value: any, match: any, ignoreCase: bool = false): IProperty => {
+export const _getProp = (value: any, match: any, ignoreCase: boolean|1|0 = false): IProperty => {
 	const property: IProperty = {
 		match,
 		key: undefined,
@@ -546,7 +545,7 @@ export const _values = (value: any, entries: boolean = false, object: boolean = 
 	let items: any[] = value === undefined ? [] : entries ? [['0', value]] : [value];
 	if (value && 'object' === typeof value && 'function' !== typeof value){
 		if (Object(value[Symbol.iterator]) === value[Symbol.iterator]){
-			const has_entries = (items = [...value]).length && items.findIndex(v => !(Array.isArray(v) && v.length === 2 && Object.keys(v) + '' === '0,1')) < 0;
+			const has_entries = (items = [...value]).length && items.findIndex(v => !(Array.isArray(v) && v.length === 2 && Object.keys(v) + '' === '0,1' && ['string','number'].includes(typeof v[0]))) < 0;
 			if (entries) items = has_entries ? items : Object.entries(items);
 			else if (has_entries){
 				const values: any[] = [];
@@ -573,8 +572,17 @@ export const _values = (value: any, entries: boolean = false, object: boolean = 
 		else if ([null, true].includes(depth)) depth = undefined;
 		items = items.flat(depth);
 	}
-	return items;
+	return Object.values(items);
 };
+
+/**
+ * Flatten object array values
+ * 
+ * @param value - parse array value
+ * @param depth - flatten depth (default: `-1`) ~ `Array.flat` depth (alias: `-1` => `Array.flat(Infinity)`, `true|null` => `Array.flat()`)
+ * @returns `any[]` - flattened values
+ */
+export const _flatten = (value: any, depth?: number|boolean|null): any[] => _values(value, false, false, depth === undefined ? -1 : depth);
 
 /**
  * Get dump value with limit max string length
@@ -779,6 +787,7 @@ export const _sort = <T = any>(
  * @returns `string` transformed text where template values are replaced with resolved context values (see examples)
  */
 export const _trans = (template: string, context: {[name: string]: any}, _default: string = 'NULL', _format?: (value:string,path:string,name:string)=>any): string => {
+	// TODO - not urgent: refactor implementation
 	const pattern: RegExp = /\{([_0-9a-zA-Z]+)((\.[_0-9a-zA-Z]+)*)\}/g;
 	const value: string = _str(template);
 	if (!value.trim()) return value; //-- ignores blank

@@ -1,4 +1,3 @@
-import { bool } from '../types';
 /**
  * Check if value is numeric
  *
@@ -7,7 +6,7 @@ import { bool } from '../types';
  * @param blanks  Pass empty `string` values (because `!isNaN('') === true`)
  * @returns `boolean` is numeric
  */
-export declare const _numeric: (value: any, booleans?: bool, blanks?: bool) => boolean;
+export declare const _numeric: (value: any, booleans?: boolean | 1 | 0, blanks?: boolean | 1 | 0) => boolean;
 /**
  * Get parsed and normalized `number`
  *
@@ -63,7 +62,7 @@ export declare const _round: (value: number, places?: number) => number;
  * @param zeros  Enable trailing `'0'` decimal places (i.e. `1000` => `'1,000.00'`)
  * @returns `string` Comma thousand delimited number (returns `""` if parsed `value` is `NaN`)
  */
-export declare const _commas: (value: any, places?: number, zeros?: bool) => string;
+export declare const _commas: (value: any, places?: number, zeros?: boolean | 1 | 0) => string;
 /**
  * Generate random `integer` number.
  *
@@ -239,3 +238,26 @@ export declare const _logx: (base: number, value: number) => number;
  * @returns `string` number text
  */
 export declare const _numk: (value: number, places?: number) => string;
+/**
+ * Parse integer value
+ *
+ * @param val - parse value
+ * @returns `number` or `0`
+ */
+export declare const _parse_int: (val: any, base?: number, _default?: number) => number;
+/**
+ * Parse float value
+ *
+ * @param val - parse value
+ * @returns `number` or `0`
+ */
+export declare const _parse_float: (val: any, _default?: number) => number;
+/**
+ * Clamp a number between min and max
+ *
+ * @param num - number to clamp
+ * @param min - minimum value
+ * @param max - maximum value
+ * @returns `number`
+ */
+export declare const _clamp: (num: any, min: any, max: any) => number;

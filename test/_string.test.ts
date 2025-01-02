@@ -452,7 +452,7 @@ describe(`\n  _rtrim: (value: any, chars: string = ' \\r\\n\\t\\f\\v\\x00') => s
 });
 
 //_toTitleCase
-describe('\n  _toTitleCase: (value: any, keepCase: bool = false) => string', () => {
+describe('\n  _toTitleCase: (value: any, keepCase: boolean|1|0 = false) => string', () => {
 	_expectTests('_toTitleCase', _toTitleCase, [
 		{
 			label: 'lowercase',
@@ -488,7 +488,7 @@ describe('\n  _toTitleCase: (value: any, keepCase: bool = false) => string', () 
 });
 
 //_toSentenceCase
-describe('\n  _toSentenceCase: (value: any, keepCase: bool = false) => string', () => {
+describe('\n  _toSentenceCase: (value: any, keepCase: boolean|1|0 = false) => string', () => {
 	_expectTests('_toSentenceCase', _toSentenceCase, [
 		{
 			label: 'lowercase',

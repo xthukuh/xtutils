@@ -33,7 +33,8 @@ import {
 	_date,
 } from '../lib';
 
-//tests
+// npm run dev
+// npx ts-node ./test/index.ts
 (async(): Promise<any> => {
 	const val = '0005-03-01';
 	// const val = '0005-03-01T00:00:00.000Z';

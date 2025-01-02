@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports._cloneDeep = exports.clonePrototype = void 0;
-const _3rd_party_1 = require("../3rd-party");
+const Buffer_1 = require("../Buffer");
 /**
  * Clone utils
  */
@@ -58,7 +58,7 @@ function _cloneDeep(value, options) {
     const non_enumerable = Boolean(_non_enumerable);
     const allParents = [];
     const allChildren = [];
-    const useBuffer = 'undefined' !== typeof _3rd_party_1.Buffer;
+    const useBuffer = 'undefined' !== typeof Buffer_1.Buffer;
     //clone
     const _clone = (parent, depth) => {
         if (depth === 0 || !('object' === typeof parent && parent))
@@ -83,11 +83,11 @@ function _cloneDeep(value, options) {
         }
         else if (_isDate(parent))
             child = new Date(parent.getTime());
-        else if (useBuffer && _3rd_party_1.Buffer.isBuffer(parent)) {
-            if (_3rd_party_1.Buffer.from)
-                child = _3rd_party_1.Buffer.from(parent); //Node.js >= 5.10.0
+        else if (useBuffer && Buffer_1.Buffer.isBuffer(parent)) {
+            if (Buffer_1.Buffer.from)
+                child = Buffer_1.Buffer.from(parent); //Node.js >= 5.10.0
             else {
-                child = new _3rd_party_1.Buffer(parent.length); //Older Node.js versions
+                child = new Buffer_1.Buffer(parent.length); //Older Node.js versions
                 parent.copy(child);
             }
             return child;
