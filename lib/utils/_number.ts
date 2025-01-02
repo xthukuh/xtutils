@@ -1,5 +1,3 @@
-import { bool } from '../types';
-
 /**
  * Check if value is numeric
  * 
@@ -8,7 +6,7 @@ import { bool } from '../types';
  * @param blanks  Pass empty `string` values (because `!isNaN('') === true`)
  * @returns `boolean` is numeric
  */
-export const _numeric = (value: any, booleans: bool = false, blanks: bool = false): boolean => {
+export const _numeric = (value: any, booleans: boolean|1|0 = false, blanks: boolean|1|0 = false): boolean => {
 	if ('number' === typeof value) return !isNaN(value);
 	if ('boolean' === typeof value) return !!booleans;
 	const v = String(value).trim();
@@ -29,51 +27,51 @@ export const _numeric = (value: any, booleans: bool = false, blanks: bool = fals
  */
 export const _num = (value: any, _default: number = NaN): number => {
 	
-	//parse string value
+	// parse string value
 	if ('string' === typeof value){
 		
-		//parse filled, single line text
+		// parse filled, single line text
 		if ((value = value.trim()) && /^.*$/.test(value)){
 			
-			//match leading +/- operator prefix
+			// match leading +/- operator prefix
 			let prefix = '';
 			let match = value.trim().match(/^([\+-])\s*(\d.*)$/);
 			if (match){
-				prefix = match[1]; //+|-
-				value = match[2]; //value
+				prefix = match[1]; // +|-
+				value = match[2]; // value
 			}
 
-			//remove whitespace around [\d,\.]
+			// remove whitespace around [\d,\.]
 			value = value.replace(/\s*([\.,])\s*/g, '$1');
 
-			//match & remove "," thousand separator
+			// match & remove "," thousand separator
 			if (value.match(/^\d{1,3}(,\d{3})*(\.|(\.\d+))?$/)) value = value.replace(/,/g, '').trim();
 			
-			//validate number format - allow (#/#.#/.#/#.)
+			// validate number format - allow (#/#.#/.#/#.)
 			if (/^\d+\.$|^\.\d+$|^\d+(\.\d+){0,1}$/.test(value)){
 				
-				//parse number & restore +/- operator prefix
+				// parse number & restore +/- operator prefix
 				if (!isNaN(value = parseFloat(value)) && prefix) value = parseFloat(prefix + value);
 			}
 			else value = NaN;
 		}
-		else value = NaN; //invalid number string
+		else value = NaN; // invalid number string
 	}
-	else value = Number(value); //coerce number
+	else value = Number(value); // coerce number
 
-	//valid safe number => result
+	// valid safe number => result
+	let res: number;
 	if (!isNaN(value = Number(value)) && value >= Number.MIN_SAFE_INTEGER && value <= Number.MAX_SAFE_INTEGER){
 		
-		//check & normalize float `3+` last zeros from 5th place ~ 0.011000000000000001 => 0.011
+		// check & normalize float `3+` last zeros from 5th place ~ 0.011000000000000001 => 0.011
 		let match = String(value).match(/^([\+-]?\d+\.\d{5,})(0{3,}\d*)$/);
 		if (match) value = Number(match[1]);
 		
-		//result
-		return value;
+		// result
+		res = value;
 	}
-
-	//invalid => default result
-	return Number(_default);
+	else res = _default; // invalid => default result
+	return isNaN(res) ? _default : (!res ? 0 : res);
 };
 
 /**
@@ -142,7 +140,7 @@ export const _round = (value: number, places: number = 2): number => {
  * @param zeros  Enable trailing `'0'` decimal places (i.e. `1000` => `'1,000.00'`)
  * @returns `string` Comma thousand delimited number (returns `""` if parsed `value` is `NaN`)
  */
-export const _commas = (value: any, places: number = 2, zeros: bool = false): string => {
+export const _commas = (value: any, places: number = 2, zeros: boolean|1|0 = false): string => {
 	const num = _round(_num(value), places = _int(places, 2));
 	if (isNaN(num)){
 		console.warn('[WARNING: `_commas`] NaN value:', value);
@@ -196,11 +194,11 @@ export const _px2rem = (val: number = 1, reverse: boolean =false, base: number =
  */
 export const _bytesVal = (bytes: number, mode: 0|1 = 0, unit?: 'B'|'KB'|'MB'|'GB'|'TB'|'PB'|'EB'|'ZB'|'YB', places: number = 2, commas: boolean = false): number|string => {
 	mode = _posInt(mode, 0, 1) ?? 0 as any;
-	if (!(bytes = _posInt(bytes, 0) ?? 0)) return mode === 1 ? 0 : '0 B'; //-- zero
+	if (!(bytes = _posInt(bytes, 0) ?? 0)) return mode === 1 ? 0 : '0 B'; // -- zero
 	const kb = 1024, units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 	const u: string = 'string' === typeof unit && units.includes(unit = unit.trim().toUpperCase() as any) ? unit as any : '';
 	const i: number = u ? units.findIndex(v => v.toLowerCase() === u.toLowerCase()) : Math.floor(Math.log(bytes)/Math.log(kb));
-	if (!(i >= 0 && i < units.length)) return mode === 1 ? bytes : bytes + ' B'; //-- unsupported size (defaults to bytes)
+	if (!(i >= 0 && i < units.length)) return mode === 1 ? bytes : bytes + ' B'; // -- unsupported size (defaults to bytes)
 	let val: string|number = bytes/Math.pow(kb, i);
 	if (mode === 1) return _round(val, places);
 	return (commas ? _commas(val, places) : _round(val, places)) + ' ' + units[i];
@@ -269,7 +267,7 @@ export const _dec2bin = (decimal: number, group: number = 0): string => _dec2bas
  * @returns `number|undefined` ~ parsed decimal integer | `undefined` when invalid
  */
 export const _bin2dec = (binary: string): number|undefined => {
-	if (!('string' === typeof binary && /^[01]+$/.test(binary = binary.replace(/\s/g, '')))) return undefined; //-- invalid binary text
+	if (!('string' === typeof binary && /^[01]+$/.test(binary = binary.replace(/\s/g, '')))) return undefined; // -- invalid binary text
 	let dec: number = 0, pow: number = 0;
 	for (let i = binary.length - 1; i >= 0; i--){
 		dec += parseInt(binary[i]) * Math.pow(2, pow);
@@ -302,7 +300,7 @@ export const _dec2hex = (decimal: number, group: number = 0): string => _dec2bas
  * @returns `number|undefined` ~ parsed decimal integer | `undefined` when invalid
  */
 export const _hex2dec = (hex: string): number|undefined => {
-	if (!('string' === typeof hex && /^[0-9A-F]+$/.test(hex = hex.replace(/0x/ig, '').replace(/\s/g, '').toUpperCase()))) return undefined; //-- invalid hexadecimal text
+	if (!('string' === typeof hex && /^[0-9A-F]+$/.test(hex = hex.replace(/0x/ig, '').replace(/\s/g, '').toUpperCase()))) return undefined; // -- invalid hexadecimal text
 	const hex_map: {[key:string]: number} = Object.fromEntries('0123456789ABCDEF'.split('').map((v, i) => [v, i]));
 	let dec = 0;
 	for (let i = 0; i < hex.length; i ++){
@@ -335,7 +333,7 @@ export const _dec2oct = (decimal: number): string => _dec2base(decimal, 8);
  * @returns `number|undefined` ~ parsed decimal integer | `undefined` when invalid
  */
 export const _oct2dec = (octal: string): number|undefined => {
-	if (!('string' === typeof octal && /^[0-7]+$/.test(octal = octal.replace(/0o/ig, '').replace(/\s/g, '').toUpperCase()))) return undefined; //-- invalid octal text
+	if (!('string' === typeof octal && /^[0-7]+$/.test(octal = octal.replace(/0o/ig, '').replace(/\s/g, '').toUpperCase()))) return undefined; // -- invalid octal text
 	let dec = 0;
 	for (let i = 0; i < octal.length; i ++){
 		const val = (octal[i] as any) - 0;
@@ -456,3 +454,35 @@ export const _numk = (value: number, places: number = 1): string => {
 	}
 	return text;
 };
+
+/**
+ * Parse integer value
+ * 
+ * @param val - parse value
+ * @returns `number` or `0`
+ */
+export const _parse_int = (val: any, base?: number, _default: number = 0): number => {
+	const res: number = parseInt(val, base);
+	return isNaN(res) ? _default : (!res ? 0 : res);
+};
+
+/**
+ * Parse float value
+ * 
+ * @param val - parse value
+ * @returns `number` or `0`
+ */
+export const _parse_float = (val: any, _default: number = 0): number => {
+	const res: number = parseFloat(val);
+	return isNaN(res) ? _default : (!res ? 0 : res);
+};
+
+/**
+ * Clamp a number between min and max
+ * 
+ * @param num - number to clamp
+ * @param min - minimum value
+ * @param max - maximum value
+ * @returns `number`
+ */
+export const _clamp = (num: any, min: any, max: any): number => Math.min(Math.max(_num(min), _num(num)), _num(max));

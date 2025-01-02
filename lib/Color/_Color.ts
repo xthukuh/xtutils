@@ -2,7 +2,7 @@
  * Color Utils - [ported from color-string](https://github.com/Qix-/color-string)
  */
 
-import { _str, _values } from '../utils';
+import { _clamp, _parse_float, _parse_int, _str, _flatten } from '../utils';
 import { ColorNames } from './_ColorNames';
 
 /**
@@ -15,21 +15,6 @@ const ColorValueName = Object.fromEntries(Object.entries(ColorNames).map(([key, 
  */
 export type TColorValue = [number,number,number,number];
 
-
-/**
- * Clamp a number between min and max
- * 
- * @param num - number to clamp
- * @param min - minimum value
- * @param max - maximum value
- * @returns `number`
- */
-const clamp = (num: number, min: number, max: number): number => {
-	let res: number = Math.min(Math.max(min, num), max);
-	if (min === 0 && max === 1) res = Number(res.toFixed(2));
-	return res;
-};
-
 /**
  * Convert a number to a hex string
  * 
@@ -39,35 +24,20 @@ const clamp = (num: number, min: number, max: number): number => {
 const hex_double = (num: number): string => Math.round(num).toString(16).toUpperCase().padStart(2, '0');
 
 /**
- * Parse integer value
- * 
- * @param val - parse value
- * @returns `number` or `0`
- */
-const parse_int = (val: any, base?: number, _default: number = 0): number => parseInt(val, base) || _default;
-
-/**
- * Parse float value
- * 
- * @param val - parse value
- * @returns `number` or `0`
- */
-const parse_float = (val: any, _default: number = 0): number => parseFloat(val) || _default;
-
-/**
  * Get color array value arguments
  * 
  * @param args - parse arguments
  * @returns `TColorValue` or `null`
  */
-const parse_args = (args: any[], max: number): TColorValue|null => {
-	const items: any[] = (Array.isArray(args) ? _values(args, false, false, -1) : [])
-	.map((val, i) => i < 3 ? parse_int(val, undefined, NaN) : parse_float(val, NaN));
-	if (items.filter(v => isNaN(v)).length) return null;
+const parse_args = (args: any[], max?: number): TColorValue|null => {
+	const has_max: boolean = Number.isInteger(max) && Number(max) >= 255;
+	const items: any[] = (Array.isArray(args) ? _flatten(args) : []).map(v => _parse_float(v, NaN));
 	if (items.length < 3) return null;
+	if (items.filter(v => isNaN(v)).length) return null;
 	const res: TColorValue = items.slice(0, 4).map((val, i) => {
-		if (i < 3) return max === 360 && i ? clamp(val, 0, 100) : clamp(val, 0, max);
-		return clamp(val, 0, 1);
+		if (!has_max) return val;
+		if (i < 3) return max === 360 && i ? _clamp(val, 0, 100) : _clamp(val, 0, max);
+		return _clamp(val, 0, 1);
 	}) as any;
 	if (res.length < 4) res[3] = 1;
 	return res;
@@ -82,7 +52,7 @@ const parse_args = (args: any[], max: number): TColorValue|null => {
 const get_rgb = (str: string): TColorValue|null => {
 	if (!(str = _str(str, true))) return null;
 	const abbr = /^#([a-f0-9]{3,4})$/i;
-	const hex = /^#([a-f0-9]{3,6})([a-f0-9]{2})?$/i;
+	const hex = /^#([a-f0-9]{6})([a-f0-9]{2})?$/i;
 	const rgba = /^rgba?\(\s*([+-]?\d+)(?=[\s,])\s*(?:,\s*)?([+-]?\d+)(?=[\s,])\s*(?:,\s*)?([+-]?\d+)\s*(?:[,|\/]\s*([+-]?[\d\.]+)(%?)\s*)?\)$/i;
 	const per = /^rgba?\(\s*([+-]?[\d\.]+)\%\s*,?\s*([+-]?[\d\.]+)\%\s*,?\s*([+-]?[\d\.]+)\%\s*(?:[,|\/]\s*([+-]?[\d\.]+)(%?)\s*)?\)$/i;
 	const keyword = /^(\w+)$/;
@@ -98,28 +68,28 @@ const get_rgb = (str: string): TColorValue|null => {
 		for (let i = 0; i < 3; i ++) {
 			// https://jsperf.com/slice-vs-substr-vs-substring-methods-long-string/19
 			const i2 = i * 2;
-			rgb[i] = parse_int(match.slice(i2, i2 + 2), 16);
+			rgb[i] = _parse_int(match.slice(i2, i2 + 2), 16);
 		}
-		if (hexAlpha) rgb[3] = parse_int(hexAlpha, 16) / 255;
+		if (hexAlpha) rgb[3] = _parse_int(hexAlpha, 16) / 255;
 	}
 	else if (match = str.match(abbr)) {
 		match = match[1];
 		hexAlpha = match[3];
-		for (let i = 0; i < 3; i ++) rgb[i] = parse_int(match[i] + match[i], 16);
-		if (hexAlpha)  rgb[3] = parse_int(hexAlpha + hexAlpha, 16) / 255;
+		for (let i = 0; i < 3; i ++) rgb[i] = _parse_int(match[i] + match[i], 16);
+		if (hexAlpha)  rgb[3] = _parse_int(hexAlpha + hexAlpha, 16) / 255;
 	}
 	else if (match = str.match(rgba)) {
-		for (let i = 0; i < 3; i ++) rgb[i] = parse_int(match[i + 1], 0);
+		for (let i = 0; i < 3; i ++) rgb[i] = _parse_int(match[i + 1], 0);
 		if (match[4]) {
-			if (match[5]) rgb[3] = parse_float(match[4]) * 0.01;
-			else rgb[3] = parse_float(match[4], 1);
+			if (match[5]) rgb[3] = _parse_float(match[4]) * 0.01;
+			else rgb[3] = _parse_float(match[4]);
 		}
 	}
 	else if (match = str.match(per)) {
-		for (let i = 0; i < 3; i ++) rgb[i] = Math.round(parse_float(match[i + 1]) * 2.55);
+		for (let i = 0; i < 3; i ++) rgb[i] = Math.round(_parse_float(match[i + 1]) * 2.55);
 		if (match[4]) {
-			if (match[5]) rgb[3] = parse_float(match[4]) * 0.01;
-			else rgb[3] = parse_float(match[4], 1);
+			if (match[5]) rgb[3] = _parse_float(match[4]) * 0.01;
+			else rgb[3] = _parse_float(match[4]);
 		}
 	}
 	else if (match = str.match(keyword)) {
@@ -132,9 +102,9 @@ const get_rgb = (str: string): TColorValue|null => {
 	}
 	else return null;
 	for (let i = 0; i < 3; i ++) {
-		rgb[i] = clamp(rgb[i], 0, 255);
+		rgb[i] = _clamp(rgb[i], 0, 255);
 	}
-	rgb[3] = clamp(rgb[3], 0, 1);
+	rgb[3] = _clamp(rgb[3], 0, 1);
 	return rgb;
 };
 
@@ -149,11 +119,11 @@ const get_hsl = (str: string): TColorValue|null => {
 	const hsl = /^hsla?\(\s*([+-]?(?:\d{0,3}\.)?\d+)(?:deg)?\s*,?\s*([+-]?[\d\.]+)%\s*,?\s*([+-]?[\d\.]+)%\s*(?:[,|\/]\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*)?\)$/i;
 	const match: RegExpMatchArray|null = str.match(hsl);
 	if (!match) return null;
-	const alpha = parse_float(match[4], 1);
-	const h = ((parse_float(match[1]) % 360) + 360) % 360;
-	const s = clamp(parse_float(match[2]), 0, 100);
-	const l = clamp(parse_float(match[3]), 0, 100);
-	const a = clamp(isNaN(alpha) ? 1 : alpha, 0, 1);
+	const alpha = _parse_float(match[4], NaN);
+	const h = ((_parse_float(match[1]) % 360) + 360) % 360;
+	const s = _clamp(_parse_float(match[2]), 0, 100);
+	const l = _clamp(_parse_float(match[3]), 0, 100);
+	const a = _clamp(isNaN(alpha) ? 1 : alpha, 0, 1);
 	return [h, s, l, a];
 };
 
@@ -168,11 +138,11 @@ const get_hwb = (str: string): TColorValue|null => {
 	const hwb = /^hwb\(\s*([+-]?\d{0,3}(?:\.\d+)?)(?:deg)?\s*,\s*([+-]?[\d\.]+)%\s*,\s*([+-]?[\d\.]+)%\s*(?:,\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*)?\)$/i;
 	const match: RegExpMatchArray|null = str.match(hwb);
 	if (!match) return null;
-	const alpha = parse_float(match[4], 1);
-	const h = ((parse_float(match[1]) % 360) + 360) % 360;
-	const w = clamp(parse_float(match[2]), 0, 100);
-	const b = clamp(parse_float(match[3]), 0, 100);
-	const a = clamp(isNaN(alpha) ? 1 : alpha, 0, 1);
+	const alpha = _parse_float(match[4], NaN);
+	const h = ((_parse_float(match[1]) % 360) + 360) % 360;
+	const w = _clamp(_parse_float(match[2]), 0, 100);
+	const b = _clamp(_parse_float(match[3]), 0, 100);
+	const a = _clamp(isNaN(alpha) ? 1 : alpha, 0, 1);
 	return [h, w, b, a];
 };
 
@@ -268,9 +238,24 @@ const to_rgb_percent = (...args: any[]): string => {
 	const r = Math.round(rgba[0] / 255 * 100);
 	const g = Math.round(rgba[1] / 255 * 100);
 	const b = Math.round(rgba[2] / 255 * 100);
-	return rgba.length < 4 || rgba[3] === 1
+	return rgba[3] === 1
 	? 'rgb(' + r + '%, ' + g + '%, ' + b + '%)'
 	: 'rgba(' + r + '%, ' + g + '%, ' + b + '%, ' + rgba[3] + ')';
+};
+
+/**
+ * Get RGBA percent color `string` from array value
+ * 
+ * @param args - color array value
+ * @returns `string` or `''`
+ */
+const to_rgba_percent = (...args: any[]): string => {
+	const rgba = parse_args(args, 255);
+	if (!rgba) return '';
+	const r = Math.round(rgba[0] / 255 * 100);
+	const g = Math.round(rgba[1] / 255 * 100);
+	const b = Math.round(rgba[2] / 255 * 100);
+	return 'rgba(' + r + '%, ' + g + '%, ' + b + '%, ' + rgba[3] + ')';
 };
 
 /**
@@ -333,7 +318,8 @@ const to_hwba = (...args: any[]): string => {
 const to_keyword = (...args: any[]): string => {
 	const rgba = parse_args(args, 255);
 	if (!rgba) return '';
-	return ColorValueName[rgba.slice(0, 3) as any] || '';
+	const key: any = rgba.slice(0, 3);
+	return key in ColorValueName ? ColorValueName[key] : '';
 };
 
 
@@ -342,14 +328,33 @@ const to_keyword = (...args: any[]): string => {
  */
 export interface IColorTo {
 	hex: () => string;
+	hexl: () => string;
 	rgb: () => string;
 	rgba: () => string;
 	rgb_percent: () => string;
+	rgba_percent: () => string;
 	hsl: () => string;
 	hsla: () => string;
 	hwb: () => string;
 	hwba: () => string;
 	keyword: () => string;
+}
+
+/**
+ * Static color to converter interface
+ */
+export interface IStaticColorTo {
+	hex: (...args: any[]) => string;
+	hexl: (...args: any[]) => string;
+	rgb: (...args: any[]) => string;
+	rgba: (...args: any[]) => string;
+	rgb_percent: (...args: any[]) => string;
+	rgba_percent: (...args: any[]) => string;
+	hsl: (...args: any[]) => string;
+	hsla: (...args: any[]) => string;
+	hwb: (...args: any[]) => string;
+	hwba: (...args: any[]) => string;
+	keyword: (...args: any[]) => string;
 }
 
 /**
@@ -359,17 +364,18 @@ export interface IColor {
 	value: TColorValue;
 	format: TColorFormat;
 	to: IColorTo;
+	normalizeAlpha: () => IColor;
 	toString: () => string;
 }
 
 /**
  * Color parse from interface
  */
-export interface IColorFrom {
-	rgb: (str: string) => IColor;
-	hsl: (str: string) => IColor;
-	hwb: (str: string) => IColor;
-	value: (value: TColorValue) => IColor;
+export interface IStaticColorFrom {
+	rgb: (str: string) => IColor|null;
+	hsl: (str: string) => IColor|null;
+	hwb: (str: string) => IColor|null;
+	value: (...args: any[]) => IColor|null;
 }
 
 /**
@@ -417,32 +423,25 @@ export class Color implements IColor
 	constructor(value: any, format: TColorFormat = 'rgb') {
 		if ('string' === typeof value) {
 			const color = color_get(value);
-			if (!color) throw new TypeError('Invalid color value format.');
+			if (!color) throw new TypeError('Invalid color value');
 			this[_props].value = color.value;
 			this[_props].format = color.format;
 			return;
 		}
-		if (!(Array.isArray(value) && value.length === 4 && value.every(v => typeof v === 'number'))) throw new TypeError('Invalid color value format.');
+		if (!(Array.isArray(value) && value.length === 4 && value.every(v => typeof v === 'number'))) throw new TypeError('Invalid color value');
 		this[_props].value = value as TColorValue;
 		this[_props].format = format;
 	}
 
 	/**
-	 * Color to converter
+	 * Normalize alpha value
 	 */
-	get to(): IColorTo
+	normalizeAlpha(): IColor
 	{
-		return {
-			hex: (): string => to_hex(...this.value),
-			rgb: (): string => to_rgb(...this.value),
-			rgba: (): string => to_rgba(...this.value),
-			rgb_percent: (): string => to_rgb_percent(...this.value),
-			hsl: (): string => to_hsl(...this.value),
-			hsla: (): string => to_hsla(...this.value),
-			hwb: (): string => to_hwb(...this.value),
-			hwba: (): string => to_hwba(...this.value),
-			keyword: (): string => to_keyword(...this.value),
-		};
+		if (Array.isArray(this.value) && this.value.length === 4 && this.value[3].toString().indexOf('.') > 0) {
+			this[_props].value[3] = Number(this.value[3].toFixed(2));
+		}
+		return this;
 	}
 
 	/**
@@ -450,33 +449,189 @@ export class Color implements IColor
 	 */
 	toString(): string
 	{
+		console.log('Color.toString:', {value: this.value, format: this.format});
 		return this.to.rgb();
+		// return this.normalizeAlpha().to.rgb();
+	}
+
+	/**
+	 * Color to converter
+	 */
+	get to(): IColorTo
+	{
+		const that = this;
+		return {
+			hex: function(): string
+			{
+				return to_hex(...that.value);
+			},
+			hexl: function(): string
+			{
+				return to_hex(...that.value).toLowerCase();
+			},
+			rgb: function(): string
+			{
+				return to_rgb(...that.value);
+			},
+			rgba: function(): string
+			{
+				return to_rgba(...that.value);
+			},
+			rgb_percent: function(): string
+			{
+				return to_rgb_percent(...that.value);
+			},
+			rgba_percent: function(): string
+			{
+				return to_rgba_percent(...that.value);
+			},
+			hsl: function(): string
+			{
+				return to_hsl(...that.value);
+			},
+			hsla: function(): string
+			{
+				return to_hsla(...that.value);
+			},
+			hwb: function(): string
+			{
+				return to_hwb(...that.value);
+			},
+			hwba: function(): string
+			{
+				return to_hwba(...that.value);
+			},
+			keyword: function(): string
+			{
+				return to_keyword(...that.value);
+			},
+		};
+	}
+
+	/**
+	 * Static color value to converter
+	 */
+	static get to(): IStaticColorTo
+	{
+		const that = this;
+		return {
+			hex: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.hex() : '';
+			},
+			hexl: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.hex().toLowerCase() : '';
+			},
+			rgb: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.rgb() : '';
+			},
+			rgba: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.rgba() : '';
+			},
+			rgb_percent: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.rgb_percent() : '';
+			},
+			rgba_percent: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.rgba_percent() : '';
+			},
+			hsl: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.hsl() : '';
+			},
+			hsla: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.hsla() : '';
+			},
+			hwb: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.hwb() : '';
+			},
+			hwba: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.hwba() : '';
+			},
+			keyword: function(...args: any[]): string
+			{
+				const col: IColor|null = that.from.value(...args);
+				return col ? col.to.keyword() : '';
+			},
+		};
 	}
 
 	/**
 	 * Parse color value from
 	 */
-	static get from(): IColorFrom
+	static get from(): IStaticColorFrom
 	{
 		return {
-			rgb: (str: string) => new Color(get_rgb(str), 'rgb'),
-			hsl: (str: string) => new Color(get_hsl(str), 'hsl'),
-			hwb: (str: string) => new Color(get_hwb(str), 'hwb'),
-			value: (value: TColorValue) => new Color(value),
+			rgb: function(str: string): IColor|null
+			{
+				const val: TColorValue|null = get_rgb(str);
+				return val ? new Color(val, 'rgb') : null;
+			},
+			hsl: function(str: string): IColor|null
+			{
+				const val: TColorValue|null = get_hsl(str);
+				return val ? new Color(val, 'hsl') : null;
+			},
+			hwb: function(str: string): IColor|null
+			{
+				const val: TColorValue|null = get_hwb(str);
+				return val ? new Color(val, 'hwb') : null;
+			},
+			value: function(...args: any[]): IColor|null
+			{
+				return Color.parse(args);
+			},
 		};
 	}
 
 	/**
 	 * Parse color value
 	 * 
-	 * @param value - parse value 
+	 * @param value - parse value ~ accepts `string` or `array` _(i.e. `TColorValue`)_ color value
 	 * @param format - parse format (default: `rgb`)
-	 * @returns `IColor` ~ `Color` instance
-	 * @throws `TypeError`
+	 * @returns `IColor` ~ `Color` instance or `null`
 	 */
-	static parse(value: any, format: TColorFormat = 'rgb'): IColor
+	static parse(value: any, format: TColorFormat = 'rgb'): IColor|null
 	{
-		return new Color(value, format);
+		try {
+			let val: any = null;
+			if (Array.isArray(value) && value.length){
+				if (value.length === 1 && 'string' === typeof value[0]) val = value[0];
+				else val = parse_args(value);
+			}
+			else val = value;
+			if ([undefined, null, ''].includes(val)) return null;
+			return new Color(val, format);
+		}
+		catch (err: any) {
+			console.error(`Color.parse: ${err.message || err}`);
+			return null;
+		}
 	}
 }
 
+/**
+ * `Color<IColor>` class constructor interface
+ */
+export interface IColorConstructor {
+	parse: (value: any, format?: TColorFormat) => IColor|null;
+	from: IStaticColorFrom;
+	to: IStaticColorTo;
+}

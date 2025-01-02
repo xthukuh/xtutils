@@ -5,27 +5,29 @@
  * @param key - cypher key (default: `'alohomora'`)
  * @returns `string`
  */
-export const _rc4 = (text: any, key?: string): string => {
-	//FIXME: use buffer to handle binary data
-	if (!(text = String(text ?? ''))) return '';
-	key = String(key ?? 'alohomora');
-	const S: any[] = [], K: any[] = [];
-	for (let i = 0; i < 256; i++){
-		S[i] = i;
-		K[i] = key.charCodeAt(i % key.length);
-	}
+export function _rc4(input: any, pass?: string): Buffer|string
+{
+	const is_buffer = Buffer.isBuffer(input);
+	const data = is_buffer ? input : Buffer.from(String(input ?? ''), 'binary');
+	if (!data.length) return is_buffer ? Buffer.from('') : '';
+	let S = Array.from({ length: 256 }, (_, i) => i);
 	let j = 0;
-	for (let i = 0; i < 256; i++) {
-		j = (j + S[i] + K[i]) % 256;
+	pass = String(pass ?? 'alohomora');
+	const key = Array.from(pass).map(c => c.charCodeAt(0));
+	for (let i = 0; i < 256; i ++) {
+		j = (j + S[i] + key[i % key.length]) % 256;
 		[S[i], S[j]] = [S[j], S[i]];
 	}
-	let result = '', i = 0; j = 0;
-	for (let n = 0; n < text.length; n++) {
+	let i = 0, k = 0, result = '';
+	const buffer = Buffer.from(new Uint8Array(data.length) as any);
+	for (let n = 0; n < data.length; n++) {
 		i = (i + 1) % 256;
-		j = (j + S[i]) % 256;
-		[S[i], S[j]] = [S[j], S[i]];
-		const keystream = S[(S[i] + S[j]) % 256];
-		result += String.fromCharCode(text.charCodeAt(n) ^ keystream);
+		k = (k + S[i]) % 256;
+		[S[i], S[k]] = [S[k], S[i]];
+		const key_stream = S[(S[i] + S[k]) % 256];
+		const transformed_byte = data[n] ^ key_stream;
+		if (is_buffer) buffer[n] = transformed_byte;
+		else result += String.fromCharCode(transformed_byte);
 	}
-	return result;
+	return is_buffer ? buffer : result;
 };

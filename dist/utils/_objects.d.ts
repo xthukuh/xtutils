@@ -1,4 +1,3 @@
-import { bool } from '../types';
 /**
  * Get all property descriptors
  * - API ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
@@ -27,7 +26,7 @@ export declare const _getAllProperties: (value: any, statics?: boolean) => (stri
  * @param own  [default: `false`] As own property
  * @returns `boolean`
  */
-export declare const _hasProp: (value: any, prop: any, own?: bool) => boolean;
+export declare const _hasProp: (value: any, prop: any, own?: boolean | 1 | 0) => boolean;
 /**
  * Check if object has properties
  *
@@ -77,7 +76,7 @@ export interface IProperty {
  * @param own - whether property is value's own ~ `value.hasOwnProperty`
  * @returns `IProperty` ~ `{exists:boolean; name:string; value:any;}`
  */
-export declare const _getProp: (value: any, match: any, ignoreCase?: bool) => IProperty;
+export declare const _getProp: (value: any, match: any, ignoreCase?: boolean | 1 | 0) => IProperty;
 /**
  * Check if value is a class function
  *
@@ -237,6 +236,14 @@ export declare const _isArray: (value: any, _filled?: boolean, _mode?: 0 | 1 | 2
  * - `[]` when `value` argument is empty ~ `[]`/`{}`/`undefined`
  */
 export declare const _values: (value: any, entries?: boolean, object?: boolean, flatten?: number | boolean | null) => any[];
+/**
+ * Flatten object array values
+ *
+ * @param value - parse array value
+ * @param depth - flatten depth (default: `-1`) ~ `Array.flat` depth (alias: `-1` => `Array.flat(Infinity)`, `true|null` => `Array.flat()`)
+ * @returns `any[]` - flattened values
+ */
+export declare const _flatten: (value: any, depth?: number | boolean | null) => any[];
 /**
  * Get dump value with limit max string length
  *

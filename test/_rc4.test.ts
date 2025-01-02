@@ -13,7 +13,7 @@ describe('\n _rc4(text: any, key?: string) => string', () => {
 		expect(_rc4(_unescape(escaped_rc4_encryption), key)).toBe(text);
 	});
 	it('RC4 text cannot be decrypted with wrong key.', () => {
-		expect(_rc4(_unescape(escaped_rc4_encryption), 'wrong-key') === text).toBeFalsy();
+		expect(_rc4(_unescape(escaped_rc4_encryption), 'wrong-key').toString() === text).toBeFalsy();
 	});
 	it('RC4 encrypts and decrypts text with blank key (i.e `""|null|undefined`).', () => {
 		let key: string = '', escaped_rc4_encryption: string = '%B7%9Aokc.%60pZD%5Ce';

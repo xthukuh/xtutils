@@ -1,4 +1,4 @@
-import { Buffer } from '../3rd-party';
+import { Buffer } from '../Buffer';
 
 /**
  * Clone utils
@@ -95,7 +95,7 @@ export function _cloneDeep<T = any>(value: T, options?: IDeepCloneOptions): T {
 		}
 		else if (_isDate(parent)) child = new Date(parent.getTime());
 		else if (useBuffer && Buffer.isBuffer(parent)){
-			if (Buffer.from) child = Buffer.from(parent); //Node.js >= 5.10.0
+			if (Buffer.from) child = Buffer.from(parent as any); //Node.js >= 5.10.0
 			else {
 				child = new Buffer(parent.length); //Older Node.js versions
 				parent.copy(child);

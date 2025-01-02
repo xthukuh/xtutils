@@ -1,4 +1,3 @@
-import { bool } from '../types';
 /**
  * Get unique string of random characters
  *
@@ -118,7 +117,7 @@ export declare const _rtrim: (value: any, chars?: string) => string;
  * @param keepCase  Disable lowercasing uncapitalized characters
  * @returns Title Case `string`
  */
-export declare const _toTitleCase: (value: any, keepCase?: bool) => string;
+export declare const _toTitleCase: (value: any, keepCase?: boolean | 1 | 0) => string;
 /**
  * Convert string to sentence case
  *
@@ -126,7 +125,7 @@ export declare const _toTitleCase: (value: any, keepCase?: bool) => string;
  * @param keepCase  Disable lowercasing uncapitalized characters
  * @returns Sentence case `string`
  */
-export declare const _toSentenceCase: (value: any, keepCase?: bool) => string;
+export declare const _toSentenceCase: (value: any, keepCase?: boolean | 1 | 0) => string;
 /**
  * Convert value to snake case (i.e. 'HelloWorld' => 'hello_world')
  * - accents are normalized (i.e. "Test Amélie" => "test_amelie")
@@ -301,6 +300,7 @@ export declare const _errorText: (error: any) => string;
  */
 export declare const _textMaxLength: (value: any, max?: number, mode?: 0 | 1 | 2) => string;
 /**
+ * @deprecated use `_rc4` instead
  * Custom text encrypt/decrypt cypher ~ `v20231027232850`
  *
  * @param value - text value ~ `string`

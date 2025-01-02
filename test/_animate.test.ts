@@ -6,7 +6,7 @@ import {
 	_sleep,
 } from '../lib';
 
-describe('_animate', () => {
+describe('\n _animate', () => {
 	let updateMock: jest.Mock;
 	let beforeMock: jest.Mock;
 	let afterMock: jest.Mock;

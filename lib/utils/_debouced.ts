@@ -1,5 +1,3 @@
-import { bool } from '../types';
-
 /**
  * Create debounced callback function
  * 
@@ -9,12 +7,12 @@ import { bool } from '../types';
  * @param immediate  Execute callback before delay
  * @returns Throttled callback function
  */
-export const _debouced = (handler: (...args: any)=>void, delay: number = 200, maxWait: number = 0, immediate: bool = false): ((...args: any)=>void) => {
+export const _debouced = (handler: (...args: any)=>void, delay: number = 200, maxWait: number = 0, immediate: boolean|1|0 = false): ((...args: any)=>void) => {
 	delay = !isNaN(delay = parseFloat(delay as any)) && delay >= 0 ? delay : 200;
 	maxWait = !isNaN(maxWait = parseFloat(maxWait as any)) && maxWait >= 0 && maxWait > delay ? maxWait : 0;
 	immediate = !!immediate;
 	let immediateTimer: any, callTimer: any, waitTimer: any, nextCall: [context: any, args: any[]] | undefined;
-	const execute = (is_immediate?:bool) => {
+	const execute = (is_immediate?:boolean|1|0) => {
 		let next = nextCall;
 		nextCall = undefined;
 		if (waitTimer){
