@@ -34,12 +34,11 @@
 		"prepublish": "npm run build",
 		"dev": "npx ts-node ./test/index.ts",
 		"test": "jest",
-		"docs-rm-temp": "rimraf ./_temp_docs.xx",
+		"docs-rm-temp": "rimraf ./_temp_docs.xx && rimraf ./z__README.xx.md",
 		"docs-gen": "typedoc --options typedoc.json",
 		"docs-concat": "concat-md --toc --decrease-title-levels --dir-name-as-title ./_temp_docs.xx > ./z__README.xx.md",
-		"docs-show": "showdown makehtml -i ./z__README.xx.md -o ./z__README.xx.html",
-		"docs": "npm run docs-rm-temp && npm run docs-gen && npm run docs-concat && npm run docs-show && npm run docs-rm-temp",
-		"_tmp": "echo 'does nothing'"
+		"docs-show": "showdown makehtml -i ./z__README.xx.md -o ./z__docs.xx.html",
+		"docs": "npm run docs-rm-temp && npm run docs-gen && npm run docs-concat && npm run docs-show && npm run docs-rm-temp"
 	},
 	"repository": {
 		"type": "git",

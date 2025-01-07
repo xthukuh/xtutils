@@ -5,6 +5,5 @@
 	],
 	"entryPoints": ["./lib/index.ts"],
 	"theme": "markdown",
-  "mode": "file",
   "out": "./_temp_docs.xx"
 }
