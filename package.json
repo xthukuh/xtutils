@@ -33,12 +33,7 @@
 		"build": "npm run prebuild && npm run compile",
 		"prepublish": "npm run build",
 		"dev": "npx ts-node ./test/index.ts",
-		"test": "jest",
-		"docs-rm-temp": "rimraf ./_temp_docs.xx && rimraf ./z__README.xx.md",
-		"docs-gen": "typedoc --options typedoc.json",
-		"docs-concat": "concat-md --toc --decrease-title-levels --dir-name-as-title ./_temp_docs.xx > ./z__README.xx.md",
-		"docs-show": "showdown makehtml -i ./z__README.xx.md -o ./z__docs.xx.html",
-		"docs": "npm run docs-rm-temp && npm run docs-gen && npm run docs-concat && npm run docs-show && npm run docs-rm-temp"
+		"test": "jest"
 	},
 	"repository": {
 		"type": "git",
@@ -55,7 +50,6 @@
 		"ts-jest": "^29.1.0",
 		"ts-node": "^10.9.1",
 		"typedoc": "0.27.6",
-		"typedoc-plugin-markdown": "^4.4.1",
 		"typescript": "^5.1.3"
 	},
 	"dependencies": {
