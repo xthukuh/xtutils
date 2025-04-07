@@ -695,3 +695,7 @@ export class Term
 		};
 	}
 }
+
+// TODO: Term.table - invert, no columns, auto-resize, table-wrap, return text
+// TODO: Term before-log-callback
+// TODO: Term test scripts
