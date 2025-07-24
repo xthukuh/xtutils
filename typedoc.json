@@ -1,0 +1,9 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"plugin": [
+		"typedoc-plugin-markdown"
+	],
+	"entryPoints": ["./lib/index.ts"],
+	"theme": "markdown",
+  "out": "./_temp_docs.xx"
+}

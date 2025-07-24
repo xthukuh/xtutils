@@ -395,12 +395,13 @@ class Term {
      * @param noIndex - (default: `false`) whether to remove index column ([#])
      * @param numIndex - (default: `false` ~ `0`) whether index column starts from `1`
      */
-    static table(data, cellMaxLength, divider, noIndex, numIndex) {
-        //args
+    static table(data, cellMaxLength, divider, noIndex, numIndex, rows2cols) {
+        // args
         let args_cellMaxLength = undefined;
         let args_divider = undefined;
         let args_noIndex = undefined;
         let args_numIndex = undefined;
+        let args_rows2cols = undefined;
         const args_text = typeof process !== 'undefined' && Array.isArray(process?.argv) ? process.argv.slice(2).join('|') : '';
         let args_match = args_text.match(/--cellMaxLength=(\d+)(\||$)/);
         if (args_match)
@@ -417,14 +418,21 @@ class Term {
             args_numIndex = true;
         else if (!!(args_match = args_text.match(/--numIndex=false(\||$)/)))
             args_numIndex = false;
+        if (!!(args_match = args_text.match(/--rows2cols(\||$)/)))
+            args_rows2cols = true;
+        else if (!!(args_match = args_text.match(/--rows2cols=false(\||$)/)))
+            args_rows2cols = false;
         cellMaxLength = args_cellMaxLength ?? (0, utils_1._posInt)(cellMaxLength, 0) ?? 250;
         divider = args_divider ?? divider ?? false;
         noIndex = args_noIndex ?? noIndex ?? false;
         numIndex = args_numIndex ?? numIndex ?? false;
-        //vars
+        rows2cols = args_rows2cols ?? rows2cols ?? false;
+        // vars
         const that = this;
+        if (Object(data) === data && !(0, utils_1._isArray)(data))
+            data = [data];
         const [data_items, data_type] = that.list(data, 'object' === typeof data && data && !(0, utils_1._stringable)(data));
-        //fn => str value
+        // fn => str value
         const strVal = (val) => {
             let color, tmp;
             if (!Array.isArray(val) && (tmp = (0, utils_1._stringable)(val)) !== false) {
@@ -458,15 +466,14 @@ class Term {
             val = val.replace(/\t/g, '  ');
             const _val = (0, utils_1._strEscape)(val)
                 .replace(/(\\n)+/g, '\n').trim(); //++ multiline support
-            // console.log(_val);
             return [_val, color];
         };
-        //table items
+        // table items
         let mode = undefined;
         const table_items = [];
         if (data_type === 'entries') {
             if (!noIndex)
-                table_items.push(['[#]', 'Values']);
+                data_items.unshift(['[#]', 'Values']);
             table_items.push(...data_items);
         }
         else {
@@ -494,40 +501,43 @@ class Term {
                 }
                 map_items.push(map_item);
             }
-            if (!noIndex)
+            const has_index = !noIndex && !(map_keys.length === 1 && map_keys[0] === '0');
+            if (has_index)
                 table_items.push(['[#]', ...map_keys]);
             for (let r = 0; r < map_items.length; r++) {
                 const table_item = [], map_item = map_items[r];
                 for (const key of map_keys)
                     table_item.push(map_item[key]);
-                table_items.push([...(!noIndex ? [r + (numIndex ? 1 : 0)] : []), ...table_item]);
+                table_items.push([...(has_index ? [r + (numIndex ? 1 : 0)] : []), ...table_item]);
             }
         }
-        //width
+        // rows2cols
+        const table_rows = rows2cols ? (0, utils_1._rows2cols)(table_items) : table_items;
+        // width
         const width_map = {};
         const str_items = [];
-        for (const table_item of table_items) {
+        for (const table_item of table_rows) {
             const str_item = [];
             for (let i = 0; i < table_item.length; i++) {
                 const val = table_item[i];
                 const [_value, _format] = strVal(val);
                 if (!width_map.hasOwnProperty(i))
                     width_map[i] = 0;
-                let width = 0; //++ multiline support
-                for (const txt of _value.split('\n')) { //++ multiline support
+                let width = 0; // ++ multiline support
+                for (const txt of _value.split('\n')) { // ++ multiline support
                     let len = txt.length;
                     if (cellMaxLength && len > cellMaxLength)
-                        len = cellMaxLength; //cellMaxLength limit
+                        len = cellMaxLength; // cellMaxLength limit
                     if (len > width)
                         width = len;
                 }
                 if (width > width_map[i])
-                    width_map[i] = width; //++ multiline support
+                    width_map[i] = width; // ++ multiline support
                 str_item.push([_value, _format]);
             }
             str_items.push(str_item);
         }
-        //rows
+        // rows
         const rows_len = str_items.length;
         for (let r = 0; r < str_items.length; r++) {
             const str_item = str_items[r];
@@ -692,4 +702,7 @@ class Term {
     }
 }
 exports.Term = Term;
+// TODO: Term.table - invert, no columns, auto-resize, table-wrap, return text
+// TODO: Term before-log-callback
+// TODO: Term test scripts
 //# sourceMappingURL=_Term.js.map

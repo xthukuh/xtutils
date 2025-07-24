@@ -6,4 +6,4 @@
  * @param key - cypher key (default: `'alohomora'`)
  * @returns `string`
  */
-export declare function _rc4(input: any, pass?: string): Buffer | string;
+export declare function _rc4<TResult extends Buffer | string = Buffer | string>(input: any, pass?: string): TResult;

@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._wrapLines = exports._strKeyValues = exports._parseKeyValues = exports._keyValue = exports._cr = exports._textMaxLength = exports._errorText = exports._split = exports._toCsv = exports._parseCsv = exports._isEmail = exports._isUrl = exports._parseDataUri = exports._hash53 = exports._hashCodeStr = exports._hashCode = exports._toUpperCase = exports._toLowerCase = exports._toCamelCase = exports._toStudlyCase = exports._toSlugCase = exports._toSnakeCase = exports._toSentenceCase = exports._toTitleCase = exports._rtrim = exports._ltrim = exports._trim = exports._sqlEscape = exports._strEscape = exports._regEscape = exports._strNorm = exports._str = exports._stringable = exports._string = exports._uuid = exports._xuid = void 0;
+exports._wrapLines = exports._strKeyValues = exports._parseKeyValues = exports._keyValue = exports._cr = exports._textMaxLength = exports._errorText = exports._split = exports._toCsv = exports._parseCsv = exports._isEmail = exports._isUrl = exports._parseDataUri = exports._hash53 = exports._hashCodeStr = exports._hashCode = exports._toUpperCase = exports._toLowerCase = exports._toCamelCase = exports._toStudlyCase = exports._toSlugCase = exports._toSnakeCase = exports._toSentenceCase = exports._toTitleCase = exports._rtrim = exports._ltrim = exports._trim = exports._sqlEscape = exports._strEscape = exports._regEscape = exports._strNorm = exports._str = exports._stringable = exports._string = exports._uuid = exports._uid = exports._xuid = void 0;
 const _json_1 = require("./_json");
 /**
- * Get unique string of random characters
+ * Get XUID ~ unique string of random characters
  *
  * @example
  * _xuid() => 'zt7eg4eu3b6mf66jga' 18
@@ -13,41 +13,52 @@ const _json_1 = require("./_json");
 const _xuid = () => Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
 exports._xuid = _xuid;
 /**
- * Get unique string of random characters `string` ~ alphanumeric lowercase
+ * Get UID ~ unique string of random characters `string` ~ alphanumeric lowercase
  *
  * @example
- * _uuid() => 'g9eem5try3pll9ue' 16
- * _uuid(20) => 'k6yo2zgzodjll9uers4u' 20
- * _uuid(7, 'test_') => 'test_3bmxj2t' 12
- * _uuid(7, 'test_{uuid}_example') => 'test_lk9r5tv_example' 20
- * _uuid(7, 'test_{uuid}_{uuid}_example') => 'test_g948vqf_0s6ms8y_example' 28
+ * _uid() => 'g9eem5try3pll9ue' 16
+ * _uid(20) => 'k6yo2zgzodjll9uers4u' 20
+ * _uid(7, 'test_') => 'test_3bmxj2t' 12
+ * _uid(7, 'test_{uid}_example') => 'test_lk9r5tv_example' 20
+ * _uid(7, 'test_{uid}_{uid}_example') => 'test_g948vqf_0s6ms8y_example' 28
  *
- * @param length - uuid length - integer `number` min=`7`, max=`64` (default `16`)
- * @param template - uuid template - trimmed `string` ~ appends when `'{uuid}'` not in template
+ * @param length - UID length - integer `number` min=`7`, max=`64` (default `16`)
+ * @param template - UID template - trimmed `string` ~ appends when `'{uid}'` not in template
  * @returns unique `string` ~ alphanumeric lowercase `(length[min: 7, max: 64])`
  */
-const _uuid = (length, template) => {
+const _uid = (length, template) => {
     const len = length !== undefined && !isNaN(parseInt(length + '')) && Number.isInteger(length) && length >= 7 && length <= 64 ? length : 16;
-    const _get_uuid = () => {
+    const _get_uid = () => {
         let buffer = '';
         while (buffer.length < len)
             buffer += (0, exports._xuid)();
         return buffer.substring(buffer.length - len);
     };
-    let uuid = '';
+    let uid = '';
     if ('string' === typeof template && (template = template.trim())) {
         let append = true;
-        const tmp = template.replace(/\{uuid\}/g, () => {
+        const tmp = template.replace(/\{uid\}/g, () => {
             if (append)
                 append = false;
-            return _get_uuid();
+            return _get_uid();
         });
-        uuid = append ? tmp + _get_uuid() : tmp;
+        uid = append ? tmp + _get_uid() : tmp;
     }
     else
-        uuid = _get_uuid();
-    return uuid;
+        uid = _get_uid();
+    return uid;
 };
+exports._uid = _uid;
+/**
+ * Get UUID ~ 36 character string _(e.g. `'f552c9f9-1cdb-45f7-8dff-dca0c363e0fb'`)_
+ *
+ * @returns `string`
+ */
+const _uuid = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+});
 exports._uuid = _uuid;
 /**
  * Safely `string` cast value

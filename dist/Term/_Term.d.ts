@@ -135,7 +135,7 @@ export declare class Term {
      * @param noIndex - (default: `false`) whether to remove index column ([#])
      * @param numIndex - (default: `false` ~ `0`) whether index column starts from `1`
      */
-    static table(data: any, cellMaxLength?: number, divider?: boolean, noIndex?: boolean, numIndex?: boolean): void;
+    static table(data: any, cellMaxLength?: number, divider?: boolean, noIndex?: boolean, numIndex?: boolean, rows2cols?: boolean): void;
     /**
      * Console clear logs
      */

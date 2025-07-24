@@ -787,7 +787,7 @@ export const _sort = <T = any>(
  * @returns `string` transformed text where template values are replaced with resolved context values (see examples)
  */
 export const _trans = (template: string, context: {[name: string]: any}, _default: string = 'NULL', _format?: (value:string,path:string,name:string)=>any): string => {
-	// TODO - not urgent: refactor implementation
+	// FIXME: refactor "_trans" implementation (not urgent)
 	const pattern: RegExp = /\{([_0-9a-zA-Z]+)((\.[_0-9a-zA-Z]+)*)\}/g;
 	const value: string = _str(template);
 	if (!value.trim()) return value; //-- ignores blank
@@ -823,6 +823,60 @@ export const _trans = (template: string, context: {[name: string]: any}, _defaul
  * @returns `T[]` array list
  */
 export const _arrayList = <T = any>(values: any): T[] => _isArray(values, true) ? [...values] : [];
+
+/**
+ * Parse iterable 2d array list
+ * 
+ * @param values - parse values
+ * @param objects - parse values as object list (object keys as columns)
+ * @returns `any[][]` array list
+ */
+export const _array2d = (values: any, objects: boolean = false): any[][] => {
+	values = _arrayList(values);
+	const rows: any[][] = [];
+	if (objects) {
+		const cols: Set<string> = new Set();
+		for (let i = 0; i < values.length; i ++) {
+			const item = values[i];
+			if (Object(item) !== item) continue;
+			for (const key of Object.keys(item)) cols.add(key);
+		}
+		if (cols.size) {
+			const columns: any[] = [...cols];
+			rows.push(columns);
+			for (let i = 0; i < values.length; i ++) {
+				const item = values[i], row = [];
+				for (let j = 0; j < columns.length; j ++) row.push(item[columns[j] ?? null]);
+				rows.push(row);
+			}
+		}
+	} else {
+		let arr: any[] = [], row_cols: number = 0;
+		for (let i = 0; i < values.length; i ++) {
+			if (!_isArray(values[i])) continue;
+			const item = _arrayList(values[i]);
+			if (item.length > row_cols) row_cols = item.length;
+			if (item.length) arr.push(item);
+		}
+		for (let i = 0; i < arr.length; i ++) {
+			rows.push([...Array(row_cols)].map((_, j) => arr[i][j] ?? null));
+		}
+	}
+	return rows;
+};
+
+/**
+ * Invert 2d array rows to columns
+ * 
+ * @param values - parse 2d array values
+ * @param objects - parse values as object list (object keys as columns)
+ * @returns `any[][]`
+ */
+export const _rows2cols = (values: any, objects: boolean = false): any[][] => {
+	const arr = _array2d(values, objects);
+	if (!arr.length) return [];
+  return arr[0].map((_, i) => arr.map(row => row[i]));
+};
 
 /**
  * Map values (`object[]`) by key property ID value

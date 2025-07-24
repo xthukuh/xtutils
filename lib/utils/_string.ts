@@ -1,7 +1,7 @@
 import { _jsonStringify } from './_json';
 
 /**
- * Get unique string of random characters
+ * Get XUID ~ unique string of random characters
  * 
  * @example
  * _xuid() => 'zt7eg4eu3b6mf66jga' 18
@@ -11,38 +11,49 @@ import { _jsonStringify } from './_json';
 export const _xuid = (): string => Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
 
 /**
- * Get unique string of random characters `string` ~ alphanumeric lowercase
+ * Get UID ~ unique string of random characters `string` ~ alphanumeric lowercase
  * 
  * @example
- * _uuid() => 'g9eem5try3pll9ue' 16
- * _uuid(20) => 'k6yo2zgzodjll9uers4u' 20
- * _uuid(7, 'test_') => 'test_3bmxj2t' 12
- * _uuid(7, 'test_{uuid}_example') => 'test_lk9r5tv_example' 20
- * _uuid(7, 'test_{uuid}_{uuid}_example') => 'test_g948vqf_0s6ms8y_example' 28
+ * _uid() => 'g9eem5try3pll9ue' 16
+ * _uid(20) => 'k6yo2zgzodjll9uers4u' 20
+ * _uid(7, 'test_') => 'test_3bmxj2t' 12
+ * _uid(7, 'test_{uid}_example') => 'test_lk9r5tv_example' 20
+ * _uid(7, 'test_{uid}_{uid}_example') => 'test_g948vqf_0s6ms8y_example' 28
  * 
- * @param length - uuid length - integer `number` min=`7`, max=`64` (default `16`)
- * @param template - uuid template - trimmed `string` ~ appends when `'{uuid}'` not in template
+ * @param length - UID length - integer `number` min=`7`, max=`64` (default `16`)
+ * @param template - UID template - trimmed `string` ~ appends when `'{uid}'` not in template
  * @returns unique `string` ~ alphanumeric lowercase `(length[min: 7, max: 64])`
  */
-export const _uuid = (length?: number, template?: string): string => {
+export const _uid = (length?: number, template?: string): string => {
 	const len: number = length !== undefined && !isNaN(parseInt(length + '')) && Number.isInteger(length) && length >= 7 && length <= 64 ? length : 16;
-	const _get_uuid = () => {
+	const _get_uid = () => {
 		let buffer = '';
 		while (buffer.length < len) buffer += _xuid();
 		return buffer.substring(buffer.length - len);
 	};
-	let uuid: string = '';
+	let uid: string = '';
 	if ('string' === typeof template && (template = template.trim())){
 		let append: boolean = true;
-		const tmp = template.replace(/\{uuid\}/g, () => {
+		const tmp = template.replace(/\{uid\}/g, () => {
 			if (append) append = false;
-			return _get_uuid();
+			return _get_uid();
 		});
-		uuid = append ? tmp + _get_uuid() : tmp;
+		uid = append ? tmp + _get_uid() : tmp;
 	}
-	else uuid = _get_uuid();
-	return uuid;
+	else uid = _get_uid();
+	return uid;
 };
+
+/**
+ * Get UUID ~ 36 character string _(e.g. `'f552c9f9-1cdb-45f7-8dff-dca0c363e0fb'`)_
+ * 
+ * @returns `string`
+ */
+export const _uuid = (): string => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+	const r = Math.random() * 16 | 0;
+	const v = c === 'x' ? r : (r & 0x3 | 0x8);
+	return v.toString(16);
+});
 
 /**
  * Safely `string` cast value

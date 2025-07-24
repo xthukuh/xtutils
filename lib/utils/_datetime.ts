@@ -466,7 +466,7 @@ const create_duration = (years: number, months: number, days: number, hours: num
  * @returns `IDuration`
  */
 export const _elapsed = (start: any, end: any = undefined, _strict: boolean = false): IDuration => {
-	// TODO - not urgent: improve accuracy 
+	// FIXME: improve '_elapsed' accuracy (not urgent)
 	
 	// parse date arguments
 	if (!(start = _date(start, _strict))) throw new TypeError('Invalid elapsed start date value.');

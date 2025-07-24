@@ -5,11 +5,11 @@
  * @param key - cypher key (default: `'alohomora'`)
  * @returns `string`
  */
-export function _rc4(input: any, pass?: string): Buffer|string
+export function _rc4<TResult extends Buffer|string = Buffer|string>(input: any, pass?: string): TResult
 {
 	const is_buffer = Buffer.isBuffer(input);
 	const data = is_buffer ? input : Buffer.from(String(input ?? ''), 'binary');
-	if (!data.length) return is_buffer ? Buffer.from('') : '';
+	if (!data.length) return (is_buffer ? Buffer.from('') : '') as TResult;
 	let S = Array.from({ length: 256 }, (_, i) => i);
 	let j = 0;
 	pass = String(pass ?? 'alohomora');
@@ -29,5 +29,5 @@ export function _rc4(input: any, pass?: string): Buffer|string
 		if (is_buffer) buffer[n] = transformed_byte;
 		else result += String.fromCharCode(transformed_byte);
 	}
-	return is_buffer ? buffer : result;
+	return (is_buffer ? buffer : result) as TResult;
 };

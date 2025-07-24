@@ -1,5 +1,5 @@
 /**
- * Get unique string of random characters
+ * Get XUID ~ unique string of random characters
  *
  * @example
  * _xuid() => 'zt7eg4eu3b6mf66jga' 18
@@ -8,20 +8,26 @@
  */
 export declare const _xuid: () => string;
 /**
- * Get unique string of random characters `string` ~ alphanumeric lowercase
+ * Get UID ~ unique string of random characters `string` ~ alphanumeric lowercase
  *
  * @example
- * _uuid() => 'g9eem5try3pll9ue' 16
- * _uuid(20) => 'k6yo2zgzodjll9uers4u' 20
- * _uuid(7, 'test_') => 'test_3bmxj2t' 12
- * _uuid(7, 'test_{uuid}_example') => 'test_lk9r5tv_example' 20
- * _uuid(7, 'test_{uuid}_{uuid}_example') => 'test_g948vqf_0s6ms8y_example' 28
+ * _uid() => 'g9eem5try3pll9ue' 16
+ * _uid(20) => 'k6yo2zgzodjll9uers4u' 20
+ * _uid(7, 'test_') => 'test_3bmxj2t' 12
+ * _uid(7, 'test_{uid}_example') => 'test_lk9r5tv_example' 20
+ * _uid(7, 'test_{uid}_{uid}_example') => 'test_g948vqf_0s6ms8y_example' 28
  *
- * @param length - uuid length - integer `number` min=`7`, max=`64` (default `16`)
- * @param template - uuid template - trimmed `string` ~ appends when `'{uuid}'` not in template
+ * @param length - UID length - integer `number` min=`7`, max=`64` (default `16`)
+ * @param template - UID template - trimmed `string` ~ appends when `'{uid}'` not in template
  * @returns unique `string` ~ alphanumeric lowercase `(length[min: 7, max: 64])`
  */
-export declare const _uuid: (length?: number, template?: string) => string;
+export declare const _uid: (length?: number, template?: string) => string;
+/**
+ * Get UUID ~ 36 character string _(e.g. `'f552c9f9-1cdb-45f7-8dff-dca0c363e0fb'`)_
+ *
+ * @returns `string`
+ */
+export declare const _uuid: () => string;
 /**
  * Safely `string` cast value
  * - Returns ISO format timestamp for valid Date value

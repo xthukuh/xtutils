@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._tree = exports._selectKeys = exports._chunks = exports._propsObj = exports.FailError = exports._mapValues = exports._arrayList = exports._trans = exports._sort = exports._dumpVal = exports._flatten = exports._values = exports._isArray = exports._isObject = exports._iterable = exports._empty = exports._valueOf = exports._dotGet = exports._bool = exports._validDotPath = exports._dotInflate = exports._dotFlat = exports._minMax = exports._isFunc = exports._isClass = exports._getProp = exports._hasAnyProps = exports._hasProps = exports._hasProp = exports._getAllProperties = exports._getAllPropertyDescriptors = void 0;
+exports._tree = exports._selectKeys = exports._chunks = exports._propsObj = exports.FailError = exports._mapValues = exports._rows2cols = exports._array2d = exports._arrayList = exports._trans = exports._sort = exports._dumpVal = exports._flatten = exports._values = exports._isArray = exports._isObject = exports._iterable = exports._empty = exports._valueOf = exports._dotGet = exports._bool = exports._validDotPath = exports._dotInflate = exports._dotFlat = exports._minMax = exports._isFunc = exports._isClass = exports._getProp = exports._hasAnyProps = exports._hasProps = exports._hasProp = exports._getAllProperties = exports._getAllPropertyDescriptors = void 0;
 const Buffer_1 = require("../Buffer");
 const _json_1 = require("./_json");
 const _number_1 = require("./_number");
@@ -816,7 +816,7 @@ exports._sort = _sort;
  * @returns `string` transformed text where template values are replaced with resolved context values (see examples)
  */
 const _trans = (template, context, _default = 'NULL', _format) => {
-    // TODO - not urgent: refactor implementation
+    // FIXME: refactor "_trans" implementation (not urgent)
     const pattern = /\{([_0-9a-zA-Z]+)((\.[_0-9a-zA-Z]+)*)\}/g;
     const value = (0, _string_1._str)(template);
     if (!value.trim())
@@ -859,6 +859,68 @@ exports._trans = _trans;
  */
 const _arrayList = (values) => (0, exports._isArray)(values, true) ? [...values] : [];
 exports._arrayList = _arrayList;
+/**
+ * Parse iterable 2d array list
+ *
+ * @param values - parse values
+ * @param objects - parse values as object list (object keys as columns)
+ * @returns `any[][]` array list
+ */
+const _array2d = (values, objects = false) => {
+    values = (0, exports._arrayList)(values);
+    const rows = [];
+    if (objects) {
+        const cols = new Set();
+        for (let i = 0; i < values.length; i++) {
+            const item = values[i];
+            if (Object(item) !== item)
+                continue;
+            for (const key of Object.keys(item))
+                cols.add(key);
+        }
+        if (cols.size) {
+            const columns = [...cols];
+            rows.push(columns);
+            for (let i = 0; i < values.length; i++) {
+                const item = values[i], row = [];
+                for (let j = 0; j < columns.length; j++)
+                    row.push(item[columns[j] ?? null]);
+                rows.push(row);
+            }
+        }
+    }
+    else {
+        let arr = [], row_cols = 0;
+        for (let i = 0; i < values.length; i++) {
+            if (!(0, exports._isArray)(values[i]))
+                continue;
+            const item = (0, exports._arrayList)(values[i]);
+            if (item.length > row_cols)
+                row_cols = item.length;
+            if (item.length)
+                arr.push(item);
+        }
+        for (let i = 0; i < arr.length; i++) {
+            rows.push([...Array(row_cols)].map((_, j) => arr[i][j] ?? null));
+        }
+    }
+    return rows;
+};
+exports._array2d = _array2d;
+/**
+ * Invert 2d array rows to columns
+ *
+ * @param values - parse 2d array values
+ * @param objects - parse values as object list (object keys as columns)
+ * @returns `any[][]`
+ */
+const _rows2cols = (values, objects = false) => {
+    const arr = (0, exports._array2d)(values, objects);
+    if (!arr.length)
+        return [];
+    return arr[0].map((_, i) => arr.map(row => row[i]));
+};
+exports._rows2cols = _rows2cols;
 /**
  * Map values (`object[]`) by key property ID value
  * - ID value is a trimmed `string` (lowercase when argument `_lowercase` is `true`)

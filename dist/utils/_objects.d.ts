@@ -310,6 +310,22 @@ export declare const _trans: (template: string, context: {
  */
 export declare const _arrayList: <T = any>(values: any) => T[];
 /**
+ * Parse iterable 2d array list
+ *
+ * @param values - parse values
+ * @param objects - parse values as object list (object keys as columns)
+ * @returns `any[][]` array list
+ */
+export declare const _array2d: (values: any, objects?: boolean) => any[][];
+/**
+ * Invert 2d array rows to columns
+ *
+ * @param values - parse 2d array values
+ * @param objects - parse values as object list (object keys as columns)
+ * @returns `any[][]`
+ */
+export declare const _rows2cols: (values: any, objects?: boolean) => any[][];
+/**
  * Map values (`object[]`) by key property ID value
  * - ID value is a trimmed `string` (lowercase when argument `_lowercase` is `true`)
  *

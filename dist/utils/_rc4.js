@@ -12,7 +12,7 @@ function _rc4(input, pass) {
     const is_buffer = Buffer.isBuffer(input);
     const data = is_buffer ? input : Buffer.from(String(input ?? ''), 'binary');
     if (!data.length)
-        return is_buffer ? Buffer.from('') : '';
+        return (is_buffer ? Buffer.from('') : '');
     let S = Array.from({ length: 256 }, (_, i) => i);
     let j = 0;
     pass = String(pass ?? 'alohomora');
@@ -34,7 +34,7 @@ function _rc4(input, pass) {
         else
             result += String.fromCharCode(transformed_byte);
     }
-    return is_buffer ? buffer : result;
+    return (is_buffer ? buffer : result);
 }
 exports._rc4 = _rc4;
 ;

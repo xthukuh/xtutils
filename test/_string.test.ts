@@ -1,4 +1,5 @@
 import {
+	_uid,
 	_uuid,
 	_string,
 	_stringable,
@@ -19,9 +20,16 @@ import {
 import { _expectTests } from './__helpers';
 
 //_uuid
-describe('\n  _uuid: (length: number) => string', () => {
-	test('generate random string of length 20 (i.e. "") ---> true', () => {
-		expect(_uuid(20).length).toBe(20);
+describe('\n  _uuid: () => string', () => {
+	test('generate UUID string of length 36 (i.e. "f552c9f9-1cdb-45f7-8dff-dca0c363e0fb") ---> true', () => {
+		expect(_uuid().length).toBe(36);
+	});
+});
+
+//_uid
+describe('\n  _uid: (length: number) => string', () => {
+	test('generate random string of length 20 (e.g., "d9desfufpoykmdho6ed9") ---> true', () => {
+		expect(_uid(20).length).toBe(20);
 	});
 });
 

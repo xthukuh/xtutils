@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"editor.tabSize": 2,
+		"editor.detectIndentation": false,
+		"editor.insertSpaces": false,
+		"git.repositoryScanIgnoredFolders": [
+			"node_modules",
+			"dist"
+		],
+		"search.exclude": {
+			"**/dist": true
+		},
+		"workbench.colorCustomizations": {
+			// "activityBar.background": "#4e0359",
+			"titleBar.activeBackground": "#840698",
+			"titleBar.activeForeground": "#FCF9FA",
+			"titleBar.inactiveBackground": "#4e0359",
+			"titleBar.inactiveForeground": "#FCF9FA",
+		}
+	}
+}
