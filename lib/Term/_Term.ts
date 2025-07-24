@@ -1,4 +1,4 @@
-import { _clone, _jsonStringify, _isDate, _str, _string, _stringable, _strEscape, _bool, _posInt } from '../utils';
+import { _clone, _jsonStringify, _isDate, _str, _string, _stringable, _strEscape, _bool, _posInt, _rows2cols, _isArray } from '../utils';
 
 /**
  * Term format result interface
@@ -33,34 +33,40 @@ export class Term
 	/**
 	 * Format disabled
 	 */
-	static get FORMAT_DISABLED(): boolean {
+	static get FORMAT_DISABLED(): boolean
+	{
 		return TERM_FORMAT_DISABLED;
 	}
-	static set FORMAT_DISABLED(value: any){
+	static set FORMAT_DISABLED(value: any)
+	{
 		TERM_FORMAT_DISABLED = _bool(value, true) ?? false;
 	}
 
 	/**
 	 * Console log methods
 	 */
-	static get LOG_METHODS(): string[] {
+	static get LOG_METHODS(): string[]
+	{
 		return ['log', 'debug', 'warn', 'error', 'info'];
 	}
 
 	/**
 	 * Preferred console log method
 	 */
-	static get LOG_METHOD(): undefined|'log'|'debug'|'warn'|'error'|'info' {
+	static get LOG_METHOD(): undefined|'log'|'debug'|'warn'|'error'|'info'
+	{
 		return TERM_LOG_METHOD;
 	}
-	static set LOG_METHOD(value: any){
+	static set LOG_METHOD(value: any)
+	{
 		TERM_LOG_METHOD = this.LOG_METHODS.includes(value) ? value : undefined;
 	}
 
 	/**
 	 * Text formats
 	 */
-	static get FORMATS(): {[key: string]: string} {
+	static get FORMATS(): {[key: string]: string}
+	{
 		return {
 			reset: '\x1b[0m',
 			bright: '\x1b[1m',
@@ -93,7 +99,8 @@ export class Term
 	/**
 	 * Predefined text formats
 	 */
-	static get PREDEFINED_FORMATS(): {[key: string]: string|string[]} {
+	static get PREDEFINED_FORMATS(): {[key: string]: string|string[]}
+	{
 		return {
 			log: 'fg_white',
 			dump: ['fg_white', 'bright'],
@@ -117,7 +124,8 @@ export class Term
 	 * @param formats - text formats
 	 * @returns `string[]`
 	 */
-	static getFormats(formats: string|string[]): string[] {
+	static getFormats(formats: string|string[]): string[]
+	{
 		const FM = this.FORMATS;
 		const PF = this.PREDEFINED_FORMATS;
 		const _formats: string[] = Array.isArray(formats) ? formats : 'string' === typeof formats ? [formats] : [];
@@ -145,7 +153,8 @@ export class Term
 	 * @param args - parse items (arguments)
 	 * @returns `ITermFormat`
 	 */
-	static format(formats: string|string[], ...args: any[]): ITermFormat {
+	static format(formats: string|string[], ...args: any[]): ITermFormat
+	{
 		
 		//-- fn => format helpers
 		let tmp: string;
@@ -285,7 +294,8 @@ export class Term
 	 * @param args - parse items (arguments)
 	 * @returns `any[]`
 	 */
-	static clean(...args: any[]): any[] {
+	static clean(...args: any[]): any[]
+	{
 		const _clean = (val: string): string => Object.values(this.FORMATS).reduce<string>((p, v)=> p.replace(new RegExp(String(v).replace(/\x1B/, '\\x1B').replace(/\[/, '\\['), 'g'), ''), val);
 		const values: any[] = [];
 		for (const val of args) values.push('string' === typeof val && val.trim().length ? _clean(val) : val);
@@ -299,7 +309,8 @@ export class Term
 	 * @param formats - text formats
 	 * @returns `string`
 	 */
-	static text(value: string, formats?: string|string[]): string {
+	static text(value: string, formats?: string|string[]): string
+	{
 		const _val: string = _string(value);
 		const _formats: string[] = [], _formats_list: string[] = (Array.isArray(formats) ? formats : 'string' === typeof formats ? [formats] : []);
 		for (const v of _formats_list){
@@ -312,7 +323,8 @@ export class Term
 	/**
 	 * Print line ~ `console.log(' ')`
 	 */
-	static br(): void {
+	static br(): void
+	{
 		console.log(' ');
 	}
 
@@ -321,7 +333,8 @@ export class Term
 	 * 
 	 * @param args - log arguments
 	 */
-	static log(...args: any[]): void {
+	static log(...args: any[]): void
+	{
 		this.format('log', ...args).log();
 	}
 
@@ -330,7 +343,8 @@ export class Term
 	 * 
 	 * @param args - log arguments
 	 */
-	static debug(...args: any[]): void {
+	static debug(...args: any[]): void
+	{
 		this.format('debug', ...args).debug();
 	}
 
@@ -339,7 +353,8 @@ export class Term
 	 * 
 	 * @param args - log arguments
 	 */
-	static error(...args: any[]): void {
+	static error(...args: any[]): void
+	{
 		this.format('error', ...args).error();
 	}
 
@@ -348,7 +363,8 @@ export class Term
 	 * 
 	 * @param args - log arguments
 	 */
-	static warn(...args: any[]): void {
+	static warn(...args: any[]): void
+	{
 		this.format('warn', ...args).warn();
 	}
 
@@ -357,7 +373,8 @@ export class Term
 	 * 
 	 * @param args - log arguments
 	 */
-	static info(...args: any[]): void {
+	static info(...args: any[]): void
+	{
 		this.format('info', ...args).info();
 	}
 
@@ -366,7 +383,8 @@ export class Term
 	 * 
 	 * @param args - log arguments
 	 */
-	static success(...args: any[]): void {
+	static success(...args: any[]): void
+	{
 		this.format('success', ...args).log();
 	}
 
@@ -377,7 +395,8 @@ export class Term
 	 * @param _entries - (default: `false`) whether to parse entries ~ `Object.entries(value)`
 	 * @returns `[list: any[], type:'values'|'entries']`
 	 */
-	static list(value: any, _entries: boolean = false): [list: any[], type:'values'|'entries'] {
+	static list(value: any, _entries: boolean = false): [list: any[], type:'values'|'entries']
+	{
 		let items: any[] = [value = _clone(value)], type: 'values'|'entries' = 'values';
 		if ('object' === typeof value && value){
 			if (!(type = value[Symbol.iterator]?.name)){
@@ -414,13 +433,14 @@ export class Term
 	 * @param noIndex - (default: `false`) whether to remove index column ([#])
 	 * @param numIndex - (default: `false` ~ `0`) whether index column starts from `1`
 	 */
-	static table(data: any, cellMaxLength?: number, divider?: boolean, noIndex?: boolean, numIndex?: boolean): void {
-		
-		//args
+	static table(data: any, cellMaxLength?: number, divider?: boolean, noIndex?: boolean, numIndex?: boolean, rows2cols?: boolean): void
+	{	
+		// args
 		let args_cellMaxLength: number|undefined = undefined;
 		let args_divider: boolean|undefined = undefined;
 		let args_noIndex: boolean|undefined = undefined;
 		let args_numIndex: boolean|undefined = undefined;
+		let args_rows2cols: boolean|undefined = undefined;
 		const args_text: string = typeof process !== 'undefined' && Array.isArray(process?.argv) ? process.argv.slice(2).join('|') : '';
 		let args_match: RegExpMatchArray|null = args_text.match(/--cellMaxLength=(\d+)(\||$)/);
 		if (args_match) args_cellMaxLength = _posInt(args_match[1], 0);
@@ -430,16 +450,20 @@ export class Term
 		else if (!!(args_match = args_text.match(/--noIndex=false(\||$)/))) args_noIndex = false;
 		if (!!(args_match = args_text.match(/--numIndex(\||$)/))) args_numIndex = true;
 		else if (!!(args_match = args_text.match(/--numIndex=false(\||$)/))) args_numIndex = false;
+		if (!!(args_match = args_text.match(/--rows2cols(\||$)/))) args_rows2cols = true;
+		else if (!!(args_match = args_text.match(/--rows2cols=false(\||$)/))) args_rows2cols = false;
 		cellMaxLength = args_cellMaxLength ?? _posInt(cellMaxLength, 0) ?? 250;
 		divider = args_divider ?? divider ?? false;
 		noIndex = args_noIndex ?? noIndex ?? false;
 		numIndex = args_numIndex ?? numIndex ?? false;
+		rows2cols = args_rows2cols ?? rows2cols ?? false;
 
-		//vars
+		// vars
 		const that = this;
+		if (Object(data) === data && !_isArray(data)) data = [data];
 		const [data_items, data_type] = that.list(data, 'object' === typeof data && data && !_stringable(data));
-
-		//fn => str value
+		
+		// fn => str value
 		const strVal = (val: any): [_value: string, _format: string] => {
 			let color: string, tmp: any;
 			if (!Array.isArray(val) && (tmp = _stringable(val)) !== false){
@@ -466,28 +490,26 @@ export class Term
 			val = val.replace(/\t/g, '  ');
 			const _val: string = _strEscape(val)
 			.replace(/(\\n)+/g, '\n').trim(); //++ multiline support
-			// console.log(_val);
 			return [_val, color];
 		};
 
-		//table items
+		// table items
 		let mode: 'values'|'entries' = undefined as any;
 		const table_items: any[][] = [];
-		if (data_type === 'entries'){
-			if (!noIndex) table_items.push(['[#]', 'Values']);
+		if (data_type === 'entries') {
+			if (!noIndex) data_items.unshift(['[#]', 'Values']);
 			table_items.push(...data_items);
-		}
-		else {
+		} else {
 			let map_keys: string[] = [], map_items: {[key: string]: any}[] = [];
-			for (let r = 0; r < data_items.length; r ++){
+			for (let r = 0; r < data_items.length; r ++) {
 				const data_item = data_items[r];
 				let [list_items, list_type] = that.list(data_item, !r || mode === 'entries');
 				if (!r) mode = list_type;
 				const map_item: {[key: string]: any} = {};
-				for (let i = 0; i < list_items.length; i ++){
+				for (let i = 0; i < list_items.length; i ++) {
 					const item = list_items[i];
 					let k: string, v: any;
-					if (list_type === 'entries'){
+					if (list_type === 'entries') {
 						k = _str(item[0], true, true);
 						v = item[1];
 					}
@@ -500,38 +522,42 @@ export class Term
 				}
 				map_items.push(map_item);
 			}
-			if (!noIndex) table_items.push(['[#]', ...map_keys]);
-			for (let r = 0; r < map_items.length; r ++){
+			const has_index = !noIndex && !(map_keys.length === 1 && map_keys[0] === '0');
+			if (has_index) table_items.push(['[#]', ...map_keys]);
+			for (let r = 0; r < map_items.length; r ++) {
 				const table_item: any[] = [], map_item = map_items[r];
 				for (const key of map_keys) table_item.push(map_item[key]);
-				table_items.push([...(!noIndex ? [r + (numIndex ? 1 : 0)] : []), ...table_item]);
+				table_items.push([...(has_index ? [r + (numIndex ? 1 : 0)] : []), ...table_item]);
 			}
 		}
 
-		//width
+		// rows2cols
+		const table_rows = rows2cols ? _rows2cols(table_items) : table_items;
+
+		// width
 		const width_map: {[key: number]: number} = {};
 		const str_items: [_value: string, _format: string][][] = [];
-		for (const table_item of table_items){
+		for (const table_item of table_rows) {
 			const str_item: [_value: string, _format: string][] = [];
-			for (let i = 0; i < table_item.length; i ++){
+			for (let i = 0; i < table_item.length; i ++) {
 				const val = table_item[i];
 				const [_value, _format] = strVal(val);
 				if (!width_map.hasOwnProperty(i)) width_map[i] = 0;
-				let width = 0; //++ multiline support
-				for (const txt of _value.split('\n')){ //++ multiline support
+				let width = 0; // ++ multiline support
+				for (const txt of _value.split('\n')){ // ++ multiline support
 					let len = txt.length;
-					if (cellMaxLength && len > cellMaxLength) len = cellMaxLength; //cellMaxLength limit
+					if (cellMaxLength && len > cellMaxLength) len = cellMaxLength; // cellMaxLength limit
 					if (len > width) width = len;
 				}
-				if (width > width_map[i]) width_map[i] = width; //++ multiline support
+				if (width > width_map[i]) width_map[i] = width; // ++ multiline support
 				str_item.push([_value, _format]);
 			}
 			str_items.push(str_item);
 		}
 
-		//rows
+		// rows
 		const rows_len: number = str_items.length;
-		for (let r = 0; r < str_items.length; r ++){
+		for (let r = 0; r < str_items.length; r ++) {
 			const str_item = str_items[r];
 			let max_lines: number = 0;
 			let str_item_lines: string[][] = [];
@@ -688,7 +714,8 @@ export class Term
 	/**
 	 * Console clear logs
 	 */
-	static get clear(): () => void {
+	static get clear(): () => void
+	{
 		return function(): void {
 			console.log('\x1Bc');
 			console.clear();
