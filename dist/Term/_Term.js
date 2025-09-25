@@ -546,7 +546,7 @@ class Term {
             let str_item_lines = [];
             for (let i = 0; i < str_item.length; i++) {
                 let [_value, _format] = str_item[i];
-                if (!i || !r)
+                if (!i || !r && !noIndex)
                     _format = (!i && r && mode === 'values') ? 'gray' : 'white';
                 const width = width_map[i];
                 const lines = [];
@@ -670,7 +670,7 @@ class Term {
                 rows.push(b.left + line_row.join(b.mid) + b.right);
                 //-- border mid
                 b = lines_mid[bm];
-                if ((!r || divider) && n + 1 === len && r + 1 < rows_len) {
+                if ((!r && !noIndex || divider) && n + 1 === len && r + 1 < rows_len) {
                     let border_mid = b.left;
                     for (let i = 0; i < line_row.length; i++) {
                         border_mid += (i ? b.mid : '') + ''.padEnd(width_map[i], b.line);

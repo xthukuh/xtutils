@@ -564,7 +564,7 @@ export class Term
 			let str_item_lines: string[][] = [];
 			for (let i = 0; i < str_item.length; i ++){
 				let [_value, _format] = str_item[i];
-				if (!i || !r) _format = (!i && r && mode === 'values') ? 'gray' : 'white';
+				if (!i || !r && !noIndex) _format = (!i && r && mode === 'values') ? 'gray' : 'white';
 				const width: number = width_map[i];
 				const lines: string[] = [];
 				for (let txt of _value.split('\n')){ //++ multiline support
@@ -667,7 +667,7 @@ export class Term
 			// BOX_SUDLR   ┼
 			
 			//-- table borders
-			for (let n = 0; n < line_rows.length; n ++){
+			for (let n = 0; n < line_rows.length; n ++) {
 				const line_row = line_rows[n];
 				let b: any, bm: number = borderMode === 0 ? 0 : 1;
 
@@ -688,7 +688,7 @@ export class Term
 
 				//-- border mid
 				b = lines_mid[bm];
-				if ((!r || divider) && n + 1 === len && r + 1 < rows_len){
+				if ((!r && !noIndex || divider) && n + 1 === len && r + 1 < rows_len) {
 					let border_mid: string = b.left;
 					for (let i = 0; i < line_row.length; i ++){
 						border_mid += (i ? b.mid : '') + ''.padEnd(width_map[i], b.line);
