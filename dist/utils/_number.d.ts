@@ -261,3 +261,29 @@ export declare const _parse_float: (val: any, _default?: number) => number;
  * @returns `number`
  */
 export declare const _clamp: (num: any, min: any, max: any) => number;
+/**
+ * `TXColumn` describes the returned structure from _xcolumn.
+ */
+export type TXColumn = {
+    text: Readonly<string>;
+    value: Readonly<number>;
+    indexes: Readonly<number[]>;
+    valueOf(): number;
+    toString(): string;
+};
+/**
+ * Convert between Excel style column labels and 1-based numeric column index.
+ *
+ * Example Usage:
+ * ```js
+ * _xcolumn(1);           // { text: 'A', value: 1, indexes: [0] }
+ * _xcolumn('AA');        // { text: 'AA', value: 27, indexes: [0,0] }
+ * Number(_xcolumn('B')); // 2
+ * String(_xcolumn(10));  // 'J'
+ * ```
+ *
+ * @param column - positive integer or alphabetical Excel-like column string
+ * @returns TXColumn with coercion helpers (valueOf and toString)
+ * @throws RangeError on invalid input
+ */
+export declare const _xcolumn: (column: number | string) => TXColumn;

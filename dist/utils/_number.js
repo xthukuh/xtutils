@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._clamp = exports._parse_float = exports._parse_int = exports._numk = exports._logx = exports._distance = exports._rad2deg = exports._deg2rad = exports._base2dec = exports._oct2dec = exports._dec2oct = exports._hex2dec = exports._dec2hex = exports._bin2dec = exports._dec2bin = exports._dec2base = exports._bytesVal = exports._px2rem = exports._rand = exports._commas = exports._round = exports._posInt = exports._int = exports._posNum = exports._num = exports._numeric = void 0;
+exports._xcolumn = exports._clamp = exports._parse_float = exports._parse_int = exports._numk = exports._logx = exports._distance = exports._rad2deg = exports._deg2rad = exports._base2dec = exports._oct2dec = exports._dec2oct = exports._hex2dec = exports._dec2hex = exports._bin2dec = exports._dec2bin = exports._dec2base = exports._bytesVal = exports._px2rem = exports._rand = exports._commas = exports._round = exports._posInt = exports._int = exports._posNum = exports._num = exports._numeric = void 0;
 /**
  * Check if value is numeric
  *
@@ -518,4 +518,70 @@ exports._parse_float = _parse_float;
  */
 const _clamp = (num, min, max) => Math.min(Math.max((0, exports._num)(min), (0, exports._num)(num)), (0, exports._num)(max));
 exports._clamp = _clamp;
+/**
+ * Convert between Excel style column labels and 1-based numeric column index.
+ *
+ * Example Usage:
+ * ```js
+ * _xcolumn(1);           // { text: 'A', value: 1, indexes: [0] }
+ * _xcolumn('AA');        // { text: 'AA', value: 27, indexes: [0,0] }
+ * Number(_xcolumn('B')); // 2
+ * String(_xcolumn(10));  // 'J'
+ * ```
+ *
+ * @param column - positive integer or alphabetical Excel-like column string
+ * @returns TXColumn with coercion helpers (valueOf and toString)
+ * @throws RangeError on invalid input
+ */
+const _xcolumn = (column) => {
+    const _res = (text, value, indexes) => {
+        return {
+            get text() { return text; },
+            get value() { return value; },
+            get indexes() { return indexes; },
+            valueOf() {
+                return value;
+            },
+            toString() {
+                return text;
+            }
+        };
+    };
+    const _throw = (err) => {
+        err = '[_xcolumn] ' + err;
+        console.warn(err, { column });
+        throw new RangeError(err);
+    };
+    if (typeof column === 'number') {
+        const n = Math.floor(column);
+        if (!isFinite(n) || n < 1)
+            _throw('column number must be a positive integer');
+        let x = n;
+        let chars = [];
+        const indexes = [];
+        while (x > 0) {
+            x -= 1;
+            const rem = x % 26;
+            indexes.unshift(rem);
+            chars.unshift(String.fromCharCode(65 + rem));
+            x = Math.floor(x / 26);
+        }
+        const text = chars.join('');
+        return _res(text, n, indexes);
+    }
+    const s = String(column).trim().toUpperCase();
+    if (s.length === 0)
+        _throw('column string must not be empty');
+    const indexes = [];
+    let value = 0;
+    for (let i = 0, len = s.length; i < len; i += 1) {
+        const code = s.charCodeAt(i) - 65;
+        if (code < 0 || code > 25)
+            _throw('invalid column string, must contain A-Z only');
+        indexes.push(code);
+        value = value * 26 + (code + 1);
+    }
+    return _res(s, value, indexes);
+};
+exports._xcolumn = _xcolumn;
 //# sourceMappingURL=_number.js.map
