@@ -21,6 +21,9 @@
 			"titleBar.activeForeground": "#FCF9FA",
 			"titleBar.inactiveBackground": "#4e0359",
 			"titleBar.inactiveForeground": "#FCF9FA",
-		}
+		},
+		"cSpell.ignoreRegExpList": [
+			"/\\b[_x][\\w]+\\b/"
+		],
 	}
 }

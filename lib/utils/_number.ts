@@ -486,3 +486,77 @@ export const _parse_float = (val: any, _default: number = 0): number => {
  * @returns `number`
  */
 export const _clamp = (num: any, min: any, max: any): number => Math.min(Math.max(_num(min), _num(num)), _num(max));
+
+/**
+ * `TXColumn` describes the returned structure from _xcolumn.
+ */
+export type TXColumn = {
+	text: Readonly<string>;
+	value: Readonly<number>;
+	indexes: Readonly<number[]>;
+	valueOf(): number;
+	toString(): string;
+};
+
+/**
+ * Convert between Excel style column labels and 1-based numeric column index.
+ *
+ * Example Usage:
+ * ```js
+ * _xcolumn(1);           // { text: 'A', value: 1, indexes: [0] }
+ * _xcolumn('AA');        // { text: 'AA', value: 27, indexes: [0,0] }
+ * Number(_xcolumn('B')); // 2
+ * String(_xcolumn(10));  // 'J'
+ * ```
+ * 
+ * @param column - positive integer or alphabetical Excel-like column string
+ * @returns TXColumn with coercion helpers (valueOf and toString)
+ * @throws RangeError on invalid input
+ */
+export const _xcolumn = (column: number|string): TXColumn => {
+	const _res = (text: string, value: number, indexes: number[]): TXColumn => {
+		return {
+			get text(): string { return text; },
+			get value(): number { return value; },
+			get indexes(): number[] { return indexes; },
+			valueOf() {
+				return value;
+			},
+			toString() {
+				return text;
+			}
+		};
+	};
+	const _throw = (err: string): void => {
+		err = '[_xcolumn] ' + err;
+		console.warn(err, {column});
+		throw new RangeError(err);
+	};
+	if (typeof column === 'number') {
+		const n = Math.floor(column);
+		if (!isFinite(n) || n < 1) _throw('column number must be a positive integer');
+		let x = n;
+		let chars: string[] = [];
+		const indexes: number[] = [];
+		while (x > 0) {
+			x -= 1;
+			const rem = x % 26;
+			indexes.unshift(rem);
+			chars.unshift(String.fromCharCode(65 + rem));
+			x = Math.floor(x / 26);
+		}
+		const text = chars.join('');
+		return _res(text, n, indexes);
+	}
+	const s = String(column).trim().toUpperCase();
+	if (s.length === 0) _throw('column string must not be empty');
+	const indexes: number[] = [];
+	let value = 0;
+	for (let i = 0, len = s.length; i < len; i += 1) {
+		const code = s.charCodeAt(i) - 65;
+		if (code < 0 || code > 25) _throw('invalid column string, must contain A-Z only');
+		indexes.push(code);
+		value = value * 26 + (code + 1);
+	}
+	return _res(s, value, indexes);
+};

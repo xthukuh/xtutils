@@ -5,8 +5,9 @@ import {
 	_round,
 	_logx,
 	_numk,
+	TXColumn,
+	_xcolumn,
 } from '../lib';
-import { _expectTests } from './__helpers';
 
 // _deg2rad
 describe('\n _deg2rad: (degrees: number) => number', () => {
@@ -49,7 +50,7 @@ describe('\n _rad2deg: (radians: number) => number', () => {
 	});
 });
 
-//_distance
+// _distance
 describe('_distance: (latitude1: number, longitude1: number, latitude2: number, longitude2: number) => number', () => {
 	it('calculates the distance between two known coordinates correctly', () => {
 		// The approximate distance between New York City and Los Angeles is 3939 km
@@ -130,5 +131,77 @@ describe('_numk: (value: number, places: number = 1) => string', () => {
 		expect(_numk(1500, -1)).toBe('1.5k');
 		expect(_numk(1500, 4)).toBe('1.5k'); // Assuming places are constrained to 0-3
 		expect(_numk(1500, NaN)).toBe('1.5k');
+	});
+});
+
+describe('\n _xcolumn: (column: number | string) => TXColumn', () => {
+	it('Returns TXColumn from integer column argument 1 -> A', () => {
+		const r: TXColumn = _xcolumn(1);
+		expect(r).toBeDefined();
+		expect(r.text).toBe('A');
+		expect(r.value).toBe(1);
+		expect(r.indexes).toEqual([0]);
+	});
+
+	it('Returns TXColumn from integer column argument 33 -> AG', () => {
+		const r: TXColumn = _xcolumn(33);
+		expect(r.text).toBe('AG');
+		expect(r.value).toBe(33);
+		expect(r.indexes).toEqual([0, 6]);
+	});
+
+	it('Returns TXColumn from string column "X"', () => {
+		const r: TXColumn = _xcolumn('X');
+		expect(r.text).toBe('X');
+		expect(r.value).toBe(24);
+		expect(r.indexes).toEqual([23]);
+	});
+
+	it('Returns TXColumn from string column "AA"', () => {
+		const r: TXColumn = _xcolumn('AA');
+		expect(r.text).toBe('AA');
+		expect(r.value).toBe(27);
+		expect(r.indexes).toEqual([0, 0]);
+	});
+
+	it('Supports numeric coercion via Number(result)', () => {
+		const n = Number(_xcolumn('B'));
+		expect(n).toBe(2);
+		const n2 = Number(_xcolumn('ZZ'));
+		expect(n2).toBe(702);
+	});
+
+	it('Supports string coercion via String(result)', () => {
+		const s = String(_xcolumn(10));
+		expect(s).toBe('J');
+		const s2 = String(_xcolumn(702));
+		expect(s2).toBe('ZZ');
+	});
+
+	it('Trims and uppercases string input', () => {
+		const r: TXColumn = _xcolumn('  ab ');
+		expect(r.text).toBe('AB');
+		expect(r.value).toBe(28);
+		expect(r.indexes).toEqual([0, 1]);
+	});
+
+	it('Throws on invalid numeric inputs (0, negative, NaN, Infinity)', () => {
+		expect(() => _xcolumn(0)).toThrow(RangeError);
+		expect(() => _xcolumn(-5)).toThrow(RangeError);
+		expect(() => _xcolumn(Number.NaN)).toThrow(RangeError);
+		expect(() => _xcolumn(Number.POSITIVE_INFINITY)).toThrow(RangeError);
+	});
+
+	it('Throws on invalid string inputs', () => {
+		expect(() => _xcolumn('')).toThrow(RangeError);
+		expect(() => _xcolumn('A1')).toThrow(RangeError);
+		expect(() => _xcolumn('!@#')).toThrow(RangeError);
+	});
+
+	it('Handles large columns correctly (example: 16384 -> XFD)', () => {
+		const r: TXColumn = _xcolumn(16384);
+		expect(r.text).toBe('XFD');
+		expect(r.value).toBe(16384);
+		expect(r.indexes).toEqual([23, 5, 3]);
 	});
 });
