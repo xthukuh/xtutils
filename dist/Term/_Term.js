@@ -390,44 +390,66 @@ class Term {
      * - `numIndex` = `--numIndex` | `--numIndex=false`
      *
      * @param data - log data
-     * @param cellMaxLength - `--cellMaxLength=250` table max cell length (width)  (default: `250`)
+     * @param optionsOrCellMaxLength
+     * * table options `{cellMaxLength?:number,divider?:boolean,noIndex?:boolean,numIndex?:boolean,rows2cols?:boolean}`
+     * - `--cellMaxLength=250` table max cell length (width)  (default: `250`)
      * @param divider - `--divider` whether to add row divider (default: `false`)
      * @param noIndex - `--noIndex` whether to remove index column ([#]) (default: `false`)
      * @param numIndex - `--numIndex` whether index column starts from `1` (default: `false`)
      * @param rows2cols - `--rows2cols` whether to display rows as columns (default: `false`)
+     * @param rows2cols - `--rows2cols` whether to display rows as columns (default: `false`)
      */
-    static table(data, cellMaxLength, divider, noIndex, numIndex, rows2cols) {
+    static table(data, optionsOrCellMaxLength, divider, noIndex, numIndex, rows2cols, repeatHdr) {
+        // options
+        let cellMaxLength = undefined;
+        if (Object(optionsOrCellMaxLength) === optionsOrCellMaxLength) {
+            const opts = optionsOrCellMaxLength;
+            cellMaxLength = opts.hasOwnProperty('cellMaxLength') ? opts.cellMaxLength : undefined;
+            divider = opts.hasOwnProperty('divider') ? opts.divider ?? undefined : undefined;
+            noIndex = opts.hasOwnProperty('noIndex') ? opts.noIndex ?? undefined : undefined;
+            numIndex = opts.hasOwnProperty('numIndex') ? opts.numIndex ?? undefined : undefined;
+            rows2cols = opts.hasOwnProperty('rows2cols') ? opts.rows2cols ?? undefined : undefined;
+            repeatHdr = opts.hasOwnProperty('repeatHdr') ? opts.repeatHdr ?? undefined : undefined;
+        }
+        else
+            cellMaxLength = (0, utils_1._posInt)(optionsOrCellMaxLength, 0);
         // args
         let args_cellMaxLength = undefined;
         let args_divider = undefined;
         let args_noIndex = undefined;
         let args_numIndex = undefined;
         let args_rows2cols = undefined;
+        let args_repeatHdr = undefined;
         const args_text = typeof process !== 'undefined' && Array.isArray(process?.argv) ? process.argv.slice(2).join('|') : '';
-        let args_match = args_text.match(/--cellMaxLength=(\d+)(\||$)/);
-        if (args_match)
-            args_cellMaxLength = (0, utils_1._posInt)(args_match[1], 0);
-        if (!!(args_match = args_text.match(/--divider(\||$)/)))
+        let m = args_text.match(/--cellMaxLength=(\d+)(\||$)/);
+        if (m)
+            args_cellMaxLength = (0, utils_1._posInt)(m[1], 0);
+        if (args_text.match(/--divider(\||$)/))
             args_divider = true;
-        else if (!!(args_match = args_text.match(/--divider=false(\||$)/)))
+        else if (args_text.match(/--divider=false(\||$)/))
             args_divider = false;
-        if (!!(args_match = args_text.match(/--noIndex(\||$)/)))
+        if (args_text.match(/--noIndex(\||$)/))
             args_noIndex = true;
-        else if (!!(args_match = args_text.match(/--noIndex=false(\||$)/)))
+        else if (args_text.match(/--noIndex=false(\||$)/))
             args_noIndex = false;
-        if (!!(args_match = args_text.match(/--numIndex(\||$)/)))
+        if (args_text.match(/--numIndex(\||$)/))
             args_numIndex = true;
-        else if (!!(args_match = args_text.match(/--numIndex=false(\||$)/)))
+        else if (args_text.match(/--numIndex=false(\||$)/))
             args_numIndex = false;
-        if (!!(args_match = args_text.match(/--rows2cols(\||$)/)))
+        if (args_text.match(/--rows2cols(\||$)/))
             args_rows2cols = true;
-        else if (!!(args_match = args_text.match(/--rows2cols=false(\||$)/)))
+        else if (args_text.match(/--rows2cols=false(\||$)/))
             args_rows2cols = false;
+        if (args_text.match(/--repeatHdr(\||$)/))
+            args_repeatHdr = true;
+        else if (args_text.match(/--repeatHdr=false(\||$)/))
+            args_repeatHdr = false;
         cellMaxLength = args_cellMaxLength ?? (0, utils_1._posInt)(cellMaxLength, 0) ?? 250;
         divider = args_divider ?? divider ?? false;
         noIndex = args_noIndex ?? noIndex ?? false;
         numIndex = args_numIndex ?? numIndex ?? false;
         rows2cols = args_rows2cols ?? rows2cols ?? false;
+        repeatHdr = args_repeatHdr ?? repeatHdr ?? false;
         // vars
         const that = this;
         if (Object(data) === data && !(0, utils_1._isArray)(data))
@@ -538,7 +560,12 @@ class Term {
             }
             str_items.push(str_item);
         }
+        //TODO: border modes
+        const borderMode = 0;
+        const bm = borderMode === 0 ? 0 : 1;
         // rows
+        let hdr_lines = '';
+        const hdr_rows = typeof process !== 'undefined' ? process.stdout.rows - (noIndex ? 0 : 3) : 0;
         const rows_len = str_items.length;
         for (let r = 0; r < str_items.length; r++) {
             const str_item = str_items[r];
@@ -608,8 +635,6 @@ class Term {
                 { left: '│ ', mid: ' │ ', right: ' │' },
                 { left: '║ ', mid: ' ║ ', right: ' ║' },
             ];
-            //TODO: border modes
-            const borderMode = 0;
             //REF: https://cboard.cprogramming.com/c-programming/151930-ascii-table-border.html
             // BOX_DLR     ═
             // BOX_DUD     ║
@@ -654,7 +679,7 @@ class Term {
             //-- table borders
             for (let n = 0; n < line_rows.length; n++) {
                 const line_row = line_rows[n];
-                let b, bm = borderMode === 0 ? 0 : 1;
+                let b;
                 //-- border top
                 b = lines_top[bm];
                 if (!n && !r) {
@@ -689,7 +714,22 @@ class Term {
                     rows.push(border_bottom);
                 }
             }
-            console.log(rows.join('\n')); //<< print table
+            // print table
+            const row_lines = rows.join('\n');
+            // print repeat hdr
+            if (repeatHdr && !noIndex) {
+                if (!hdr_lines && !r && r + 1 < rows_len) {
+                    const b = lines_top[bm], b2 = lines_mid[bm];
+                    hdr_lines = row_lines
+                        .replace(new RegExp(b.left, 'g'), b2.left)
+                        .replace(new RegExp(b.mid, 'g'), b2.mid)
+                        .replace(new RegExp(b.right, 'g'), b2.right);
+                }
+                if (hdr_lines && (r + 1) % hdr_rows === 0)
+                    console.log(hdr_lines);
+            }
+            // print row lines
+            console.log(row_lines);
         }
     }
     /**

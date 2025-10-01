@@ -130,13 +130,18 @@ export declare class Term {
      * - `numIndex` = `--numIndex` | `--numIndex=false`
      *
      * @param data - log data
-     * @param cellMaxLength - `--cellMaxLength=250` table max cell length (width)  (default: `250`)
+     * @param optionsOrCellMaxLength
+     * * table options `{cellMaxLength?:number,divider?:boolean,noIndex?:boolean,numIndex?:boolean,rows2cols?:boolean}`
+     * - `--cellMaxLength=250` table max cell length (width)  (default: `250`)
      * @param divider - `--divider` whether to add row divider (default: `false`)
      * @param noIndex - `--noIndex` whether to remove index column ([#]) (default: `false`)
      * @param numIndex - `--numIndex` whether index column starts from `1` (default: `false`)
      * @param rows2cols - `--rows2cols` whether to display rows as columns (default: `false`)
+     * @param rows2cols - `--rows2cols` whether to display rows as columns (default: `false`)
      */
-    static table(data: any, cellMaxLength?: number, divider?: boolean, noIndex?: boolean, numIndex?: boolean, rows2cols?: boolean): void;
+    static table(data: any, optionsOrCellMaxLength?: {
+        [key: string]: any;
+    } | number, divider?: boolean, noIndex?: boolean, numIndex?: boolean, rows2cols?: boolean, repeatHdr?: boolean): void;
     /**
      * Console clear logs
      */

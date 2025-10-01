@@ -1,4 +1,16 @@
-import { _clone, _jsonStringify, _isDate, _str, _string, _stringable, _strEscape, _bool, _posInt, _rows2cols, _isArray } from '../utils';
+import {
+	_clone,
+	_jsonStringify,
+	_isDate,
+	_str,
+	_string,
+	_stringable,
+	_strEscape,
+	_bool,
+	_posInt,
+	_rows2cols,
+	_isArray,
+} from '../utils';
 
 /**
  * Term format result interface
@@ -428,36 +440,56 @@ export class Term
 	 * - `numIndex` = `--numIndex` | `--numIndex=false`
 	 * 
 	 * @param data - log data
-	 * @param cellMaxLength - `--cellMaxLength=250` table max cell length (width)  (default: `250`)
+	 * @param optionsOrCellMaxLength
+	 * * table options `{cellMaxLength?:number,divider?:boolean,noIndex?:boolean,numIndex?:boolean,rows2cols?:boolean}`
+	 * - `--cellMaxLength=250` table max cell length (width)  (default: `250`)
 	 * @param divider - `--divider` whether to add row divider (default: `false`) 
 	 * @param noIndex - `--noIndex` whether to remove index column ([#]) (default: `false`) 
 	 * @param numIndex - `--numIndex` whether index column starts from `1` (default: `false`)
 	 * @param rows2cols - `--rows2cols` whether to display rows as columns (default: `false`)
+	 * @param rows2cols - `--rows2cols` whether to display rows as columns (default: `false`)
 	 */
-	static table(data: any, cellMaxLength?: number, divider?: boolean, noIndex?: boolean, numIndex?: boolean, rows2cols?: boolean): void
-	{	
+	static table(data: any, optionsOrCellMaxLength?: {[key:string]:any}|number, divider?: boolean, noIndex?: boolean, numIndex?: boolean, rows2cols?: boolean, repeatHdr?: boolean): void
+	{
+		// options
+		let cellMaxLength: number|undefined = undefined;
+		if (Object(optionsOrCellMaxLength) === optionsOrCellMaxLength) {
+			const opts: {[key:string]:any} = optionsOrCellMaxLength as any;
+			cellMaxLength = opts.hasOwnProperty('cellMaxLength') ? opts.cellMaxLength : undefined;
+			divider = opts.hasOwnProperty('divider') ? opts.divider ?? undefined : undefined;
+			noIndex = opts.hasOwnProperty('noIndex') ? opts.noIndex ?? undefined : undefined;
+			numIndex = opts.hasOwnProperty('numIndex') ? opts.numIndex ?? undefined : undefined;
+			rows2cols = opts.hasOwnProperty('rows2cols') ? opts.rows2cols ?? undefined : undefined;
+			repeatHdr = opts.hasOwnProperty('repeatHdr') ? opts.repeatHdr ?? undefined : undefined;
+		}
+		else cellMaxLength = _posInt(optionsOrCellMaxLength, 0);
+		
 		// args
 		let args_cellMaxLength: number|undefined = undefined;
 		let args_divider: boolean|undefined = undefined;
 		let args_noIndex: boolean|undefined = undefined;
 		let args_numIndex: boolean|undefined = undefined;
 		let args_rows2cols: boolean|undefined = undefined;
+		let args_repeatHdr: boolean|undefined = undefined;
 		const args_text: string = typeof process !== 'undefined' && Array.isArray(process?.argv) ? process.argv.slice(2).join('|') : '';
-		let args_match: RegExpMatchArray|null = args_text.match(/--cellMaxLength=(\d+)(\||$)/);
-		if (args_match) args_cellMaxLength = _posInt(args_match[1], 0);
-		if (!!(args_match = args_text.match(/--divider(\||$)/))) args_divider = true;
-		else if (!!(args_match = args_text.match(/--divider=false(\||$)/))) args_divider = false;
-		if (!!(args_match = args_text.match(/--noIndex(\||$)/))) args_noIndex = true;
-		else if (!!(args_match = args_text.match(/--noIndex=false(\||$)/))) args_noIndex = false;
-		if (!!(args_match = args_text.match(/--numIndex(\||$)/))) args_numIndex = true;
-		else if (!!(args_match = args_text.match(/--numIndex=false(\||$)/))) args_numIndex = false;
-		if (!!(args_match = args_text.match(/--rows2cols(\||$)/))) args_rows2cols = true;
-		else if (!!(args_match = args_text.match(/--rows2cols=false(\||$)/))) args_rows2cols = false;
+		let m: RegExpMatchArray|null = args_text.match(/--cellMaxLength=(\d+)(\||$)/);
+		if (m) args_cellMaxLength = _posInt(m[1], 0);
+		if (args_text.match(/--divider(\||$)/)) args_divider = true;
+		else if (args_text.match(/--divider=false(\||$)/)) args_divider = false;
+		if (args_text.match(/--noIndex(\||$)/)) args_noIndex = true;
+		else if (args_text.match(/--noIndex=false(\||$)/)) args_noIndex = false;
+		if (args_text.match(/--numIndex(\||$)/)) args_numIndex = true;
+		else if (args_text.match(/--numIndex=false(\||$)/)) args_numIndex = false;
+		if (args_text.match(/--rows2cols(\||$)/)) args_rows2cols = true;
+		else if (args_text.match(/--rows2cols=false(\||$)/)) args_rows2cols = false;
+		if (args_text.match(/--repeatHdr(\||$)/)) args_repeatHdr = true;
+		else if (args_text.match(/--repeatHdr=false(\||$)/)) args_repeatHdr = false;
 		cellMaxLength = args_cellMaxLength ?? _posInt(cellMaxLength, 0) ?? 250;
 		divider = args_divider ?? divider ?? false;
 		noIndex = args_noIndex ?? noIndex ?? false;
 		numIndex = args_numIndex ?? numIndex ?? false;
 		rows2cols = args_rows2cols ?? rows2cols ?? false;
+		repeatHdr = args_repeatHdr ?? repeatHdr ?? false;
 
 		// vars
 		const that = this;
@@ -556,7 +588,13 @@ export class Term
 			str_items.push(str_item);
 		}
 
+		//TODO: border modes
+		const borderMode: number = 0;
+		const bm: number = borderMode === 0 ? 0 : 1;
+
 		// rows
+		let hdr_lines: string = '';
+		const hdr_rows = typeof process !== 'undefined' ? process.stdout.rows - (noIndex ? 0 : 3) : 0;
 		const rows_len: number = str_items.length;
 		for (let r = 0; r < str_items.length; r ++) {
 			const str_item = str_items[r];
@@ -620,9 +658,6 @@ export class Term
 				{left: '│ ', mid: ' │ ', right: ' │'},
 				{left: '║ ', mid: ' ║ ', right: ' ║'},
 			];
-			
-			//TODO: border modes
-			const borderMode: number = 0;
 
 			//REF: https://cboard.cprogramming.com/c-programming/151930-ascii-table-border.html
 			// BOX_DLR     ═
@@ -669,11 +704,11 @@ export class Term
 			//-- table borders
 			for (let n = 0; n < line_rows.length; n ++) {
 				const line_row = line_rows[n];
-				let b: any, bm: number = borderMode === 0 ? 0 : 1;
-
+				let b: any;
+				
 				//-- border top
 				b = lines_top[bm];
-				if (!n && !r){
+				if (!n && !r) {
 					let border_top: string = b.left;
 					for (let i = 0; i < line_row.length; i ++){
 						border_top += (i ? b.mid : '') + ''.padEnd(width_map[i], b.line);
@@ -685,12 +720,12 @@ export class Term
 				//-- border side
 				b = lines_side[bm];
 				rows.push(b.left + line_row.join(b.mid) + b.right);
-
+				
 				//-- border mid
 				b = lines_mid[bm];
 				if ((!r && !noIndex || divider) && n + 1 === len && r + 1 < rows_len) {
 					let border_mid: string = b.left;
-					for (let i = 0; i < line_row.length; i ++){
+					for (let i = 0; i < line_row.length; i ++) {
 						border_mid += (i ? b.mid : '') + ''.padEnd(width_map[i], b.line);
 					}
 					border_mid += b.right;
@@ -699,7 +734,7 @@ export class Term
 
 				//-- border bottom
 				b = lines_bottom[bm];
-				if (n + 1 === len && r + 1 === rows_len){
+				if (n + 1 === len && r + 1 === rows_len) {
 					let border_bottom: string = b.left;
 					for (let i = 0; i < line_row.length; i ++){
 						border_bottom += (i ? b.mid : '') + ''.padEnd(width_map[i], b.line);
@@ -708,7 +743,24 @@ export class Term
 					rows.push(border_bottom);
 				}
 			}
-			console.log(rows.join('\n')); //<< print table
+
+			// print table
+			const row_lines = rows.join('\n');
+
+			// print repeat hdr
+			if (repeatHdr && !noIndex) {
+				if (!hdr_lines && !r && r + 1 < rows_len) {
+					const b = lines_top[bm], b2 = lines_mid[bm];
+					hdr_lines = row_lines
+					.replace(new RegExp(b.left, 'g'), b2.left)
+					.replace(new RegExp(b.mid, 'g'), b2.mid)
+					.replace(new RegExp(b.right, 'g'), b2.right);
+				}
+				if (hdr_lines && (r + 1) % hdr_rows === 0) console.log(hdr_lines);
+			}
+			
+			// print row lines
+			console.log(row_lines);
 		}
 	}
 
