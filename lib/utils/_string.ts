@@ -119,6 +119,7 @@ export const _str = (value: any, trim: boolean = false, stringify: boolean = fal
  * @returns normalized `string`
  */
 export const _strNorm = (value: any): string => _str(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+// TODO: _strNorm ~ value.normalize('NFKC').replace(/[\u2018\u2019\u201A\u201B\u2032\u02BC]/g, "'"); // ’ => '
 
 /**
  * Escape regex operators from string
