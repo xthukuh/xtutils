@@ -16,11 +16,17 @@
 			"**/dist": true
 		},
 		"workbench.colorCustomizations": {
-			// "activityBar.background": "#4e0359",
 			"titleBar.activeBackground": "#840698",
 			"titleBar.activeForeground": "#FCF9FA",
 			"titleBar.inactiveBackground": "#4e0359",
 			"titleBar.inactiveForeground": "#FCF9FA",
+			"activityBar.background": "#053241",
+			"statusBar.background": "#053241",
+			"statusBar.foreground": "#F3FBFE",
+			"statusBar.debuggingBackground": "#053241",
+			"statusBar.debuggingForeground": "#F3FBFE",
+			"statusBar.noFolderBackground": "#053241",
+			"statusBar.noFolderForeground": "#F3FBFE"
 		},
 		"cSpell.ignoreRegExpList": [
 			"/\\b[_x][\\w]+\\b/"
