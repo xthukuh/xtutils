@@ -99,7 +99,7 @@ export declare const _sqlEscape: (value: any) => string | number | boolean | nul
  * @param rl  Trim mode (`''` => (default) trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
  * @returns trimmed `string`
  */
-export declare const _trim: (value: any, chars?: string, rl?: '' | 'r' | 'l' | 'right' | 'left') => string;
+export declare const _trim: (value: any, chars?: string, rl?: "" | "r" | "l" | "right" | "left") => string;
 /**
  * Regex string trim leading characters (left)
  *
@@ -140,14 +140,14 @@ export declare const _toSentenceCase: (value: any, keepCase?: boolean | 1 | 0) =
  * @param trimTrailing  Trim trailing "_" (`false` = (default) disabled, `true` => trim right & left, `'r'|'right'` => trim right, `'l'|'left'` => trim left)
  * @returns snake_case `string`
  */
-export declare const _toSnakeCase: (value: any, trimTrailing?: boolean | 'l' | 'left' | 'r' | 'right') => string;
+export declare const _toSnakeCase: (value: any, trimTrailing?: boolean | "l" | "left" | "r" | "right") => string;
 /**
  * Convert value to slug case (i.e. 'HelloWorld' => 'hello-world')
  *
  * @param value  Parse string
  * @returns slug-case `string`
  */
-export declare const _toSlugCase: (value: any, trimTrailing?: boolean | 'l' | 'left' | 'r' | 'right') => string;
+export declare const _toSlugCase: (value: any, trimTrailing?: boolean | "l" | "left" | "r" | "right") => string;
 /**
  * Convert value to studly case (i.e. 'hello-world' => 'HelloWorld')
  *
@@ -285,7 +285,7 @@ export declare const _toCsv: (data: string | string[] | string[][], delimiter?: 
  * @param limit - split items limit/count (default: `undefined`)
  * @returns `[part: string, separator: string | ''][]` split parts
  */
-export declare const _split: (value: any, separator?: string | RegExp, limit?: number) => [part: string, separator: string][];
+export declare const _split: (value: any, separator?: string | RegExp, limit?: number) => [part: string, separator: string | ""][];
 /**
  * Get error text
  *
@@ -353,4 +353,4 @@ export declare const _strKeyValues: (values: any, _key?: any, _value?: any, _val
  * @param onAddLine - add line buffer handler callback ~ return modified line value or `undefined`|`null` to skip
  * @returns `string[]` text wrap lines
  */
-export declare const _wrapLines: (text: any, max_length?: number, word_break?: boolean, onAddLine?: ((line: string, lines_buffer: string[]) => string | undefined) | undefined) => string[];
+export declare const _wrapLines: (text: any, max_length?: number, word_break?: boolean, onAddLine?: (line: string, lines_buffer: string[]) => string | undefined) => string[];

@@ -91,7 +91,7 @@ export declare const _px2rem: (val?: number, reverse?: boolean, base?: number) =
  * @param places - decimal places
  * @returns `number`
  */
-export declare const _bytesVal: (bytes: number, mode?: 0 | 1, unit?: 'B' | 'KB' | 'MB' | 'GB' | 'TB' | 'PB' | 'EB' | 'ZB' | 'YB', places?: number, commas?: boolean) => number | string;
+export declare const _bytesVal: (bytes: number, mode?: 0 | 1, unit?: "B" | "KB" | "MB" | "GB" | "TB" | "PB" | "EB" | "ZB" | "YB", places?: number, commas?: boolean) => number | string;
 /**
  * Convert decimal to base
  *

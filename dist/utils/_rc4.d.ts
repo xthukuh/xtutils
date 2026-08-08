@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /**
  * RC4 encrypt/decrypt text value
  *

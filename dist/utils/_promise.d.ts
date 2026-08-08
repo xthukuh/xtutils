@@ -31,7 +31,7 @@ export interface IPromiseResult<TResult> {
  *
  * @returns `Promise<IPromiseResult<TResult>[]>`
  */
-export declare const _asyncAll: <T = any, TResult = any>(items: (T | Promise<T> | (() => T | Promise<T>))[], callback?: ((item: T, index: number, length: number) => Promise<TResult>) | undefined, onProgress?: ((percent: number, total: number, complete: number, failures: number) => void) | undefined) => Promise<IPromiseResult<TResult>[]>;
+export declare const _asyncAll: <T = any, TResult = any>(items: (T | Promise<T> | (() => T | Promise<T>))[], callback?: (item: T, index: number, length: number) => Promise<TResult>, onProgress?: (percent: number, total: number, complete: number, failures: number) => void) => Promise<IPromiseResult<TResult>[]>;
 /**
  * Parallel resolve list items `<T=any>[]` with max simultaneous promises size limit
  *
@@ -41,7 +41,7 @@ export declare const _asyncAll: <T = any, TResult = any>(items: (T | Promise<T> 
  * @param onProgress - queue on progress callback ~ `(percent:number,total:number,complete:number,failures:number)=>void`
  * @returns `Promise<IPromiseResult<TResult>[]>`
  */
-export declare const _asyncQueue: <T = any, TResult = any>(values: T[], size?: number, callback?: ((value: T, index: number, length: number) => Promise<TResult>) | undefined, onProgress?: ((percent: number, total: number, complete: number, failures: number) => void) | undefined) => Promise<IPromiseResult<TResult>[]>;
+export declare const _asyncQueue: <T = any, TResult = any>(values: T[], size?: number, callback?: (value: T, index: number, length: number) => Promise<TResult>, onProgress?: (percent: number, total: number, complete: number, failures: number) => void) => Promise<IPromiseResult<TResult>[]>;
 /**
  * Get async iterable values (i.e. `for await (const value of _asyncValues(array)){...}`)
  *
