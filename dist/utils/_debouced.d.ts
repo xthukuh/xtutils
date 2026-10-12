@@ -7,4 +7,4 @@
  * @param immediate  Execute callback before delay
  * @returns Throttled callback function
  */
-export declare const _debouced: (handler: (...args: any) => void, delay?: number, maxWait?: number, immediate?: boolean | 1 | 0) => (...args: any) => void;
+export declare const _debouced: (handler: (...args: any) => void, delay?: number, maxWait?: number, immediate?: boolean | 1 | 0) => ((...args: any) => void);

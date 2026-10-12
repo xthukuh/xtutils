@@ -6,9 +6,7 @@
  * @returns `{[key: string|number|symbol]: any}` ~ {property => descriptors} object
  */
 export declare const _getAllPropertyDescriptors: (value: any) => {
-    [key: string]: any;
-    [key: number]: any;
-    [key: symbol]: any;
+    [key: string | number | symbol]: any;
 };
 /**
  * Get all value properties
@@ -273,7 +271,7 @@ export type TSortOrder = -1 | 1 | 0;
  */
 export declare const _sort: <T = any>(array: T[], mode?: TSortMode | {
     [key: string]: TSortMode;
-} | [string, TSortMode] | [string, TSortMode][] | undefined, onCompare?: ((a: any, b: any, key?: string) => TSortOrder | [a: any, b: any]) | undefined, localeCompareConfig?: {
+} | [string, TSortMode] | [string, TSortMode][], onCompare?: (a: any, b: any, key?: string) => TSortOrder | [a: any, b: any], localeCompareConfig?: {
     locales?: any;
     options?: any;
 }) => T[];
@@ -301,7 +299,7 @@ export declare const _sort: <T = any>(array: T[], mode?: TSortMode | {
  */
 export declare const _trans: (template: string, context: {
     [name: string]: any;
-}, _default?: string, _format?: ((value: string, path: string, name: string) => any) | undefined) => string;
+}, _default?: string, _format?: (value: string, path: string, name: string) => any) => string;
 /**
  * Parse iterable values array list
  *
@@ -382,9 +380,7 @@ export declare class FailError extends Error {
  * @returns `{[prop: any]: any}`
  */
 export declare const _propsObj: (value: any, props?: any[], _omit?: boolean, _undefined?: boolean) => {
-    [key: string]: any;
-    [key: number]: any;
-    [key: symbol]: any;
+    [key: string | number | symbol]: any;
 };
 /**
  * Split `T[]` array values into `T[][]` chunks array

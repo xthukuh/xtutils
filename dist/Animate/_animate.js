@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._animate = exports.ANIMATE_DEFAULT_DURATION = exports.ANIMATE_DEFAULT_EASING = void 0;
+exports.ANIMATE_DEFAULT_DURATION = exports.ANIMATE_DEFAULT_EASING = void 0;
+exports._animate = _animate;
 const utils_1 = require("../utils");
 const _easing_functions_1 = require("./_easing_functions");
 const _polyfill_1 = require("./_polyfill");
@@ -225,5 +226,4 @@ function _animate(options, _debug = false) {
         abort,
     };
 }
-exports._animate = _animate;
 //# sourceMappingURL=_animate.js.map

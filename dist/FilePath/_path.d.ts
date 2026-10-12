@@ -96,4 +96,4 @@ export interface IFilePathError extends Error {
  * @param _failure - error handling ~ `0` = ignore, '1' = warn, `2` = throw error (default `0`)
  * @returns `IFilePath` normalized path (stringable)
  */
-export declare const _filepath: (value: any, separator?: '' | '/' | '\\', _strict?: boolean, _type?: string, _failure?: 0 | 1 | 2) => IFilePath;
+export declare const _filepath: (value: any, separator?: "" | "/" | "\\", _strict?: boolean, _type?: string, _failure?: 0 | 1 | 2) => IFilePath;

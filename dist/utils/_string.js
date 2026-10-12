@@ -132,6 +132,7 @@ exports._str = _str;
  */
 const _strNorm = (value) => (0, exports._str)(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 exports._strNorm = _strNorm;
+// TODO: _strNorm ~ value.normalize('NFKC').replace(/[\u2018\u2019\u201A\u201B\u2032\u02BC]/g, "'"); // ’ => '
 /**
  * Escape regex operators from string
  * - i.e. `'\\s\n\r\t\v\x00~_!@#$%^&*()[]\\/,.?"\':;{}|<>=+-'` => `'\\s\n\r\t\v\x00\s~_!@#\\$%\\^&\\*\\(\\)\\[\\]\\\\/,\\.\\?"\':;\\{\\}\\|<>=\\+-'`

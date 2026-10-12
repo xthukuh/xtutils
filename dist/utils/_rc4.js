@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._rc4 = void 0;
+exports._rc4 = _rc4;
 /**
  * RC4 encrypt/decrypt text value
  *
@@ -36,6 +36,5 @@ function _rc4(input, pass) {
     }
     return (is_buffer ? buffer : result);
 }
-exports._rc4 = _rc4;
 ;
 //# sourceMappingURL=_rc4.js.map

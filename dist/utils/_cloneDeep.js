@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._cloneDeep = exports.clonePrototype = void 0;
+exports.clonePrototype = void 0;
+exports._cloneDeep = _cloneDeep;
 const Buffer_1 = require("../Buffer");
 /**
  * Clone utils
@@ -172,6 +173,5 @@ function _cloneDeep(value, options) {
     //result
     return _clone(value, depth);
 }
-exports._cloneDeep = _cloneDeep;
 ;
 //# sourceMappingURL=_cloneDeep.js.map

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._pendingAbort = exports._pending = exports.PENDING_CACHE = exports.PendingAbortError = exports._resolve = exports._sleep = exports._asyncValues = exports._asyncQueue = exports._asyncAll = void 0;
+exports._pendingAbort = exports._pending = exports.PENDING_CACHE = exports.PendingAbortError = exports._sleep = exports._asyncValues = exports._asyncQueue = exports._asyncAll = void 0;
+exports._resolve = _resolve;
 const _number_1 = require("./_number");
 const _objects_1 = require("./_objects");
 const _string_1 = require("./_string");
@@ -233,7 +234,6 @@ async function _resolve(promise, _new = false) {
     const resolved = Promise.resolve('function' !== typeof promise ? promise : (async () => promise.call(this))());
     return !_new ? resolved : new Promise((resolve, reject) => resolved.then(resolve, reject));
 }
-exports._resolve = _resolve;
 ;
 /**
  * @class pending promise abort error
